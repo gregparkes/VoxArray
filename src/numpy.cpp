@@ -1699,16 +1699,16 @@ namespace numpy {
 		{
 			for (unsigned int j = k+1; j < ncol; j++)
 			{
-				if (A[j+k*ncol] != 0.0)
+				if (A.data[j+k*ncol] != 0.0)
 				{
 					// for every element on the column 0, zero it by selecting the negative divide
-					double value = -(U[j+k*ncol] / U[k*ncol]);
+					double value = -(U.data[j+k*ncol] / U.data[k*ncol]);
 					// for every element on selected row, substract by denominator
 					for (unsigned int i = k; i < A.nvec; i++)
 					{
-						U[j+i*ncol] += value*A[k+i*ncol];
+						U.data[j+i*ncol] += value*A.data[k+i*ncol];
 					}
-					L[j+k*ncol] = -value;
+					L.data[j+k*ncol] = -value;
 				}
 			}
 		}
