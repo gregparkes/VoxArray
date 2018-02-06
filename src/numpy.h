@@ -1138,6 +1138,22 @@ namespace numpy {
 	Matrix dot(const Matrix& A, const Matrix& B);
 
 	/**
+	 Calculate the magnitude of a vector.
+
+	@param v : the vector
+	@return The magnitude
+	*/
+	double magnitude(const Vector& v);
+
+	/**
+	 Normalizes the array by it's magnitude.
+	
+	@param v : the vector to normalize
+	@return The normalized array
+	*/
+	Vector normalized(const Vector& v);
+
+	/**
 	 Computes the outer product of two vectors, where v is a column-vector and w is row-vector.
 	 Also known as the tensor-product. Contrasts to the inner/dot product.
 
@@ -1291,6 +1307,38 @@ namespace numpy {
 	Matrix tan(const Matrix& rhs);
 
 	/**
+	 Creates a radians vector from a degrees vector.
+
+	 @param rhs : the vector
+	 @return The new radians vector <created on the stack>
+	*/
+	Vector to_radians(const Vector& rhs);
+
+	/**
+	 Creates a radians matrix from a degrees matrix.
+
+	 @param rhs : the matrix
+	 @return The new radians matrix <created on the stack>
+	*/
+	Matrix to_radians(const Matrix& rhs);	
+
+	/**
+	 Creates a degrees vector from a radians vector.
+
+	 @param rhs : the vector
+	 @return The new degrees vector <created on the stack>
+	*/
+	Vector to_degrees(const Vector& rhs);
+
+	/**
+	 Creates a degrees matrix from a radians matrix.
+
+	 @param rhs : the matrix
+	 @return The new degrees matrix <created on the stack>
+	*/
+	Matrix to_degrees(const Matrix& rhs);
+
+	/**
 	 Creates an (applied) exponential copy of the vector.
 
 	 @param rhs : the vector
@@ -1428,6 +1476,54 @@ namespace numpy {
 	 */
 	Matrix hstack(const Vector& lhs, const Vector& rhs);
 
+	/**
+	Rotates a 2-D vector by a certain number of degrees.
+
+	@param v : the vector to rotate
+	@param degrees : the number of degrees to rotate by.
+	@return The rotated vector.
+	*/
+	Vector rotate_vector2d(const Vector& v, double degrees);
+
+	/**
+	Calculates the angle between a set of vectors, up to n-dimensions.
+
+	@param l : the left vector
+	@param r : the right vector
+	@return TThe angle between them
+	*/
+	double angle(const Vector& l, const Vector& r);
+
+	/**
+	 Calculates the projection using some lengths and directions. Practically applicable
+	 in 2,3-D but can extend to n-dimension if needed.
+
+	@param length : length vector
+	@param dir : direction vector
+	@return Projection vector
+	*/
+	Vector project(const Vector& length, const Vector& dir);
+
+	/**
+	 Calculates the perpendicular vector associated with length and direction vectors.
+
+	@param length : length vector
+	@param dir : direction vector
+	@return Perpendicular vector
+	*/
+	Vector perpendicular(const Vector& length, const Vector& dir);
+
+	/**
+	 Calculates the Reflection vector associated with source and normal vectors.
+
+	@param source : source vector
+	@param normal : normal vector
+	@return Reflection vector
+	*/
+	Vector reflection(const Vector& source, const Vector& normal);
+
+
+
 	/* --------------------------------------------------------------------------------------- *
 	 *
 	 * Now we handle our global operator overloads of +, -, *, / etc. This applies to all
@@ -1436,36 +1532,7 @@ namespace numpy {
 	 *
 	 ----------------------------------------------------------------------------------------*/
 
-	// All of these methods create new vectors on the stack.
 
-	Vector operator+(const Vector& lhs, double value);
-	Vector operator+(double value, const Vector& rhs);
-	Vector operator+(const Vector& lhs, const Vector& rhs);
-
-	Vector operator-(const Vector& lhs, double value);
-	Vector operator-(const Vector& lhs, const Vector& rhs);
-
-	Vector operator*(const Vector& lhs, double value);
-	Vector operator*(double value, const Vector& rhs);
-	Vector operator*(const Vector& lhs, const Vector& rhs);
-
-	Vector operator/(const Vector& lhs, double value);
-	Vector operator/(const Vector& lhs, const Vector& rhs);
-
-	Vector operator^(const Vector& lhs, double exponent);
-	Vector operator^(double base, const Vector& rhs);
-	Vector operator^(const Vector& lhs, const Vector& rhs);
-
-	// works by summing over all elements and seeing if it's less than/more than than the other value/array,
-	// returns false if equal to.
-
-	bool operator<(const Vector& lhs, double value);
-	bool operator<(double value, const Vector& rhs);
-	bool operator<(const Vector& lhs, const Vector& rhs);
-
-	bool operator>(const Vector& lhs, double value);
-	bool operator>(double value, const Vector& rhs);
-	bool operator>(const Vector& lhs, const Vector& rhs);
 }
 
 #endif

@@ -10,9 +10,10 @@
 
 int main(void)
 {
+ 	std::cout << "---- Beginning Vector tests! ----" << std::endl;
 	call_all_tests();
-	//cout << x.str() << endl;
-	//call_all_matrix_tests();
+	std::cout << "---- Beginning Matrix tests! ----" << std::endl;
+	call_all_matrix_tests();
 
 
 //#pragma omp parallel

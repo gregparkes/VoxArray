@@ -13,8 +13,11 @@
 #include <time.h>
 #include <stdio.h>
 #include <omp.h>
+#include <iostream>
 
-#define __OMP_OPT_VALUE__ 100000
+#define __OMP_OPT_VALUE__ 50000
+// decimal constant
+#define FLT_EPSILON 1.1920929E-07F 
 
 static inline double _absolute_(double value)
 {
@@ -39,6 +42,63 @@ static inline double _c_power_(double base, double exponent)
 static inline double _natural_log_(double v)
 {
 	return log(v);
+}
+
+static inline double _sine_(double v)
+{
+	return sin(v);
+}
+
+static inline double _cosine_(double v)
+{
+	return cos(v);
+}
+
+static inline bool AlmostEqualRelativeAndAbs(double a, double b, double maxdiff,
+		 double maxreldiff = FLT_EPSILON)
+{
+	// check if the numbers are really close.
+	double diff = fabs(a - b);
+	if (diff <= maxdiff)
+	{
+		return true;
+	}
+
+	a = fabs(a);
+	b = fabs(b);
+	double largest = (b > a) ? b : a;
+
+	if (diff <= largest * maxreldiff)
+	{
+		return true;
+	}
+	return false;
+}
+
+#define CMP(x, y) AlmostEqualRelativeAndAbs(x, y, 0.005)
+
+
+static double correct_degrees(double degrees)
+{
+	while (degrees > 360.0)
+	{
+		degrees -= 360.0;
+	}
+	while (degrees < -360.0)
+	{
+		degrees += 360.0;
+	}
+	return degrees;
+}
+
+static inline double RAD2DEG(double radians)
+{
+	return (correct_degrees(radians * 57.295754));
+}
+
+static inline double DEG2RAD(double degrees)
+{
+	return (correct_degrees(degrees) * 0.0174533);
 }
 
 /*
@@ -154,7 +214,7 @@ static int _flip_array_(double *arr, unsigned int n)
 	{
 		return 0;
 	}
-	for (unsigned int i = 0; i < n / 2; i++)
+	for (unsigned int i = 0; i < (int) (n / 2); i++)
 	{
 		//swap
 		double temp = arr[i];
@@ -523,7 +583,7 @@ static double _std_array_(double *arr, unsigned int n)
 	{
 		s += (arr[i] - m) * (arr[i] - m);
 	}
-	return _square_root_((1 / n) * s);
+	return _square_root_(s / (n-1));
 }
 
 static double _matrix_rowwise_std_(double *arr, unsigned int nvec, unsigned int ncol, unsigned int rowidx)
@@ -537,7 +597,7 @@ static double _matrix_rowwise_std_(double *arr, unsigned int nvec, unsigned int 
 	{
 		s += (arr[rowidx+colidx*ncol] - m) * (arr[rowidx+colidx*ncol] - m);
 	}
-	return _square_root_((1 / nvec) * s);
+	return _square_root_(s / (nvec - 1));
 }
 
 static double _var_array_(double *arr, unsigned int n)
@@ -551,7 +611,7 @@ static double _var_array_(double *arr, unsigned int n)
 	{
 		s += (arr[i] - m) * (arr[i] - m);
 	}
-	return s / (n - 1);
+	return (s / (n - 1));
 }
 
 static double _matrix_rowwise_var_(double *arr, unsigned int nvec, unsigned int ncol, unsigned int rowidx)
@@ -627,14 +687,35 @@ static int _cumulative_sum_(double *zeros, double *oldarr, unsigned int n)
 	{
 		return 0;
 	}
+	// std::cout << "Getting here" << std::endl;
 #ifdef _OPENMP
-	#pragma omp parallel for if((n)>100000) schedule(static)
+	#pragma omp parallel for if((n)>__OMP_OPT_VALUE__) schedule(static)
 #endif
 	for (unsigned int j = 0; j < n; j++)
 	{
-		for (unsigned int i = j; i >= 0; i--)
+		for (unsigned int i = j; i > 0; i--)
 		{
-			zeros[j] += oldarr[i];
+			zeros[j] = zeros[j] + oldarr[i];
+		}
+	}
+	return 1;
+}
+
+static int _cumulative_prod_(double *zeros, double *oldarr, unsigned int n)
+{
+	if (n == 0 || zeros == 0 || oldarr == 0)
+	{
+		return 0;
+	}
+	// std::cout << "Getting here" << std::endl;
+#ifdef _OPENMP
+	#pragma omp parallel for if((n)>__OMP_OPT_VALUE__) schedule(static)
+#endif
+	for (unsigned int j = 0; j < n; j++)
+	{
+		for (unsigned int i = j; i > 0; i--)
+		{
+			zeros[j] *= oldarr[i];
 		}
 	}
 	return 1;
@@ -854,6 +935,40 @@ static int _tan_array_(double *arr, unsigned int n)
 	{
 		arr[i] = tan(arr[i]);
 	}
+	return 1;
+}
+
+static int _to_radians_array_(double *arr, unsigned int n)
+{
+	if (n == 0 || arr == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		arr[i] = DEG2RAD(arr[i]);
+	}	
+	return 1;
+}
+
+static int _to_degrees_array_(double *arr, unsigned int n)
+{
+	if (n == 0 || arr == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		arr[i] = RAD2DEG(arr[i]);
+	}	
 	return 1;
 }
 
@@ -1180,20 +1295,151 @@ static double _eigenvalue_det_(double a, double b)
 	return -a - b;
 }
 
-// received vec as random array, and matrix as the matrix to find eigenvalues for
-// assumed out is the same size as vec.
-static int _power_iteration_(double *out, double *matrix, double *vec, int n_simulations, unsigned int vec_len,
-							unsigned int matrix_nvec, unsigned int matrix_ncol)
+/**
+
+---------------------- VALUE-APPLIED MATHEMATICS -----------------------------
+
+*/
+
+static int _add_array_(double *arr, unsigned int n, double value)
 {
-	for (unsigned int i = 0; i < n_simulations; i++)
+	if (arr == 0 || n == 0)
 	{
-		_vector_dot_array_(matrix, vec, vec_len);
+		return 0;
 	}
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (unsigned int i = 0; i < n; i++)
+	{
+		arr[i] += value;
+	}	
+	return 1;
+}
+
+static int _sub_array_(double *arr, unsigned int n, double value)
+{
+	if (arr == 0 || n == 0)
+	{
+		return 0;
+	}
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (unsigned int i = 0; i < n; i++)
+	{
+		arr[i] -= value;
+	}	
+	return 1;
+}
+
+static int _mult_array_(double *arr, unsigned int n, double value)
+{
+	if (arr == 0 || n == 0)
+	{
+		return 0;
+	}
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (unsigned int i = 0; i < n; i++)
+	{
+		arr[i] *= value;
+	}	
+	return 1;
+}
+
+static int _div_array_(double *arr, unsigned int n, double value)
+{
+	if (arr == 0 || n == 0 || CMP(value, 0.0))
+	{
+		return 0;
+	}
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (unsigned int i = 0; i < n; i++)
+	{
+		arr[i] /= value;
+	}	
+	return 1;
 }
 
 
+/****
 
+---------------------- ELEMENT-WISE MATHEMATICS -------------------------------
 
+*/
+
+// adds right to left, then returns
+static int _element_add_(double *left, double *right, unsigned int n)
+{
+	if (n == 0 || left == 0 || right == 0)
+	{
+		return 0;
+	}
+	// assumes left and right are same size and DOES NOT CHECK!
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (unsigned int i = 0; i < n; i++)
+	{
+		left[i] += right[i];
+	}
+	return 1;
+}
+
+static int _element_sub_(double *left, double *right, unsigned int n)
+{
+	if (n == 0 || left == 0 || right == 0)
+	{
+		return 0;
+	}
+	// assumes left and right are same size and DOES NOT CHECK!
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (unsigned int i = 0; i < n; i++)
+	{
+		left[i] -= right[i];
+	}
+	return 1;
+}
+
+static int _element_mult_(double *left, double *right, unsigned int n)
+{
+	if (n == 0 || left == 0 || right == 0)
+	{
+		return 0;
+	}
+	// assumes left and right are same size and DOES NOT CHECK!
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (unsigned int i = 0; i < n; i++)
+	{
+		left[i] *= right[i];
+	}
+	return 1;
+}
+
+static int _element_div_(double *left, double *right, unsigned int n)
+{
+	if (n == 0 || left == 0 || right == 0)
+	{
+		return 0;
+	}
+	// assumes left and right are same size and DOES NOT CHECK!
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (unsigned int i = 0; i < n; i++)
+	{
+		left[i] /= right[i];
+	}
+	return 1;
+}
 
 #endif
 

@@ -39,40 +39,45 @@ GNU General Public License:
 
 #include "numpy.h"
 
+#define PRINT_STR(x) (std::cout << x << std::endl)
+#define PRINT_OBJ(x) (std::cout << x.str() << std::endl)
+#define CMP(x,y) (fabs(x - y) < 1E-13)
+#define WEAK_CMP(x,y) (fabs(x -y) < 1E-5)
+
 namespace tests {
 
 	static void test_zeros()
 	{
-		std::cout << "Start Zeros" << std::endl;
+		PRINT_STR("Start Zeros");
 		Numpy arr = numpy::zeros(16);
 		assert(arr.n == 16);
 		for (int i = 0; i < 16; i++)
 		{
-			assert(arr.data[i] == 0.0);
+			assert(CMP(arr.data[i], 0.0));
 		}
 
-		std::cout << "Test_Zeros :: Passed" << std::endl;
+		PRINT_STR("Test_Zeros :: Passed");
 	}
 
 	static void test_ones()
 	{
-		std::cout << "Start Ones" << std::endl;
+		PRINT_STR("Start Ones");
 		Numpy arr = numpy::ones(16);
 		assert(arr.n == 16);
 		for (int i = 0; i < 16; i++)
 		{
-			assert(arr.data[i] == 1.0);
+			assert(CMP(arr.data[i], 1.0));
 		}
 
-		std::cout << "Test_Ones :: Passed" << std::endl;
+		PRINT_STR("Test_Ones :: Passed");
 	}
 
 	static void test_empty()
 	{
-		std::cout << "Start Empty" << std::endl;
+		PRINT_STR("Start Empty");
 		Numpy arr = numpy::empty(16);
 		assert(arr.n == 16);
-		//std::cout << arr.str() << std::endl;
+		//PRINT_STR(arr.str());
 		for (int i = 0; i < 16; i++)
 		{
 			double val = arr.data[i];
@@ -81,108 +86,107 @@ namespace tests {
 		Numpy x = numpy::Vector(4.0, 5.0, 2.0);
 		Numpy y = numpy::Vector(2.0, 7.0, 5.0, 8.0);
 
-		std::cout << "Test_Empty :: Passed" << std::endl;
+		PRINT_STR("Test_Empty :: Passed");
 	}
 
 	static void test_fill()
 	{
-		std::cout << "Start Fill" << std::endl;
+		PRINT_STR("Start Fill");
 		Numpy arr = numpy::fill(16, 15.0);
 		assert(arr.n == 16);
 		for (int i = 0; i < 16; i++)
 		{
-			assert(arr.data[i] == 15.0);
+			assert(CMP(arr.data[i],15.0));
 		}
-		std::cout << "Test_Fill :: Passed" << std::endl;
+		PRINT_STR("Test_Fill :: Passed");
 	}
 
 	static void test_str()
 	{
-		std::cout << "Start Str" << std::endl;
+		PRINT_STR("Start Str");
 		Numpy x = numpy::zeros(6);
-		std::cout << numpy::str(x) << std::endl;
+		PRINT_STR(numpy::str(x));
 		Numpy y = numpy::rand(6);
-		std::cout << numpy::str(y) << std::endl;
-		std::cout << y.str() << std::endl;
+		PRINT_STR(numpy::str(y));
+		PRINT_STR(y.str());
 
-		std::cout << "Test_Str :: Passed" << std::endl;
+		PRINT_STR("Test_Str :: Passed");
 	}
 
 	static void test_array()
 	{
-		std::cout << "Start Array" << std::endl;
+		PRINT_STR("Start Array");
 		Numpy arr = numpy::array("0.0, 3.42, 5.4, 5.45, 2.45, 9.65");
-		//std::cout << arr.str() << std::endl;
+		//PRINT_STR(arr.str());
 		assert(arr.n == 6);
 		for (int i = 0; i < 6; i++)
 		{
-			assert(arr.data[i] == arr[i]);
+			assert(CMP(arr.data[i],arr[i]));
 		}
 
-		std::cout << "Test_Array :: Passed" << std::endl;
+		PRINT_STR("Test_Array :: Passed");
 	}
 
 	static void test_copy()
 	{
-		std::cout << "Start Copy" << std::endl;
+		PRINT_STR("Start Copy");
 		Numpy x = numpy::ones(16);
 		Numpy y = numpy::copy(x);
 		assert(y.n == x.n);
 		for (int i = 0; i < 16; i++)
 		{
-			assert(x.data[i] == y.data[i]);
+			assert(CMP(x.data[i], y.data[i]));
 		}
 		Numpy z = x.copy();
 		for (int i = 0; i < 16; i++)
 		{
-			assert(x.data[i] == z.data[i]);
+			assert(CMP(x.data[i], z.data[i]));
 		}
-
-		std::cout << "Test_Copy :: Passed" << std::endl;
+		PRINT_STR("Test_Copy :: Passed");
 	}
 
 	static void test_empty_like()
 	{
-		std::cout << "Start Empty_Like" << std::endl;
+		PRINT_STR("Start Empty_Like");
 		Numpy x = numpy::zeros(16);
 		Numpy y = numpy::empty_like(x);
 		assert(y.n == x.n);
 
-		std::cout << "Test_Empty_Like :: Passed" << std::endl;
+		PRINT_STR("Test_Empty_Like :: Passed");
 	}
 
 	static void test_zeros_like()
 	{
-		std::cout << "Start Zeros_Like" << std::endl;
+		PRINT_STR("Start Zeros_Like");
 		Numpy x = numpy::zeros(16);
 		Numpy y = numpy::zeros_like(x);
 		assert(y.n == x.n);
-		//std::cout << x.str() << std::endl;
+		//PRINT_STR(x.str());
 		for (int i = 0; i < 16; i++)
 		{
-			assert(y.data[i] - 0.0 < 1e-7);
+			assert(CMP(y.data[i], 0.0));
 		}
 
-		std::cout << "Test_Zeros_Like :: Passed" << std::endl;
+		PRINT_STR("Test_Zeros_Like :: Passed");
 	}
 
 	static void test_ones_like()
 	{
-		std::cout << "Start Ones_Like" << std::endl;
+		PRINT_STR("Start Ones_Like");
 		Numpy x = numpy::zeros(16);
 		Numpy y = numpy::ones_like(x);
 		assert(y.n == x.n);
 		for (int i = 0; i < 16; i++)
 		{
-			assert(y.data[i] == 1.0);
+			assert(CMP(y.data[i], 1.0));
 		}
 
-		std::cout << "Test_Ones_Like :: Passed" << std::endl;
+		PRINT_STR("Test_Ones_Like :: Passed");
 	}
 
 	static void test_rand()
 	{
-		std::cout << "Start Rand" << std::endl;
+		PRINT_STR("Start Rand");
 		Numpy x = numpy::rand(16);
 		assert(x.n == 16);
 		for (int i = 0; i < 16; i++)
@@ -190,12 +194,12 @@ namespace tests {
 			assert(x.data[i] > 0.0 && x.data[i] < 1.0);
 		}
 
-		std::cout << "Test_Rand :: Passed" << std::endl;
+		PRINT_STR("Test_Rand :: Passed");
 	}
 
 	static void test_randn()
 	{
-		std::cout << "Start Randn" << std::endl;
+		PRINT_STR("Start Randn");
 		Numpy x = numpy::randn(500);
 		assert(x.n == 500);
 		//calculate mean and hope it's close to +- 0.2 around 0.
@@ -206,83 +210,86 @@ namespace tests {
 		}
 		assert(count / 500 > -0.5 && count / 500 < 0.5);
 
-		std::cout << "Test_Randn :: Passed" << std::endl;
+		PRINT_STR("Test_Randn :: Passed");
 	}
 
 	static void test_arange()
 	{
-		std::cout << "Start Arange" << std::endl;
+		PRINT_STR("Start Arange");
 		Numpy x = numpy::arange(0.0, 1.0, 0.1);
 		assert(x.n == 11);
 		for (int i = 0; i < 11; i++)
 		{
 			double y = i * 0.1;
 			//printf("%lf %lf %lf %lf\n", x.data[i], y, x.data[i] - y, 1e-5);
-			assert(x.data[i] - y <= 1e-14);
+			assert(CMP(x.data[i], y));
 		}
 
-		std::cout << "Test_Arange :: Passed" << std::endl;
+		PRINT_STR("Test_Arange :: Passed");
 	}
 
 	static void test_linspace()
 	{
-		std::cout << "Start Linspace" << std::endl;
-		Numpy x = numpy::linspace(0.0, 1.0, 11);
+		PRINT_STR("Start Linspace");
+		Numpy x = numpy::linspace(0.0, 10.0, 11);
 		assert(x.n == 11);
 		for (int i = 0; i < 11; i++)
 		{
-			assert(x.data[i] - i <= 1e-14);
+			//std::cout << x.data[i] << ", " << (double) i << std::endl;
+			assert(CMP(x.data[i], (double) i));
 		}
 		Numpy y = numpy::linspace(0.0, 5.0, 6);
 		assert(y.n == 6);
 		for (int i = 0; i < 6; i++)
 		{
-			assert(y.data[i] - i <= 1e-14);
+			assert(CMP(y.data[i], i));
 		}
 		Numpy z = numpy::linspace(0.1, 0.5, 5);
-		//std::cout << z.str() << std::endl;
+		//PRINT_STR(z.str());
 		Numpy ab = numpy::linspace(0.2, 0.6, 5);
 		Numpy ac = numpy::linspace(0.3, 0.7, 5);
 		Numpy ad = numpy::linspace(0.12, 0.2, 10);
-		//std::cout << ab.str() << std::endl << ac.str() << std::endl << ad.str() << std::endl;
+		//PRINT_STR(ab.str()) << ac.str()) << ad.str());
 
-		std::cout << "Test_Linspace :: Passed" << std::endl;
+		PRINT_STR("Test_Linspace :: Passed");
 	}
 
 	static void test_abs()
 	{
-		std::cout << "Start Abs" << std::endl;
+		PRINT_STR("Start Abs");
 		Numpy x = numpy::array("5, -1.5, -3.2, 6.5, 9.8, -0.76");
 		Numpy y = numpy::abs(x);
 		assert(y.n == 6);
+		// PRINT_STR(y.str());
 		for (int i = 0; i < 6; i++)
 		{
-			assert(y.data[i] >= 0);
+			assert(y.data[i] >= 0.0);
 		}
 		x.abs();
+		
 		for (int i = 0; i < 6; i++)
 		{
-			assert(x.data[i] >= 0);
+			assert(x.data[i] >= 0.0);
 		}
 
-		std::cout << "Test_Abs :: Passed" << std::endl;
+		PRINT_STR("Test_Abs :: Passed");
 	}
 
 	static void test_sum()
 	{
-		std::cout << "Start Sum" << std::endl;
+		PRINT_STR("Start Sum");
 		Numpy x = numpy::ones(12);
 		double ans = numpy::sum(x);
-		assert(ans == 12.0);
+		assert(CMP(ans, 12.0));
 		double ans2 = x.sum();
-		assert(ans2 == 12.0);
+		assert(CMP(ans2, 12.0));
 
-		std::cout << "Test_Sum :: Passed" << std::endl;
+		PRINT_STR("Test_Sum :: Passed");
 	}
 
 	static void test_all()
 	{
-		std::cout << "Start All" << std::endl;
+		PRINT_STR("Start All");
 		Numpy x = numpy::ones(6);
 		assert(numpy::all(x));
 		assert(x.all());
@@ -290,12 +297,12 @@ namespace tests {
 		assert(!numpy::all(y));
 		assert(!y.all());
 
-		std::cout << "Test_All :: Passed" << std::endl;
+		PRINT_STR("Test_All :: Passed");
 	}
 
 	static void test_any()
 	{
-		std::cout << "Start Any" << std::endl;
+		PRINT_STR("Start Any");
 		Numpy x = numpy::ones(6);
 		assert(numpy::any(x));
 		assert(x.any());
@@ -306,268 +313,322 @@ namespace tests {
 		assert(numpy::any(z));
 		assert(z.any());
 
-		std::cout << "Test_Any :: Passed" << std::endl;
+		PRINT_STR("Test_Any :: Passed");
 	}
 
 	static void test_mean()
 	{
-		std::cout << "Start Mean" << std::endl;
+		PRINT_STR("Start Mean");
 		Numpy x = numpy::ones(6);
-		assert(numpy::mean(x) - 1.0 <= 1e-14);
-		assert(x.mean() - 1.0 <= 1e-14);
+		assert(CMP(numpy::mean(x), 1.0));
+		assert(CMP(x.mean(), 1.0));
 		Numpy y = numpy::array("0.0, 0.25, 0.5, 0.75, 1.0");
-		assert(numpy::mean(y) - 0.5 <= 1e-14);
-		assert(y.mean() - 0.5 <= 1e-14);
+		assert(CMP(numpy::mean(y), 0.5));
+		assert(CMP(y.mean(), 0.5));
 
-		std::cout << "Test_Mean :: Passed" << std::endl;
+		PRINT_STR("Test_Mean :: Passed");
 	}
 
 	static void test_std()
 	{
-		std::cout << "Start Std" << std::endl;
+		PRINT_STR("Start Std");
 		Numpy x = numpy::array("6.0, 2.0, 3.0, 1.0");
-		assert(numpy::std(x) - 1.87 <= 1e-7);
-		assert(x.std() - 1.87 <= 1e-7);
+		//PRINT_OBJ(x);
+		//PRINT_STR(numpy::std(x));
+		assert(CMP(numpy::std(x), 2.1602468994693));
+		assert(CMP(x.std(), 2.1602468994693));
 
-		std::cout << "Test_Std :: Passed" << std::endl;
+		PRINT_STR("Test_Std :: Passed");
 	}
 
 	static void test_var()
 	{
-		std::cout << "Start Var" << std::endl;
+		PRINT_STR("Start Var");
 		Numpy x = numpy::array("7.0,6.0,8.0,4.0,2.0,7.0,6.0,7.0,6.0,5.0");
-		assert((numpy::var(x) - 121.7) <= 1e-14);
-		assert((x.var() - 121.7) <= 1e-14);
+		//PRINT_OBJ(x);
+		//PRINT_STR(numpy::var(x));
+		assert(WEAK_CMP(numpy::var(x), 3.0666666666667));
+		assert(WEAK_CMP(x.var(), 3.0666666666667));
 
-		std::cout << "Test_Var :: Passed" << std::endl;
+		PRINT_STR("Test_Var :: Passed");
 	}
 
 	static void test_argmin()
 	{
-		std::cout << "Start Argmin" << std::endl;
+		PRINT_STR("Start Argmin");
 		Numpy df = numpy::array("3.0, 6.0, -2.0, 5.0, -4.0, 0.65");
-		//std::cout << df.str() << std::endl;
+		//PRINT_STR(df.str());
 		//printf("%d\n",numpy::argmin(df));
 		assert(numpy::argmin(df) == 4);
 		assert(df.argmin() == 4);
 
-		std::cout << "Test_Argmin :: Passed" << std::endl;
+		PRINT_STR("Test_Argmin :: Passed");
 	}
 
 	static void test_argmax()
 	{
-		std::cout << "Start Argmax" << std::endl;
+		PRINT_STR("Start Argmax");
 		Numpy x = numpy::array("3.0, 6.0, -2.0, 5.0, -4.0");
 		assert(numpy::argmax(x) == 1);
 		assert(x.argmax() == 1);
 
-		std::cout << "Test_Argmax :: Passed" << std::endl;
+		PRINT_STR("Test_Argmax :: Passed");
 	}
 
 	static void test_sine()
 	{
-		std::cout << "Start Sine" << std::endl;
-		Numpy x = numpy::array("0.0, 1.570796, 3.14159, 4.712388");
+		PRINT_STR("Start Sine");
+		Numpy x = numpy::array("0.0, 1.570796, 3.141592, 4.712388");
 		Numpy y = numpy::sin(x);
-		assert(y.data[0] == 0.0);
-		assert(y.data[1] - 1.0 < 1e-5);
-		assert(y.data[2] - 0.0 < 1e-5);
-		assert(y.data[3] + 1.0 < 1e-5);
+		//std::cout << y.str(7) << std::endl;
+		assert(WEAK_CMP(y.data[0], 0.0));
+		assert(WEAK_CMP(y.data[1], 1.0));
+		assert(WEAK_CMP(y.data[2], 0.0));
+		assert(WEAK_CMP(y.data[3], -1.0));
 		// x.sine() doesnt copy, changes the values at reference.
 		x.sin();
-		assert(x.data[0] == 0.0);
-		assert(x.data[1] - 1.0 < 1e-5);
-		assert(x.data[2] - 0.0 < 1e-5);
-		assert(x.data[3] + 1.0 < 1e-5);
+		assert(WEAK_CMP(x.data[0], 0.0));
+		assert(WEAK_CMP(x.data[1], 1.0));
+		assert(WEAK_CMP(x.data[2], 0.0));
+		assert(WEAK_CMP(x.data[3], -1.0));
 
-		std::cout << "Test_Sin :: Passed" << std::endl;
+		PRINT_STR("Test_Sin :: Passed");
 	}
 
 	static void test_cosi()
 	{
-		std::cout << "Start Cosine" << std::endl;
+		PRINT_STR("Start Cosine");
 		Numpy x = numpy::array("0.0, 1.570796, 3.14159, 4.712388");
 		Numpy y = numpy::cos(x);
-		assert(y.data[0] == 1.0);
-		assert(y.data[1] - 0.0 < 1e-5);
-		assert(y.data[2] + 1.0 < 1e-5);
-		assert(y.data[3] - 0.0 < 1e-5);
+		//std::cout << y.str(7) << std::endl;
+		assert(WEAK_CMP(y.data[0], 1.0));
+		assert(WEAK_CMP(y.data[1], 0.0));
+		assert(WEAK_CMP(y.data[2], -1.0));
+		assert(WEAK_CMP(y.data[3], 0.0));
 		// unlike numpy::cosi(x), x.cosi() doesnt copy and changes at reference.
 		x.cos();
-		assert(x.data[0] == 1.0);
-		assert(x.data[1] - 0.0 < 1e-5);
-		assert(x.data[2] + 1.0 < 1e-5);
-		assert(x.data[3] - 0.0 < 1e-5);
+		assert(WEAK_CMP(x.data[0], 1.0));
+		assert(WEAK_CMP(x.data[1], 0.0));
+		assert(WEAK_CMP(x.data[2], -1.0));
+		assert(WEAK_CMP(x.data[3], 0.0));
 
-		std::cout << "Test_Cos :: Passed" << std::endl;
+		PRINT_STR("Test_Cos :: Passed");
 	}
 
 	static void test_tang()
 	{
-		std::cout << "Start Tan" << std::endl;
-		Numpy x = numpy::array("0.0, 1.570796, 3.14159, 4.712388");
-		Numpy y = numpy::tan(x);
-		for (int i = 0; i < 4; i++)
-		{
-			// printf("%f %f\n", x[i], y[i]);
-		}
-		x.tan();
+		PRINT_STR("Start Tan");
+		Numpy x = numpy::array("0.0, 45.0, 89.0, 135.0");
+		Numpy y = numpy::to_radians(x).tan();
+		std::cout << y.str(8) << std::endl;
+		assert(WEAK_CMP(y.data[0], 0.0));
+		assert(WEAK_CMP(y.data[1], 1.0));
+		assert(WEAK_CMP(y.data[2], 57.29214));
+		assert(WEAK_CMP(y.data[3], -1.0));
 
-		std::cout << "Test_Tan :: Passed" << std::endl;
+		PRINT_STR("Test_Tan :: Passed");
+	}
+
+	static void test_to_radians()
+	{
+		// ----------------------------------------------------------------------------------------
+	}
+
+	static void test_to_degrees()
+	{
+		// ---------------------------------------------------------------------------------------
 	}
 
 	static void test_expn()
 	{
-		std::cout << "Start Exp" << std::endl;
+		PRINT_STR("Start Exp");
 		Numpy x = numpy::array("0.0, 1.0");
 		Numpy y = numpy::exp(x);
-		assert(y.data[0] - 1.0 < 1e-14);
-		assert(y.data[1] - 2.71828 < 1e-5);
+		assert(CMP(y.data[0], 1.0));
+		assert(WEAK_CMP(y.data[1], 2.71828));
 		x.exp();
-		assert(x.data[0] - 1.0 < 1e-14);
-		assert(x.data[1] - 2.71828 < 1e-5);
+		assert(CMP(x.data[0], 1.0));
+		assert(WEAK_CMP(x.data[1], 2.71828));
 
-		std::cout << "Test_Exp :: Passed" << std::endl;
+		PRINT_STR("Test_Exp :: Passed");
 	}
 
 	static void test_operators()
 	{
-		std::cout << "Start Operators" << std::endl;
+		PRINT_STR("Start Operators");
 		Numpy x = numpy::ones(10);
 		Numpy y = x.copy();
+		Numpy a = numpy::fill(10, 3.0);
 		// check ==
 		assert(x == y);
 		Numpy z = numpy::zeros(10);
 		// check !=
 		assert(x != z);
-		// check []
-		y[6] = 5.0;
-		y[3] = 3.0;
-		// changing y
-		assert(x != y);
-		// check []
-		assert(x[0] == 1.0);
-		assert(y[6] == 5.0);
-		// check +=
+		
+		// checking +=
 		x += y;
-		assert(x[1] == 2.0);
-		assert(y[6] == 5.0);
-		x += 4.0;
-		assert(x[2] == 6.0);
-		// check -=
-		x -= y;
-		assert(x[1] == 5.0);
-		x -= 4.0;
-		assert(x[0] == 1.0);
-		// check *=
-		x *= z;
-		assert(x[0] == 0.0);
+		assert(CMP(x.data[0], 2.0));
 		x += 1.0;
-		x *= 4.0;
-		assert(x[1] == 4.0);
-		// check /=
-		x /= y;
-		assert(x[1] == 4.0);
-		x /= 2.0;
-		assert(x[2] == 2.0);
-		//std::cout << x.str() << std::endl;
+		assert(CMP(x.data[0], 3.0));
+		x += 1;
+		assert(CMP(x.data[0], 4.0));
 
-		std::cout << "Test_Operators :: Passed" << std::endl;
+		// checking -= 
+		x -= y;
+		assert(CMP(x.data[0], 3.0));
+		x -= 1.0;
+		assert(CMP(x.data[0], 2.0));
+		x -= 1;
+		assert(CMP(x.data[0], 1.0));
+
+		// checking *=
+		x *= 4.0;
+		assert(CMP(x.data[0], 4.0));
+		y *= 2;
+		assert(CMP(y.data[0], 2.0));
+		x *= y;
+		assert(CMP(x.data[0], 8.0));
+
+		// checking /=
+		x /= 2.0;
+		assert(CMP(x.data[0], 4.0));
+		x /= y;
+		assert(CMP(x.data[0], 2.0));
+		y /= 2;
+		assert(CMP(y.data[0], 1.0));
+
+		// checking +
+		Numpy b = x + a + y;
+		Numpy c = x + 3.0 + y;
+		Numpy d = x + 2 + y + 4;
+		assert(CMP(b.data[0], 6.0));
+		assert(CMP(c.data[0], 6.0));
+		assert(CMP(d.data[0], 9.0));
+
+		// checking -
+		Numpy e = x - a - y;
+		Numpy f = x - 3.0 - y;
+		Numpy g = x - y - 6;
+		assert(CMP(e.data[0], -2.0));
+		assert(CMP(f.data[0], -2.0));
+		assert(CMP(g.data[0], -5.0));
+
+		// checking *
+		Numpy h = x * a * y;
+		Numpy i = x * 3.0 * y;
+		Numpy j = x * y * 6;
+		assert(CMP(h.data[0], 6.0));
+		assert(CMP(i.data[0], 6.0));
+		assert(CMP(j.data[0], 12.0));
+
+		// checking /
+		Numpy k = a / x / y;
+		Numpy l = x / 2.0 / y;
+		Numpy m = x / y / 2;
+		assert(CMP(k.data[0], 1.5));
+		assert(CMP(l.data[0], 1.0));
+		assert(CMP(m.data[0], 1.0));
+
+		// checking ^ - STILL TO DO -------------------------------------------------------------------
+
+
+		PRINT_STR("Test_Operators :: Passed");
 	}
 
 	static void test_floor()
 	{
-		std::cout << "Start Floor" << std::endl;
-		Numpy xz = numpy::randn(10);
-		Numpy yz = numpy::floor(xz);
-		//std::cout << xz.str() << std::endl;
-		//std::cout << yz.str() << std::endl;
-//		for (int i = 0; i < 10; i++)
-//		{
-//			printf("%f, ", yz[i]);
-//		}
+		PRINT_STR("Start Floor");
+		Numpy x = numpy::array("3.14, 4.54, -3.2, 7.4987");
+		Numpy y = numpy::floor(x);
+		Numpy answers = numpy::array("3.0, 4.0, -3.0, 7.0");
+		for (int i = 0; i < 4; i++)
+		{
+			assert(y[i] - answers[i] <= 1e-14);
+		}
 
-		std::cout << "Test_Floor :: Passed" << std::endl;
+		PRINT_STR("Test_Floor :: Passed");
 	}
 
 	static void test_ceil()
 	{
-		std::cout << "Start Ceil" << std::endl;
-		Numpy x = numpy::randint(10, 15);
+		PRINT_STR("Start Ceil");
+		Numpy x = numpy::array("3.14, 4.54, -3.2, 7.4987");
 		Numpy y = numpy::ceil(x);
-		//std::cout << x.str() << std::endl;
-		//std::cout << y.str() << std::endl;
-//		for (int i = 0; i < 10; i++)
-//		{
-//			printf("%f, ", y[i]);
-//		}
+		Numpy answers = numpy::array("4.0, 5.0, -4.0, 8.0");
+		// PRINT_STR(y.str());
+		for (int i = 0; i < 4; i++)
+		{
+			assert(y[i] - answers[i] <= 1e-14);
+		}
 
-		std::cout << "Test_Ceil :: Passed" << std::endl;
+		PRINT_STR("Test_Ceil :: Passed");
 	}
 
 	static void test_randint()
 	{
-		std::cout << "Start Randint" << std::endl;
+		PRINT_STR("Start Randint");
 		Numpy x = numpy::randint(15, 10);
-		//std::cout << x.str() << std::endl;
+		//PRINT_STR(x.str());
 		for (int i = 0; i < 15; i++)
 		{
 			assert(x[i] <= 10.0);
 		}
 
-		std::cout << "Test_Randint :: Passed" << std::endl;
+		PRINT_STR("Test_Randint :: Passed");
 	}
 
 	static void test_randchoice()
 	{
-		std::cout << "Start Randchoice" << std::endl;
+		PRINT_STR("Start Randchoice");
 		Numpy x = numpy::randchoice(15, "-1.0, 0.0, 1.0");
 		assert(x.n == 15);
-		//std::cout << x.str() << std::endl;
+		//PRINT_STR(x.str());
 		for (int i = 0; i < 15; i++)
 		{
 			assert(x[i] == -1.0 || x[i] == 0.0 || x[i] == 1.0);
 		}
 
-		std::cout << "Test_Randchoice :: Passed" << std::endl;
+		PRINT_STR("Test_Randchoice :: Passed");
 	}
 
 	static void test_count()
 	{
-		std::cout << "Start Count" << std::endl;
+		PRINT_STR("Start Count");
 		Numpy x = numpy::ones(10);
 		assert(numpy::count(x, 1.0) == 10);
 
-		std::cout << "Test_Count :: Passed" << std::endl;
+		PRINT_STR("Test_Count :: Passed");
 	}
 
 	static void test_count_nonzero()
 	{
-		std::cout << "Start Count_Nonzero" << std::endl;
+		PRINT_STR("Start Count_Nonzero");
 		Numpy x = numpy::zeros(10);
 		assert(numpy::count_nonzero(x) == 0);
 		Numpy y = numpy::ones(10);
 		assert(numpy::count_nonzero(y) == 10);
 
-		std::cout << "Test_Count_Nonzero :: Passed" << std::endl;
+		PRINT_STR("Test_Count_Nonzero :: Passed");
 	}
 
 	static void test_cumsum()
 	{
-		std::cout << "Start Cumsum" << std::endl;
+		PRINT_STR("Start Cumsum");
 		Numpy x = numpy::linspace(0.0, 3.0, 4);
+		// PRINT_STR(x.str() << numpy::len(x));
 		Numpy y = numpy::cumsum(x);
+
 		assert(y.data[0] == 0.0);
 		assert(y.data[1] == 1.0);
 		assert(y.data[2] == 3.0);
 		assert(y.data[3] == 6.0);
 
-		std::cout << "Test_Cumsum :: Passed" << std::endl;
+		PRINT_STR("Test_Cumsum :: Passed");
 	}
 
 	static void test_flip()
 	{
-		std::cout << "Start Flip" << std::endl;
+		PRINT_STR("Start Flip");
 		Numpy x = numpy::linspace(0.0, 4.0, 5);
 		Numpy y = numpy::flip(x);
 		for (int i = 0; i < 5; i++)
@@ -575,12 +636,12 @@ namespace tests {
 			assert(y.data[i] == 4-i);
 		}
 
-		std::cout << "Test_Flip :: Passed" << std::endl;
+		PRINT_STR("Test_Flip :: Passed");
 	}
 
 	static void test_logr()
 	{
-		std::cout << "Start Log" << std::endl;
+		PRINT_STR("Start Log");
 		Numpy x = numpy::array("0.0, 1.0");
 		Numpy y = numpy::log(x);
 		assert(y.data[0] - 1.0 < 1e-14);
@@ -589,132 +650,132 @@ namespace tests {
 //		assert(x.data[0] - 1.0 < 1e-14);
 //		assert(x.data[1] - 2.71828 < 1e-5);
 
-		std::cout << "Test_Logr :: Passed" << std::endl;
+		PRINT_STR("Test_Logr :: Passed");
 	}
 
 	static void test_logspace()
 	{
-		std::cout << "Start Logspace" << std::endl;
+		PRINT_STR("Start Logspace");
 		Numpy x = numpy::linspace(0.0, 1.0, 11);
 		Numpy y = numpy::logspace(0.0, 1.0, 11);
 		for (int i = 0; i < 11; i++)
 		{
 			assert(y.data[i] == pow(10, x[i]));
 		}
-		//std::cout << x.str() << std::endl << y.str() << std::endl;
+		//PRINT_STR(x.str()) << y.str());
 
-		std::cout << "Test_Logspace :: Passed" << std::endl;
+		PRINT_STR("Test_Logspace :: Passed");
 	}
 
 	static void test_cumprod()
 	{
-		std::cout << "Start Cumprod" << std::endl;
-		// to complete
-		Numpy x = numpy::linspace(1.0, 3.0, 3);
+		PRINT_STR("Start Cumprod");
+		Numpy x = numpy::linspace(1.0, 5.0, 5);
 		Numpy y = numpy::cumprod(x);
-		//std::cout << y.str() << std::endl;
+		// PRINT_STR(y.str());
 		assert(y.data[0] == 1.0);
 		assert(y.data[1] == 2.0);
 		assert(y.data[2] == 6.0);
-
-		std::cout << "Test_Cumprod :: Passed" << std::endl;
+		assert(y.data[3] == 24.0);
+		assert(y.data[4] == 120.0);
+		PRINT_STR("Test_Cumprod :: Passed");
 	}
 
 	static void test_lstrip()
 	{
-		std::cout << "Start Lstrip" << std::endl;
+		PRINT_STR("Start Lstrip");
 		Numpy x = numpy::linspace(0.0, 10.0, 11);
 		Numpy y = numpy::lstrip(x, 4);
 		assert(y.n == 7);
-		//std::cout << y.str() << std::endl;
+		//PRINT_STR(y.str());
 		for (int i = 4; i < 11; i++)
 		{
 			assert(y.data[i-4] == i);
 		}
 
-		std::cout << "Test_Lstrip :: Passed" << std::endl;
+		PRINT_STR("Test_Lstrip :: Passed");
 	}
 
 	static void test_rstrip()
 	{
-		std::cout << "Start Rstrip" << std::endl;
+		PRINT_STR("Start Rstrip");
 		Numpy x = numpy::linspace(0.0, 10.0, 11);
 		Numpy y = numpy::rstrip(x, 5);
 		assert(y.n == 6);
-		//std::cout << y.str() << std::endl;
+		//PRINT_STR(y.str());
 		for (int i = 0; i < 6; i++)
 		{
 			assert(y.data[i] == i);
 		}
 
-		std::cout << "Test_Rstrip :: Passed" << std::endl;
+		PRINT_STR("Test_Rstrip :: Passed");
 	}
 
 	static void test_hstack()
 	{
-		std::cout << "Start Vstack" << std::endl;
+		PRINT_STR("Start Vstack");
 		Numpy x = numpy::arange(0.0, 1.0, 0.1);
 		Numpy y = numpy::randn(5);
 		Numpy z = numpy::vstack(x, y);
-		//std::cout << z.str() << std::endl;
+		//PRINT_STR(z.str());
 		assert(z.n == x.n + y.n);
 
-		std::cout << "Test_Vstack :: Passed" << std::endl;
+		PRINT_STR("Test_Vstack :: Passed");
 	}
 
 	static void test_norm()
 	{
-		std::cout << "Start Norm" << std::endl;
+		PRINT_STR("Start Norm");
 		Numpy x = numpy::linspace(1.0, 3.0, 3);
-		//std::cout << numpy::norm(x, 2) << std::endl;
+		//PRINT_STR(numpy::norm(x, 2));
 		assert(numpy::norm(x, _INF_NORM) - 3.0 < 1e-14);
 		assert(numpy::norm(x, _ONE_NORM) == 6.0);
 		assert(numpy::norm(x, _TWO_NORM) == 1.0);
 
-		std::cout << "Test_Norm :: Passed" << std::endl;
+		PRINT_STR("Test_Norm :: Passed");
 	}
 
 	static void test_adjacsum()
 	{
-		std::cout << "Start Adjacsum" << std::endl;
+		PRINT_STR("Start Adjacsum");
 		Numpy x = numpy::linspace(0.0, 1.0, 11);
 		Numpy y = numpy::adjacsum(x);
-		//std::cout << y.str() << std::endl;
+		//PRINT_STR(y.str());
 
-		std::cout << "Test_Adjacsum :: Passed" << std::endl;
+		PRINT_STR("Test_Adjacsum :: Passed");
 	}
 
 	static void test_radians()
 	{
-		std::cout << "Start Radians" << std::endl;
+		PRINT_STR("Start Radians");
 		Numpy x = numpy::array("0.0, 90.0, 180.0, 360.0");
 		Numpy y = numpy::radians(x);
-		//std::cout << y.str() << std::endl;
+		//PRINT_STR(y.str());
 		assert(y[0] == x[0]);
 		assert(y[1] == M_PI / 2);
 		assert(y[2] == M_PI);
 		assert(y[3] == M_PI * 2);
 
-		std::cout << "Test_Radians :: Passed" << std::endl;
+		PRINT_STR("Test_Radians :: Passed");
 	}
 
 	static void test_degrees()
 	{
-		std::cout << "Start Degrees" << std::endl;
+		PRINT_STR("Start Degrees");
 		Numpy x = numpy::array("0.0, 1.570796, 3.14159, 4.712388");
 		Numpy y = numpy::degrees(x);
-		//std::cout << y.str() << std::endl;
+		//PRINT_STR(y.str());
 		assert(y[0] - x[0] < 2);
 		assert(y[1] - 90.0 < 2);
 		assert(y[2] - 180.0 < 2);
 		assert(y[3] - 360.0 < 2);
 
-		std::cout << "Test_Degrees :: Passed" << std::endl;
+		PRINT_STR("Test_Degrees :: Passed");
 	}
 
 	static void test_sqroot()
 	{
-		std::cout << "Start Sqrt" << std::endl;
+		PRINT_STR("Start Sqrt");
 		Numpy x = numpy::array("4.0, 9.0, 16.0, 25.0");
 		Numpy y = numpy::sqrt(x);
 		for (int i = 0; i < 4; i++)
@@ -722,21 +783,21 @@ namespace tests {
 			assert(y[i] == i+2);
 		}
 
-		std::cout << "Test_Sqroot :: Passed" << std::endl;
+		PRINT_STR("Test_Sqroot :: Passed");
 	}
 
 	static void test_normal()
 	{
-		std::cout << "Start Normal" << std::endl;
+		PRINT_STR("Start Normal");
 		Numpy x = numpy::normal(30, 0.0, 1.0);
-		//std::cout << x.str() << std::endl << x.mean() << std::endl;
+		//PRINT_STR(x.str()) << x.mean());
 
-		std::cout << "Test_Normal :: Passed" << std::endl;
+		PRINT_STR("Test_Normal :: Passed");
 	}
 
 	static void test_power()
 	{
-		std::cout << "Start Power" << std::endl;
+		PRINT_STR("Start Power");
 		Numpy x = numpy::linspace(1.0, 5.0, 5);
 		Numpy y = numpy::power(x, 2);
 		for (int i = 0; i < 5; i++)
@@ -744,12 +805,12 @@ namespace tests {
 			assert(y[i] == x[i] * x[i]);
 		}
 
-		std::cout << "Test_Power :: Passed" << std::endl;
+		PRINT_STR("Test_Power :: Passed");
 	}
 
 	static void test_min()
 	{
-		std::cout << "Start Min" << std::endl;
+		PRINT_STR("Start Min");
 		Numpy x = numpy::linspace(1.0, 10.0, 11);
 		assert(numpy::min(x) == 1.0);
 		Numpy y = numpy::rand(5);
@@ -763,12 +824,12 @@ namespace tests {
 		}
 		assert(min - numpy::min(y) <= 1e-14);
 
-		std::cout << "Test_Min :: Passed" << std::endl;
+		PRINT_STR("Test_Min :: Passed");
 	}
 
 	static void test_max()
 	{
-		std::cout << "Start Max" << std::endl;
+		PRINT_STR("Start Max");
 		Numpy x = numpy::linspace(1.0, 10.0, 11);
 		assert(numpy::max(x) == 10.0);
 		Numpy y = numpy::rand(5);
@@ -782,28 +843,28 @@ namespace tests {
 		}
 		assert(max - numpy::max(y) <= 1e-14);
 
-		std::cout << "Test_Max :: Passed" << std::endl;
+		PRINT_STR("Test_Max :: Passed");
 	}
 
 	static void test_dot()
 	{
-		std::cout << "Start Dot" << std::endl;
+		PRINT_STR("Start Dot");
 		Numpy x = numpy::fill(4, 3.0);
 		Numpy y = numpy::fill(4, 2.0);
 		double z = numpy::dot(x, y);
 		assert(z == 24.0);
 		double z2 = x.dot(y);
 		assert(z2 == 24.0);
-		//std::cout << z << std::endl;
+		//PRINT_STR(z);
 
-		std::cout << "Test_Dot :: Passed" << std::endl;
+		PRINT_STR("Test_Dot :: Passed");
 	}
 
 	static void test_indexing()
 	{
-		std::cout << "Start Indexing" << std::endl;
+		PRINT_STR("Start Indexing");
 		Numpy x = numpy::linspace(0.0, 5.0, 6);
-		//std::cout << numpy::str(x) << std::endl;
+		//PRINT_STR(numpy::str(x));
 		assert(x[3] == 3.0);
 		Numpy y = x.select(3);
 		for (int i = 0; i < 3; i++)
@@ -811,47 +872,47 @@ namespace tests {
 			assert(x[i] - 3.0 <= 1e-14);
 		}
 		Numpy z = x.select($, $, -1);
-		//std::cout << numpy::str(z) << std::endl;
+		//PRINT_STR(numpy::str(z));
 		Numpy ab = x.select($, 2);
-		//std::cout << ab.str() << std::endl;
+		//PRINT_STR(ab.str());
 		Numpy ac = x.select(2, $);
-		//std::cout << numpy::str(ac) << std::endl;
+		//PRINT_STR(numpy::str(ac));
 		Numpy ad = x.select(2, $, 2);
-		//std::cout << numpy::str(ad) << std::endl;
+		//PRINT_STR(numpy::str(ad));
 
-		std::cout << "Test_Indexing :: Passed" << std::endl;
+		PRINT_STR("Test_Indexing :: Passed");
 	}
 
 	static void test_sort()
 	{
-		std::cout << "Start Sort" << std::endl;
+		PRINT_STR("Start Sort");
 
 		Numpy x = numpy::array("3.0, 2.0, 7.0, 5.0, 15.0, 9.0, 11.0");
 		Numpy y = numpy::sort(x);
-		//std::cout << x.str() << std::endl;
-		//std::cout << y.str() << std::endl;
+		//PRINT_STR(x.str());
+		//PRINT_STR(y.str());
 		for (int i = 0; i < 6; i++)
 		{
 			assert(y.data[i] <= y.data[i+1]);
 		}
 
-		std::cout << "Test_Sort :: Passed" << std::endl;
+		PRINT_STR("Test_Sort :: Passed");
 	}
 
 	static void test_unique()
 	{
-		std::cout << "Start Unique" << std::endl;
+		PRINT_STR("Start Unique");
 		Numpy x = numpy::array("6.0, 7.0, 5.0, 7.0, 3.0, 6.0, 9.0, 4.0, 5.0, 6.0");
 		Numpy ans = numpy::array("6.0, 7.0, 5.0, 3.0, 9.0, 4.0");
 		Numpy counts = numpy::array("3.0, 2.0, 2.0, 1.0, 1.0, 1.0");
 		Mat uniques = numpy::unique(x);
-		//std::cout << uniques.str() << std::endl << uniques.vectors[0]->str() << std::endl;
+		//PRINT_STR(uniques.str()) << uniques.vectors[0]->str());
 		for (uint i = 0; i < uniques.vectors[0]->n; i++)
 		{
 			assert(ans.data[i] == uniques.vectors[0]->data[i]);
 			assert(counts.data[i] == uniques.vectors[1]->data[i]);
 		}
-		std::cout << "Test_Unique :: Passed" << std::endl;
+		PRINT_STR("Test_Unique :: Passed");
 	}
 
 

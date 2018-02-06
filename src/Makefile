@@ -1,6 +1,6 @@
 CC=g++
-DEPS=types.h VarStructs.h numpy.h Vector.h Matrix.h
-OBJ1=numstatic.o numpy.o Vector.o Matrix.o test_matrix.o main.o
+DEPS=types.h Vector.h Matrix.h VarStructs.h numpy.h 
+OBJ1=numstatic.o Vector.o Matrix.o numpy.o main.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< -I.
@@ -10,3 +10,5 @@ test_numpy: $(OBJ1)
 
 clean: $(OBJ1)
 	rm $(OBJ1) test_numpy
+
+

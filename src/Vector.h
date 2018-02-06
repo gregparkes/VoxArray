@@ -121,7 +121,7 @@ class Vector
 
 		 @param start : indicates where to start copying from indexwise, or $ for all
 		 @param end : indicates which index to stop copying at, or $ for all
-		 @param step (optional) : indicates the step size, default is 1, will not accept $.
+		 @param step (optional) : indicates the step size, default is 1, will not accept $/0.
 		 @return The new select array <created on the stack>
 		 */
 		Vector select(uint start, uint end, int step = 1);
@@ -332,6 +332,20 @@ class Vector
 		Vector& sqrt();
 
 		/**
+		 Converts degrees vector to radians.
+
+		 @return The reference to this object. <object not created>
+		*/
+		Vector& to_radians();
+
+		/**
+		 Converts radians vector to degrees.
+
+		 @return The reference to this object. <object not created>
+		*/
+		Vector& to_degrees();
+
+		/**
 		 Creates an (applied) power copy of the vector.
 
 		 e.g -> base ^ this[i], (for all indices).
@@ -393,6 +407,27 @@ class Vector
 		double dot(const Vector& rhs);
 
 		/**
+		 Calculates the magnitude/norm of the vector.
+
+		@return The magnitude value.
+		*/
+		double magnitude();
+
+		/**
+		 Calculates the distance between this vector and the given vector.
+
+		@return The distance.
+		*/
+		double distance(const Vector& r);
+
+		/**
+		 Normalizes the array by it's magnitude.
+
+		@return Null
+		*/
+		void normalize();
+
+		/**
 		 Transpose the vector from column->row or vice versa.
 
 		 @return The reference to this object. <object not created>
@@ -402,22 +437,24 @@ class Vector
 		// Operator Overloads
 
 		// direct indexing
-		double& operator[](uint idx);
+		inline double& operator[](int idx) { return data[idx]; }
 		// indexing using the select struct
-
-		Vector& operator=(double value);
-		Vector& operator=(const Vector& rhs);
 
 		bool operator==(const Vector& rhs);
 		bool operator!=(const Vector& rhs);
+
 		Vector& operator+=(const Vector& rhs);
 		Vector& operator+=(double value);
+		Vector& operator+=(int value);
 		Vector& operator-=(const Vector& rhs);
 		Vector& operator-=(double value);
+		Vector& operator-=(int value);
 		Vector& operator*=(const Vector& rhs);
 		Vector& operator*=(double value);
+		Vector& operator*=(int value);
 		Vector& operator/=(const Vector& rhs);
 		Vector& operator/=(double value);
+		Vector& operator/=(int value);
 
 	// variables to be publicly accessed.
 
@@ -426,6 +463,40 @@ class Vector
 	bool column, flag_delete;
 
 };
+
+// Overloading standard numerical operators for adding, subtracting, multiplying and 
+// dividing by creating new vectors as the output to these.
+
+Vector operator+(const Vector& l, const Vector& r);
+Vector operator+(const Vector& l, double r);
+Vector operator+(const Vector& l, int r);
+Vector operator+(double l, const Vector& r);
+Vector operator+(int l, const Vector& r);
+
+Vector operator-(const Vector& l, const Vector& r);
+Vector operator-(const Vector& l, double r);
+Vector operator-(const Vector& l, int r);
+
+Vector operator*(const Vector& l, const Vector& r);
+Vector operator*(const Vector& l, double r);
+Vector operator*(const Vector& l, int r);
+Vector operator*(double l, const Vector& r);
+Vector operator*(int l, const Vector& r);
+
+Vector operator/(const Vector& l, const Vector& r);
+Vector operator/(const Vector& l, double r);
+Vector operator/(const Vector& l, int r);
+
+Vector operator^(const Vector& l, const Vector& r);
+Vector operator^(const Vector& l, double r);
+Vector operator^(const Vector& l, int r);
+
+
+
+// Accessory function to calling copy in Vector.h.
+
+Vector _copy_vector_(const Vector& v);
+
 
 }
 

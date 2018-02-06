@@ -45,7 +45,6 @@ GNU General Public License:
 
 namespace numpy {
 
-
 	/*
 	 * The static functions here. ---------------------------------
 	 */
@@ -114,7 +113,7 @@ namespace numpy {
 
 	Matrix fill(uint ncol, uint nrow, double val)
 	{
-		Matrix m(ncol,nrow);
+	  Matrix m(ncol,nrow);
 		if (!_fill_array_(m.data, ncol*nrow, val))
 		{
 			throw std::invalid_argument("Fill Error");
@@ -216,6 +215,8 @@ namespace numpy {
 		{
 			throw std::invalid_argument("copy failed!");
 		}
+		np.column = rhs.column;
+		np.flag_delete = rhs.flag_delete;
 		return np;
 	}
 
@@ -898,7 +899,7 @@ namespace numpy {
 	Vector abs(const Vector& rhs)
 	{
 		Vector np = copy(rhs);
-		_absolute_array_(rhs.data, rhs.n);
+		_absolute_array_(np.data, np.n);
 		return np;
 	}
 
@@ -981,7 +982,10 @@ namespace numpy {
 	Vector cumsum(const Vector& rhs)
 	{
 		Vector np = zeros(rhs.n);
-		_cumulative_sum_(np.data, rhs.data, rhs.n);
+		if (!_cumulative_sum_(np.data, rhs.data, rhs.n))
+		{
+			throw std::invalid_argument("cumsum failed!");
+		}
 		return np;
 	}
 
@@ -1070,11 +1074,10 @@ namespace numpy {
 
 	Vector cumprod(const Vector& rhs)
 	{
-		Vector np = zeros(rhs.n);
-		np.data[0] = rhs.data[0];
-		for (uint j = 1; j < rhs.n; j++)
+		Vector np = ones(rhs.n);
+		if (!_cumulative_prod_(np.data, rhs.data, rhs.n))
 		{
-			np.data[j] = rhs.data[j] * rhs.data[j-1];
+			throw std::invalid_argument("cumprod failed!");
 		}
 		return np;
 	}
@@ -1579,6 +1582,18 @@ namespace numpy {
 		return m;
 	}
 
+	double magnitude(const Vector& v)
+	{
+		return _square_root_(dot(v, v));
+	}
+
+	Vector normalized(const Vector& v)
+	{
+		Vector np = copy(v);
+		np *= (1.0 / magnitude(v));
+		return np;
+	}
+
 	Matrix outer(const Vector& v, const Vector& w)
 	{
 		// v and w can be different lengths
@@ -1818,6 +1833,46 @@ namespace numpy {
 		return m;
 	}
 
+	Vector to_radians(const Vector& rhs)
+	{
+		Vector v = copy(rhs);
+		if (!_to_radians_array_(v.data, v.n))
+		{
+			throw std::invalid_argument("Unable to convert to radians.");
+		}
+		return v;
+	}
+
+	Matrix to_radians(const Matrix& rhs)
+	{
+		Matrix m = copy(rhs);
+		if (!_to_radians_array_(m.data, m.nvec*m.vectors[0]->n))
+		{
+			throw std::invalid_argument("Unable to convert to radians.");
+		}
+		return m;
+	}
+
+	Vector to_degrees(const Vector& rhs)
+	{
+		Vector v = copy(rhs);
+		if (!_to_degrees_array_(v.data, v.n))
+		{
+			throw std::invalid_argument("Unable to convert to degrees.");
+		}
+		return v;
+	}
+
+	Matrix to_degrees(const Matrix& rhs)
+	{
+		Matrix m = copy(rhs);
+		if (!_to_degrees_array_(m.data, m.nvec*m.vectors[0]->n))
+		{
+			throw std::invalid_argument("Unable to convert to degrees.");
+		}
+		return m;
+	}
+
 	Vector exp(const Vector& rhs)
 	{
 		Vector np = copy(rhs);
@@ -2031,145 +2086,47 @@ namespace numpy {
 		return result;
 	}
 
-	/* --------------------------------------------------------------------------------------- *
-	 *
-	 * Now we handle our global operator overloads of +, -, *, / etc. This applies to all
-	 * classes of Vector, Matrix and higher dimensions. Special rules apply when we multiply
-	 * transposes etc, but for the most part, this provides extended vector operations.
-	 *
-	 ----------------------------------------------------------------------------------------*/
-
-	// Operator Overloads - creates on the stack
-
-	Vector operator+(const Vector& lhs, double value)
+	Vector rotate_vector2d(const Vector& v, double degrees)
 	{
-		Vector np = copy(lhs);
-		np += value;
-		return np;
-	}
-	Vector operator+(double value, const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		np += value;
-		return np;
-	}
-	Vector operator+(const Vector& lhs, const Vector& rhs)
-	{
-		if (lhs.n != rhs.n)
+		if (v.n != 2)
 		{
-			throw std::range_error("lhs and rhs vector not the same size");
+			throw std::invalid_argument("v must be of length 2!");
 		}
-		Vector np = copy(lhs);
-		np += rhs;
+		degrees = DEG2RAD(degrees);
+		double s = _sine_(degrees);
+		double c = _cosine_(degrees);
+
+		Vector np = empty(2);
+		np.data[0] = (v.data[0] * c) - (v.data[1] * s);
+		np.data[1] = (v.data[0] * s) + (v.data[1] * c);
 		return np;
 	}
 
-	Vector operator-(const Vector& lhs, double value)
+	double angle(const Vector& l, const Vector& r)
 	{
-		Vector np = copy(lhs);
-		np -= value;
-		return np;
+		return acosf(dot(l, r) / sqrtf(dot(l,l) * dot(r,r)));
 	}
-	Vector operator-(const Vector& lhs, const Vector& rhs)
+
+	Vector project(const Vector& length, const Vector& direction)
 	{
-		if (lhs.n != rhs.n)
+		if (length.n != direction.n)
 		{
-			throw std::range_error("lhs and rhs vector not same size");
+			throw std::invalid_argument("length and direction size must be the same!");
 		}
-		Vector np = copy(lhs);
-		np -= rhs;
-		return np;
+		double d = dot(length, direction);
+		double mag_sq = dot(direction, direction);
+		return (direction * (d / mag_sq));
 	}
 
-	Vector operator*(const Vector& lhs, double value)
+	Vector perpendicular(const Vector& length, const Vector& dir)
 	{
-		Vector np = copy(lhs);
-		np *= value;
-		return np;
-	}
-	Vector operator*(double value, const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		np *= value;
-		return np;
-	}
-	Vector operator*(const Vector& lhs, const Vector& rhs)
-	{
-		if (lhs.n != rhs.n)
-		{
-			throw std::range_error("lhs and rhs vector not same size");
-		}
-		Vector np = copy(lhs);
-		np *= rhs;
-		return np;
+		return length - project(length, dir);
 	}
 
-	Vector operator/(const Vector& lhs, double value)
+	Vector reflection(const Vector& source, const Vector& normal)
 	{
-		Vector np = copy(lhs);
-		np /= value;
-		return np;
+		return source - normal * (dot(source, normal) * 2.0);
 	}
-	Vector operator/(const Vector& lhs, const Vector& rhs)
-	{
-		if (lhs.n != rhs.n)
-		{
-			throw std::range_error("lhs and rhs vector not same size");
-		}
-		Vector np = copy(lhs);
-		np /= rhs;
-		return np;
-	}
-
-	Vector operator^(const Vector& base, double exponent)
-	{
-		Vector np = copy(base);
-		_pow_array_(np.data, np.n, exponent);
-		return np;
-	}
-	Vector operator^(double base, const Vector& exponent)
-	{
-		Vector np = copy(exponent);
-		_pow_base_array_(np.data, np.n, base);
-		return np;
-	}
-	Vector operator^(const Vector base, const Vector& exponent)
-	{
-		Vector np = copy(base);
-		for (uint i = 0; i < base.n; i++)
-		{
-			np.data[i] = _c_power_(base.data[i], exponent.data[i]);
-		}
-		return np;
-	}
-
-	bool operator<(const Vector& lhs, double value)
-	{
-		return (sum(lhs) < value);
-	}
-	bool operator<(double value, const Vector& rhs)
-	{
-		return (value < sum(rhs));
-	}
-	bool operator<(const Vector& lhs, const Vector& rhs)
-	{
-		return (sum(lhs) < sum(rhs));
-	}
-
-	bool operator>(const Vector& lhs, double value)
-	{
-		return (sum(lhs) > value);
-	}
-	bool operator>(double value, const Vector& rhs)
-	{
-		return (value > sum(rhs));
-	}
-	bool operator>(const Vector& lhs, const Vector& rhs)
-	{
-		return (sum(lhs) > sum(rhs));
-	}
-
-
 
 }
 

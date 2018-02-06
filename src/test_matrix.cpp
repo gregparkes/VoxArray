@@ -12,37 +12,38 @@
 
 #include "numpy.h"
 
+#define PRINT_STR(x) (std::cout << x << std::endl)
+#define PRINT_OBJ(x) (std::cout << x.str() << std::endl)
+#define CMP(x,y) (fabs(x - y) < 1E-13)
+
 namespace tests_matrix {
 
 	static void test_constructor()
 	{
-		std::cout << "Start Constructor" << std::endl;
+		PRINT_STR("Start Constructor");
 		numpy::Matrix m(10, 10);
-
-		std::cout << std::endl << "Test_Matrix_Constructor :: Passed" << std::endl;
+		PRINT_STR("Test_Matrix_Constructor :: Passed");
 	}
 
 	static void test_shape()
 	{
-		std::cout << "Start Shape" << std::endl;
+		PRINT_STR("Start Shape");
 		numpy::Matrix m(203,153);
-		//std::cout << m.shape() << std::endl;
-
-		std::cout << "Test_Shape :: Passed" << std::endl;
+		PRINT_STR(m.shape() );
+		PRINT_STR("Test_Shape :: Passed");
 	}
 
 	static void test_str()
 	{
-		std::cout << "Start Str" << std::endl;
+		PRINT_STR("Start Str");
 		numpy::Matrix m = numpy::zeros(3,3);
-		std::cout << m.str() << std::endl;
-
-		std::cout << "Test_Str :: Passed" << std::endl;
+		PRINT_OBJ(m);
+		PRINT_STR("Test_Str :: Passed");
 	}
 
 	static void test_empty_zeros_ones()
 	{
-		std::cout << "Start Empty_Zeros_Ones" << std::endl;
+		PRINT_STR("Start Empty_Zeros_Ones");
 		numpy::Matrix m = numpy::empty(6,6);
 		numpy::Matrix m2 = numpy::zeros(4,4);
 		numpy::Matrix m3 = numpy::ones(4,4);
@@ -51,47 +52,46 @@ namespace tests_matrix {
 			for (int i = 0; i < 4; i++)
 			{
 				//printf("%f\n", m3.data[i+j*4]);
-				assert(m2.data[i+j*4] == 0.0);
-				assert(m3.data[i+j*4] == 1.0);
+				assert(CMP(m2.data[i+j*4],0.0));
+				assert(CMP(m3.data[i+j*4],1.0));
 			}
 		}
 
-		//std::cout << m2.str() << std::endl << m3.str() << std::endl;
-
-		std::cout << "Test_Empty_Zeros_Ones :: Passed" << std::endl;
+		//PRINT_STR(m2.str() << std::endl << m3.str() );
+		PRINT_STR("Test_Empty_Zeros_Ones :: Passed");
 	}
 
 	static void test_fill()
 	{
-		std::cout << "Start Fill" << std::endl;
+		PRINT_STR("Start Fill");
 		numpy::Matrix m = numpy::fill(4,4,5.5);
 		for (int j = 0; j < 4; j++)
 		{
 			for (int i = 0; i < 4; i++)
 			{
-				assert(m.data[i+j*4] == 5.5);
+				assert(CMP(m.data[i+j*4], 5.5));
 			}
 		}
 
-		std::cout << "Test_Fill :: Passed" << std::endl;
+		PRINT_STR("Test_Fill :: Passed");
 	}
 
 	static void test_copy()
 	{
-		std::cout << "Start Copy" << std::endl;
+		PRINT_STR("Start Copy");
 		numpy::Matrix m = numpy::ones(6,6);
 		numpy::Matrix m2 = numpy::copy(m);
 		for (int i = 0; i < 6*6; i++)
 		{
-			assert(m.data[i] == m2.data[i]);
+			assert(CMP(m.data[i],m2.data[i]));
 		}
 
-		std::cout << "Test_Copy :: Passed" << std::endl;
+		PRINT_STR("Test_Copy :: Passed");
 	}
 
 	static void test_vectorize()
 	{
-		std::cout << "Start Vectorize" << std::endl;
+		PRINT_STR("Start Vectorize");
 		numpy::Matrix m = numpy::empty(4,2);
 		for (int i = 0; i < 8; i++)
 		{
@@ -105,52 +105,52 @@ namespace tests_matrix {
 		Numpy test1 = numpy::vectorize(m);
 		Numpy test2 = numpy::vectorize(m, AXIS_ROW);
 
-		//std::cout << m.str() << std::endl << test1.str() << std::endl << test2.str() << std::endl;
+		//PRINT_STR(m.str() << std::endl << test1.str() << std::endl << test2.str() );
 
-		std::cout << "Test_Vectorize :: Passed" << std::endl;
+		PRINT_STR("Test_Vectorize :: Passed");
 	}
 
 	static void test_countnonzero()
 	{
-		std::cout << "Start Count_Nonzero" << std::endl;
+		PRINT_STR("Start Count_Nonzero" );
 		Mat X = numpy::zeros(6,6);
 		Mat Y = numpy::ones(5,5);
 		assert(numpy::count_nonzero(X) == 0);
 		assert(numpy::count_nonzero(Y) == 25);
 
-		std::cout << "Test_Count_Nonzero :: Passed" << std::endl;
+		PRINT_STR("Test_Count_Nonzero :: Passed");
 	}
 
 	static void test_empty_zero_ones_like()
 	{
-		std::cout << "Start Empty_Zero_Ones_Like" << std::endl;
+		PRINT_STR("Start Empty_Zero_Ones_Like");
 		//@todo implement empty zero ones like test()
 	}
 
 	static void test_eye()
 	{
-		std::cout << "Start Eye" << std::endl;
+		PRINT_STR("Start Eye" );
 		//printf("got matrix\n");
 		Mat X = numpy::eye(5,5);
 		for (int i = 0; i < 5; i++)
 		{
 			assert(X.vectors[i]->data[i] == 1.0);
 		}
-		//std::cout << X.str() << std::endl;
+		//PRINT_STR(X.str() );
 
-		std::cout << "Test_Eye :: Passed" << std::endl;
+		PRINT_STR("Test_Eye :: Passed" );
 	}
 
 	static void test_trace()
 	{
-		std::cout << "Start Trace" << std::endl;
+		PRINT_STR("Start Trace" );
 		Mat X = numpy::eye(6,6);
 		assert(numpy::trace(X) == 6.0);
 		X.data[0] = 3.0;
 		X.data[1] = 30.0;
 		assert(numpy::trace(X) == 8.0);
 
-		std::cout << "Test_Trace :: Passed" << std::endl;
+		PRINT_STR("Test_Trace :: Passed" );
 	}
 
 }

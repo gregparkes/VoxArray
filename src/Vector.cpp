@@ -178,9 +178,9 @@ namespace numpy {
 	Vector Vector::copy()
 	{
 		Vector np(n);
-		for (uint i = 0; i < n; i++)
+		if (!_copy_array_(np.data, data, n))
 		{
-			np.data[i] = data[i];
+			throw std::invalid_argument("copy failed!");
 		}
 		column = np.column;
 		flag_delete = np.flag_delete;
@@ -357,6 +357,25 @@ namespace numpy {
 		return *this;
 	}
 
+
+	Vector& Vector::to_radians()
+	{
+		if (!_to_radians_array_(data, n))
+		{
+			throw std::invalid_argument("Unable to convert to radians.");
+		}
+		return *this;
+	}
+
+	Vector& Vector::to_degrees()
+	{
+		if (!_to_degrees_array_(data, n))
+		{
+			throw std::invalid_argument("Unable to convert to radians.");
+		}
+		return *this;
+	}
+
 	Vector& Vector::pow_base(double base)
 	{
 		if (! _pow_base_array_(data, n, base))
@@ -421,6 +440,25 @@ namespace numpy {
 		return dottie;
 	}
 
+	double Vector::magnitude()
+	{
+		return _square_root_(dot(*this));
+	}
+
+	double Vector::distance(const Vector& rhs)
+	{
+		if (n != rhs.n)
+		{
+			throw std::range_error("lhs must be the same size as the rhs vector");
+		}
+		return _square_root_(dot(*this - rhs));
+	}
+
+	void Vector::normalize()
+	{
+		*this *= (1.0 / magnitude());
+	}
+
 	Vector& Vector::T()
 	{
 		column = !column;
@@ -439,30 +477,12 @@ namespace numpy {
 
 	//  --------------- Instance Operator overloads ------------------------
 
-	Vector& Vector::operator=(double value)
-	{
-		_fill_array_(data, n, value);
-		return *this;
-	}
-	Vector& Vector::operator=(const Vector& rhs)
-	{
-		if (n != rhs.n)
-		{
-			throw std::range_error("lhs and rhs must be same size");
-		}
-		for (uint i = 0; i < n; i++)
-		{
-			data[i] = rhs.data[i];
-		}
-		return *this;
-	}
-
 	bool Vector::operator==(const Vector& rhs)
 	{
 		if (rhs.n != n) return false;
 		for (uint i = 0; i < n; i++)
 		{
-			if (rhs.data[i] != data[i])
+			if (!CMP(rhs.data[i], data[i]))
 			{
 				return false;
 			}
@@ -475,21 +495,12 @@ namespace numpy {
 		if (rhs.n != n) return false;
 		for (uint i = 0; i < n; i++)
 		{
-			if (rhs.data[i] != data[i])
+			if (!CMP(rhs.data[i], data[i]))
 			{
 				return true;
 			}
 		}
 		return false;
-	}
-
-	double& Vector::operator[](uint idx)
-	{
-		if (idx >= n)
-		{
-			throw std::range_error("Index Out of Bounds!");
-		}
-		return *(data+idx);
 	}
 
 
@@ -505,7 +516,6 @@ namespace numpy {
 		}
 		return *this;
 	}
-
 	Vector& Vector::operator+=(double value)
 	{
 		for (uint i = 0; i < n; i++)
@@ -514,6 +524,16 @@ namespace numpy {
 		}
 		return *this;
 	}
+	Vector& Vector::operator+=(int value)
+	{
+		double v = (double) value;
+		for (uint i = 0; i < n; i++)
+		{
+			data[i] += v;
+		}
+		return *this;
+	}
+
 
 	Vector& Vector::operator-=(const Vector& rhs)
 	{
@@ -527,12 +547,20 @@ namespace numpy {
 		}
 		return *this;
 	}
-
 	Vector& Vector::operator-=(double value)
 	{
 		for (uint i = 0; i < n; i++)
 		{
 			data[i] -= value;
+		}
+		return *this;
+	}
+	Vector& Vector::operator-=(int value)
+	{
+		double v = (double) value;
+		for (uint i = 0; i < n; i++)
+		{
+			data[i] -= v;
 		}
 		return *this;
 	}
@@ -560,12 +588,20 @@ namespace numpy {
 		}
 		return *this;
 	}
-
 	Vector& Vector::operator*=(double value)
 	{
 		for (uint i = 0; i < n; i++)
 		{
 			data[i] *= value;
+		}
+		return *this;
+	}
+	Vector& Vector::operator*=(int value)
+	{
+		double v = (double) value;
+		for (uint i = 0; i < n; i++)
+		{
+			data[i] *= v;
 		}
 		return *this;
 	}
@@ -582,7 +618,6 @@ namespace numpy {
 		}
 		return *this;
 	}
-
 	Vector& Vector::operator/=(double value)
 	{
 		for (uint i = 0; i < n; i++)
@@ -591,7 +626,184 @@ namespace numpy {
 		}
 		return *this;
 	}
+	Vector& Vector::operator/=(int value)
+	{
+		double v = (double) value;
+		for (uint i = 0; i < n; i++)
+		{
+			data[i] /= v;
+		}
+		return *this;
+	}
 
+	/*
+	* THIS SECTION WILL NOW FOCUS ON +, -, *, / AND ^ GLOBAL OPERATORS 
+	*
+	* IN ASSOCIATION WITH VECTORS.
+	*/
+
+	Vector operator+(const Vector& lhs, double value)
+	{
+		Vector np = _copy_vector_(lhs);
+		np += value;
+		return np;
+	}
+	Vector operator+(double value, const Vector& rhs)
+	{
+		Vector np = _copy_vector_(rhs);
+		np += value;
+		return np;
+	}
+	Vector operator+(const Vector& lhs, const Vector& rhs)
+	{
+		if (lhs.n != rhs.n)
+		{
+			throw std::range_error("lhs and rhs vector not the same size");
+		}
+		Vector np = _copy_vector_(lhs);
+		np += rhs;
+		return np;
+	}
+	Vector operator+(const Vector& lhs, int value)
+	{
+		Vector np = _copy_vector_(lhs);
+		np += (double) value;
+		return np;
+	}
+	Vector operator+(int lhs, const Vector& rhs)
+	{
+		Vector np = _copy_vector_(rhs);
+		np += (double) lhs;
+		return np;
+	}
+
+	Vector operator-(const Vector& lhs, int value)
+	{
+		Vector np = _copy_vector_(lhs);
+		np -= (double) value;
+		return np;
+	}
+	Vector operator-(const Vector& lhs, double value)
+	{
+		Vector np = _copy_vector_(lhs);
+		np -= value;
+		return np;
+	}
+	Vector operator-(const Vector& lhs, const Vector& rhs)
+	{
+		if (lhs.n != rhs.n)
+		{
+			throw std::range_error("lhs and rhs vector not same size");
+		}
+		Vector np = _copy_vector_(lhs);
+		np -= rhs;
+		return np;
+	}
+
+	Vector operator*(const Vector& lhs, double value)
+	{
+		Vector np = _copy_vector_(lhs);
+		np *= value;
+		return np;
+	}
+	Vector operator*(double value, const Vector& rhs)
+	{
+		Vector np = _copy_vector_(rhs);
+		np *= value;
+		return np;
+	}
+	Vector operator*(const Vector& lhs, const Vector& rhs)
+	{
+		if (lhs.n != rhs.n)
+		{
+			throw std::range_error("lhs and rhs vector not same size");
+		}
+		Vector np = _copy_vector_(lhs);
+		np *= rhs;
+		return np;
+	}
+	Vector operator*(const Vector& lhs, int value)
+	{
+		Vector np = _copy_vector_(lhs);
+		np *= (double) value;
+		return np;
+	}
+	Vector operator*(int lhs, const Vector& rhs)
+	{
+		Vector np = _copy_vector_(rhs);
+		np *= (double) lhs;
+		return np;
+	}
+
+	Vector operator/(const Vector& lhs, int value)
+	{
+		if (value == 0)
+		{
+			throw std::invalid_argument("cannot divide by 0!");
+		}
+		Vector np = _copy_vector_(lhs);
+		np /= (double) value;
+		return np;
+	}
+	Vector operator/(const Vector& lhs, double value)
+	{
+		if (CMP(value, 0.0))
+		{
+			throw std::invalid_argument("cannot divide by 0!");
+		}
+		Vector np = _copy_vector_(lhs);
+		np /= value;
+		return np;
+	}
+	Vector operator/(const Vector& lhs, const Vector& rhs)
+	{
+		if (lhs.n != rhs.n)
+		{
+			throw std::range_error("lhs and rhs vector not same size");
+		}
+		Vector np = _copy_vector_(lhs);
+		np /= rhs;
+		return np;
+	}
+
+	Vector operator^(const Vector& base, double exponent)
+	{
+		Vector np = _copy_vector_(base);
+		_pow_array_(np.data, np.n, exponent);
+		return np;
+	}
+	Vector operator^(double base, const Vector& exponent)
+	{
+		Vector np = _copy_vector_(exponent);
+		_pow_base_array_(np.data, np.n, base);
+		return np;
+	}
+	Vector operator^(const Vector& base, const Vector& exponent)
+	{
+		if (base.n != exponent.n)
+		{
+			throw std::range_error("base and exponent vector not same size");
+		}
+		Vector np = _copy_vector_(base);
+		for (uint i = 0; i < base.n; i++)
+		{
+			np.data[i] = _c_power_(base.data[i], exponent.data[i]);
+		}
+		return np;
+	}
+
+	/*
+		ACCESSORY FUNCTIONS
+	*/ 
+
+	Vector _copy_vector_(const Vector& v)
+	{
+		Vector np(v.n);
+		_copy_array_(np.data, v.data, v.n);
+		np.column = v.column;
+		np.flag_delete = v.flag_delete;
+		return np;
+	}
 
 
 }

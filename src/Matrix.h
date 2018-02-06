@@ -81,6 +81,13 @@ class Matrix
 		char* shape();
 
 		/**
+		 Returns the length of saved memory stored for the entire matrix.
+
+		@return the number of doubles in memory
+		*/
+		uint nfloats();
+
+		/**
 		 Copies a matrix object.
 
 		 @return The new matrix object. <created on the stack>
@@ -209,6 +216,15 @@ class Matrix
 		Vector mean(uint axis);
 
 		/**
+		 Calculates the standard deviation of the matrix.
+
+		 e.g sqrt((1 / N)(a-m^2 + b-m^2 + , ..., + n-m^2))
+
+		 @return The std of the matrix
+		 */
+		double std();
+
+		/**
 		 Calculates the standard deviation of the matrix per column/row.
 
 		 e.g sqrt((1 / N)(a-m^2 + b-m^2 + , ..., + n-m^2)) per row/column
@@ -217,6 +233,15 @@ class Matrix
 		 @return The std of the matrix
 		 */
 		Vector std(uint axis);
+
+		/**
+		 Calculates the variance of the matrix.
+
+		 e.g (a-m^2 + b-m^2 + , ..., + n-m^2) / (N-1)
+
+		 @return The variance of the matrix
+		*/
+		double var();
 
 		/**
 		 Calculates the variance of the matrix per column/row.
@@ -229,12 +254,26 @@ class Matrix
 		Vector var(uint axis);
 
 		/**
+		 Returns the smallest index in the matrix.
+
+		 @return The smallest index
+		 */
+		double argmin();
+
+		/**
 		 Returns the smallest index in the matrix per column/row.
 
 		 @param axis : either 0 (column-wise) or 1 (row-wise)
 		 @return The smallest index
 		 */
 		Vector argmin(uint axis);
+
+		/**
+		 Returns the largest index in the matrix.
+
+		 @return The largest index
+		 */
+		double argmax();
 
 		/**
 		 Returns the largest index in the matrix per column/row.
@@ -306,6 +345,20 @@ class Matrix
 		 @return The reference to this object. <object not created>
 		 */
 		Matrix& tan();
+
+		/**
+		 Converts the matrix from degrees to radians.
+
+		 @return The reference to this object. <object not created>
+		 */
+		Matrix& to_radians();
+
+		/**
+		 Converts the matrix from radians to degrees.
+
+		 @return The reference to this object. <object not created>
+		 */
+		Matrix& to_degrees();
 
 		/**
 		 Applies the exponential function to the matrix.
@@ -386,24 +439,24 @@ class Matrix
 		 * OPERATOR OVERLOADS
 		 */
 
-		Matrix& operator=(double value);
-		Matrix& operator=(const Vector& rhs);
-		Matrix& operator=(const Matrix& rhs);
-
 		bool operator==(const Matrix& rhs);
 		bool operator!=(const Matrix& rhs);
 		Matrix& operator+=(const Matrix& rhs);
-		Matrix& operator+=(const Vector& rhs);
+		//Matrix& operator+=(const Vector& rhs);
 		Matrix& operator+=(double value);
+		Matrix& operator+=(int value);
 		Matrix& operator-=(const Matrix& rhs);
-		Matrix& operator-=(const Vector& rhs);
+		//Matrix& operator-=(const Vector& rhs);
 		Matrix& operator-=(double value);
+		Matrix& operator-=(int value);
 		Matrix& operator*=(const Matrix& rhs);
-		Matrix& operator*=(const Vector& rhs);
+		//Matrix& operator*=(const Vector& rhs);
 		Matrix& operator*=(double value);
+		Matrix& operator*=(int value);
 		Matrix& operator/=(const Matrix& rhs);
-		Matrix& operator/=(const Vector& rhs);
+		//Matrix& operator/=(const Vector& rhs);
 		Matrix& operator/=(double value);
+		Matrix& operator/=(int value);
 
 	// variables to be publicly accessed.
 
@@ -413,8 +466,35 @@ class Matrix
 
 };
 
+Matrix operator+(const Matrix& l, const Matrix& r);
+//Matrix operator+(const Matrix& l, const Vector& r);
+Matrix operator+(const Matrix& l, double r);
+Matrix operator+(const Matrix& l, int r);
+Matrix operator+(double l, const Matrix& r);
+Matrix operator+(int l, const Matrix& r);
+
+Matrix operator-(const Matrix& l, const Matrix& r);
+//Matrix operator-(const Matrix& l, const Vector& r);
+Matrix operator-(const Matrix& l, double r);
+Matrix operator-(const Matrix& l, int r);
+
+Matrix operator*(const Matrix& l, const Matrix& r);
+//Matrix operator*(const Matrix& l, const Vector& r);
+Matrix operator*(const Matrix& l, double r);
+Matrix operator*(const Matrix& l, int r);
+Matrix operator*(double l, const Matrix& r);
+Matrix operator*(int l, const Matrix& r);
+
+Matrix operator/(const Matrix& l, const Matrix& r);
+//Matrix operator/(const Matrix& l, const Vector& r);
+Matrix operator/(const Matrix& l, double r);
+Matrix operator/(const Matrix& l, int r);
 
 
+/** ACCESSORY METHODS */
+
+Matrix _copy_matrix_(const Matrix& m);
+uint _fullsize_(const Matrix& m);
 
 }
 
