@@ -3,4 +3,4 @@ language: cpp
 
 script:
 - cd src/
-- make clean && make
+- make clean && make && ./test_numpy
