@@ -2,6 +2,5 @@ sudo: false
 language: cpp
 
 script:
-- mkdir build
-- cd build
-- make
+- cd src/
+- make clean && make
