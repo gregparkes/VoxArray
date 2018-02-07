@@ -1,1 +1,4 @@
 language: cpp
+
+cd src/
+./configure && make && make test
