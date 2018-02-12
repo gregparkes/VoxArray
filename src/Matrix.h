@@ -95,6 +95,15 @@ class Matrix
 		Matrix copy();
 
 		/**
+		 Retrieve an element from the matrix.
+
+		 @param i : index corresponding to the row number
+		 @param j : index corresponding to the column number
+		 @return Value at location [i,j]
+		*/
+		inline double& ix(uint i, uint j) { return data[i+j*vectors[0]->n]; }
+
+		/**
 		 Flips the columns/rows in the matrix.
 
 		 e.g [1.0, 2.0, 3.0] -> [3.0, 2.0, 1.0] for each row

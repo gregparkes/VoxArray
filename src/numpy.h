@@ -192,9 +192,29 @@ namespace numpy {
 
 	 @param rhs : the matrix
 	 @param axis (optional) : either 0 (column-wise) or 1 (row-wise)
-	 @return Flattened array
+	 @return Flattened array <created on the stack>
 	 */
 	Vector vectorize(const Matrix& rhs, uint axis = 0);
+
+	/**
+	 Reshape the vector into a 2-d matrix.
+
+	 @param rhs : the matrix
+	 @param nrows : the number of new rows in the new matrix
+	 @param ncols : the number of new columns in the new matrix
+	 @return The new matrix < created on the stack>
+	*/
+	Matrix reshape(const Vector& rhs, uint nrows, uint ncols);
+
+	/**
+	 Reshape the matrix.
+
+	 @param rhs : the old matrix
+	 @param nrows : the number of new rows in the new matrix
+	 @param ncols : the number of new columns in the new matrix
+	 @return The new matrix < created on the stack>
+	*/
+	Matrix reshape(const Matrix& rhs, uint nrows, uint cols);
 
 	/**
 	 Extracts all the non-zero values from an array and copies them.
@@ -221,6 +241,8 @@ namespace numpy {
 	 @return New matrix with all unique elements.
 	 */
 	Matrix unique(const Vector& rhs);
+
+
 
 	/**
 	 Flips the elements in the array into a new copied array.
@@ -459,6 +481,33 @@ namespace numpy {
 	Vector poisson(const Vector& lam);
 
 	/**
+	 Returns a random sample of items from the vector.
+
+	 @param rhs : the vector to sample from
+	 @param n : number of samples to take
+	 @return Sample vector <created on the stack>
+	*/
+	Vector sample(const Vector& rhs, uint n);
+
+	/**
+	 Returns a random sample of items from the whole matrix.
+
+	 @param rhs : the matrix to sample from
+	 @param n : number of samples to take
+	 @return Sample vector <created on the stack>
+	*/
+	Vector sample(const Matrix& rhs, uint n);
+
+	/**
+	 Returns a random sample of items from the whole matrix, per column/row.
+
+	 @param rhs : the matrix to sample from
+	 @param n : number of samples to take
+	 @return Sample matrix <created on the stack>
+	*/
+	Matrix sample(const Matrix& rhs, uint n, uint axis);
+
+	/**
 	 Creates a vector with evenly-spaced elements from
 	 start to end. Array size dictated by step and
 	 (end-start).
@@ -610,6 +659,14 @@ namespace numpy {
 	 @return The number of instances of value
 	 */
 	Vector count(const Matrix& rhs, double value, uint axis);
+
+	/**
+	 Counts every unique value and places the count at the index.
+
+	 @param rhs : the vector to count
+	 @return The new vector of counts at indices. <created on the stack>
+	*/
+	Vector bincount(const Vector& rhs);
 
 	/**
 	 Returns true if the vector is a column-vector. (Standard)
@@ -878,9 +935,65 @@ namespace numpy {
 
 	 @param rhs : the matrix to evaluate
 	 @param axis : either 0 (column-wise) or 1 (row-wise)
-	 @return Largest value
+	 @return Largest value <created on the stack>
 	 */
 	Vector max(const Matrix& rhs, uint axis);
+
+	/**
+	 Returns the n-smallest values from vector rhs.
+
+	 @param rhs : the vector
+	 @param n : the number of smallest values to get
+	 @return N-smallest Vector <created on the stack>
+	*/
+	Vector nsmallest(const Vector& rhs, uint n);
+
+	/**
+	 Returns the n-smallest values from the whole matrix rhs.
+
+	 @param rhs : the matrix
+	 @param n : the number of smallest values to get
+	 @return N-smallest Vector <created on the stack>
+	*/
+	Vector nsmallest(const Matrix& rhs, uint n);
+
+	/**
+	 Returns the n-smallest values from the whole matrix rhs, per column/row.
+
+	 @param rhs : the matrix
+	 @param n : the number of smallest values to get
+	 @param axis : either 0 (column-wise) or 1 (row-wise)
+	 @return N-smallest Matrix <created on the stack>
+	*/
+	Matrix nsmallest(const Matrix& rhs, uint n, uint axis);
+
+	/**
+	 Returns the n-largest values from vector rhs.
+
+	 @param rhs : the vector
+	 @param n : the number of largest values to get
+	 @return N-largest Vector <created on the stack>
+	*/
+	Vector nlargest(const Vector& rhs, uint n);
+
+	/**
+	 Returns the n-largest values from the whole matrix rhs.
+
+	 @param rhs : the matrix
+	 @param n : the number of largest values to get
+	 @return N-largest Vector <created on the stack>
+	*/
+	Vector nlargest(const Matrix& rhs, uint n);
+
+	/**
+	 Returns the n-largest values from the whole matrix rhs, per column/row.
+
+	 @param rhs : the matrix
+	 @param n : the number of largest values to get
+	 @param axis : either 0 (column-wise) or 1 (row-wise)
+	 @return N-largest Matrix <created on the stack>
+	*/
+	Matrix nlargest(const Matrix& rhs, uint n, uint axis);
 
 	/**
 	 Calculates the average mean of the vector.
@@ -984,6 +1097,15 @@ namespace numpy {
 	 @return The covariance matrix
 	 */
 	Matrix cov(const Matrix& A);
+
+	/**
+	 Calculates the pearson-moment correlation between two vectors.
+
+	 @param v : vector 1
+	 @param w : vector 2
+	 @return The correlation (pearson)
+	 */
+	double corr(const Vector& v, const Vector& w);
 
 	/**
 	 Calculates the Pearson product-moment correlation coefficients from
@@ -1448,6 +1570,25 @@ namespace numpy {
 	 @return The new sorted matrix. <created on the stack>
 	 */
 	Matrix sort(const Matrix& rhs, uint axis, uint sorter = SORT_ASCEND);
+
+	/**
+	 Calculates the 1st discrete differeence across a vector, approximating using Euler's method.
+
+	 @param rhs : the vector
+	 @param periods : periods to shift for forming difference
+	 @return The new difference vector. <created on the stack> 
+	*/
+	Vector diff(const Vector& rhs, uint periods = 1);
+
+	/**
+	 Calculates the 1st discrete differeence across a matrix, approximating using Euler's method.
+
+	 @param rhs : the matrix
+	 @param axis : either 0 (column-wise) or 1 (row-wise)
+	 @periods : periods to shift for forming difference
+	 @return The new difference matrix. <created on the stack>
+	*/
+	Matrix diff(const Matrix& rhs, uint axis, uint periods = 1);
 
 	/**
 	 Transposes the vector from column vector -> row vector or vice versa.

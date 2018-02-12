@@ -459,11 +459,8 @@ namespace tests {
 		Numpy x = numpy::ones(10);
 		Numpy y = x.copy();
 		Numpy a = numpy::fill(10, 3.0);
-		// check ==
-		assert(x == y);
+		
 		Numpy z = numpy::zeros(10);
-		// check !=
-		assert(x != z);
 		
 		// checking +=
 		x += y;
@@ -543,7 +540,7 @@ namespace tests {
 		Numpy answers = numpy::array("3.0, 4.0, -3.0, 7.0");
 		for (int i = 0; i < 4; i++)
 		{
-			assert(y[i] - answers[i] <= 1e-14);
+			assert(CMP(y[i], answers[i]));
 		}
 
 		PRINT_STR("Test_Floor :: Passed");
@@ -558,7 +555,7 @@ namespace tests {
 		// PRINT_STR(y.str());
 		for (int i = 0; i < 4; i++)
 		{
-			assert(y[i] - answers[i] <= 1e-14);
+			assert(CMP(y[i], answers[i]));
 		}
 
 		PRINT_STR("Test_Ceil :: Passed");
@@ -585,7 +582,7 @@ namespace tests {
 		//PRINT_STR(x.str());
 		for (int i = 0; i < 15; i++)
 		{
-			assert(x[i] == -1.0 || x[i] == 0.0 || x[i] == 1.0);
+			assert(CMP(x[i], -1.0) || CMP(x[i], 0.0) || CMP(x[i], 1.0));
 		}
 
 		PRINT_STR("Test_Randchoice :: Passed");
@@ -631,9 +628,10 @@ namespace tests {
 		PRINT_STR("Start Flip");
 		Numpy x = numpy::linspace(0.0, 4.0, 5);
 		Numpy y = numpy::flip(x);
+		Numpy z = numpy::array("4.0, 3.0, 2.0, 1.0, 0.0");
 		for (int i = 0; i < 5; i++)
 		{
-			assert(y.data[i] == 4-i);
+			assert(CMP(y.data[i], z.data[i]));
 		}
 
 		PRINT_STR("Test_Flip :: Passed");
@@ -644,8 +642,8 @@ namespace tests {
 		PRINT_STR("Start Log");
 		Numpy x = numpy::array("0.0, 1.0");
 		Numpy y = numpy::log(x);
-		assert(y.data[0] - 1.0 < 1e-14);
-		assert(y.data[1] - 2.71828 < 1e-5);
+		assert(CMP(y.data[0], 1.0) < 1e-14);
+		assert(WEAK_CMP(y.data[1], 2.71828) < 1e-5);
 //		x.logr();
 //		assert(x.data[0] - 1.0 < 1e-14);
 //		assert(x.data[1] - 2.71828 < 1e-5);
@@ -660,7 +658,7 @@ namespace tests {
 		Numpy y = numpy::logspace(0.0, 1.0, 11);
 		for (int i = 0; i < 11; i++)
 		{
-			assert(y.data[i] == pow(10, x[i]));
+			assert(CMP(y.data[i], pow(10, x[i])));
 		}
 		//PRINT_STR(x.str()) << y.str());
 
@@ -728,21 +726,11 @@ namespace tests {
 		PRINT_STR("Start Norm");
 		Numpy x = numpy::linspace(1.0, 3.0, 3);
 		//PRINT_STR(numpy::norm(x, 2));
-		assert(numpy::norm(x, _INF_NORM) - 3.0 < 1e-14);
-		assert(numpy::norm(x, _ONE_NORM) == 6.0);
-		assert(numpy::norm(x, _TWO_NORM) == 1.0);
+		assert(CMP(numpy::norm(x, _INF_NORM), 3.0));
+		assert(CMP(numpy::norm(x, _ONE_NORM), 6.0));
+		assert(CMP(numpy::norm(x, _TWO_NORM), 1.0));
 
 		PRINT_STR("Test_Norm :: Passed");
-	}
-
-	static void test_adjacsum()
-	{
-		PRINT_STR("Start Adjacsum");
-		Numpy x = numpy::linspace(0.0, 1.0, 11);
-		Numpy y = numpy::adjacsum(x);
-		//PRINT_STR(y.str());
-
-		PRINT_STR("Test_Adjacsum :: Passed");
 	}
 
 	static void test_radians()
@@ -751,10 +739,10 @@ namespace tests {
 		Numpy x = numpy::array("0.0, 90.0, 180.0, 360.0");
 		Numpy y = numpy::radians(x);
 		//PRINT_STR(y.str());
-		assert(y[0] == x[0]);
-		assert(y[1] == M_PI / 2);
-		assert(y[2] == M_PI);
-		assert(y[3] == M_PI * 2);
+		assert(CMP(y[0], x[0]));
+		assert(CMP(y[1], M_PI / 2));
+		assert(CMP(y[2], M_PI));
+		assert(CMP(y[3], M_PI * 2));
 
 		PRINT_STR("Test_Radians :: Passed");
 	}
@@ -765,10 +753,10 @@ namespace tests {
 		Numpy x = numpy::array("0.0, 1.570796, 3.14159, 4.712388");
 		Numpy y = numpy::degrees(x);
 		//PRINT_STR(y.str());
-		assert(y[0] - x[0] < 2);
-		assert(y[1] - 90.0 < 2);
-		assert(y[2] - 180.0 < 2);
-		assert(y[3] - 360.0 < 2);
+		assert(y[0] - x[0] < 2.0);
+		assert(y[1] - 90.0 < 2.0);
+		assert(y[2] - 180.0 < 2.0);
+		assert(y[3] - 360.0 < 2.0);
 
 		PRINT_STR("Test_Degrees :: Passed");
 	}
@@ -786,15 +774,6 @@ namespace tests {
 		PRINT_STR("Test_Sqroot :: Passed");
 	}
 
-	static void test_normal()
-	{
-		PRINT_STR("Start Normal");
-		Numpy x = numpy::normal(30, 0.0, 1.0);
-		//PRINT_STR(x.str()) << x.mean());
-
-		PRINT_STR("Test_Normal :: Passed");
-	}
-
 	static void test_power()
 	{
 		PRINT_STR("Start Power");
@@ -802,7 +781,7 @@ namespace tests {
 		Numpy y = numpy::power(x, 2);
 		for (int i = 0; i < 5; i++)
 		{
-			assert(y[i] == x[i] * x[i]);
+			assert(CMP(y[i], x[i] * x[i]));
 		}
 
 		PRINT_STR("Test_Power :: Passed");
@@ -814,7 +793,7 @@ namespace tests {
 		Numpy x = numpy::linspace(1.0, 10.0, 11);
 		assert(numpy::min(x) == 1.0);
 		Numpy y = numpy::rand(5);
-		int min = y[0];
+		double min = y.data[0];
 		for (int i = 0; i < 5; i++)
 		{
 			if (y[i] < min)
@@ -822,7 +801,7 @@ namespace tests {
 				min = y[i];
 			}
 		}
-		assert(min - numpy::min(y) <= 1e-14);
+		assert(CMP(min, numpy::min(y)));
 
 		PRINT_STR("Test_Min :: Passed");
 	}
@@ -833,7 +812,7 @@ namespace tests {
 		Numpy x = numpy::linspace(1.0, 10.0, 11);
 		assert(numpy::max(x) == 10.0);
 		Numpy y = numpy::rand(5);
-		int max = y[0];
+		double max = y.data[0];
 		for (int i = 0; i < 5; i++)
 		{
 			if (y[i] > max)
@@ -841,7 +820,7 @@ namespace tests {
 				max = y[i];
 			}
 		}
-		assert(max - numpy::max(y) <= 1e-14);
+		assert(CMP(max, numpy::max(y)));
 
 		PRINT_STR("Test_Max :: Passed");
 	}
@@ -869,7 +848,7 @@ namespace tests {
 		Numpy y = x.select(3);
 		for (int i = 0; i < 3; i++)
 		{
-			assert(x[i] - 3.0 <= 1e-14);
+			assert(CMP(x[i], 3.0));
 		}
 		Numpy z = x.select($, $, -1);
 		//PRINT_STR(numpy::str(z));
@@ -968,11 +947,9 @@ static void call_all_tests()
 	test_lstrip();
 	test_rstrip();
 	test_norm();
-	test_adjacsum();
 	test_radians();
 	test_degrees();
 	test_sqroot();
-	test_normal();
 	test_power();
 	test_min();
 	test_max();

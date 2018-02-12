@@ -176,13 +176,28 @@ static double* _create_empty_(unsigned int n)
 	double* my_empty = (double*) malloc(n * sizeof(double));
 	if (my_empty == NULL)
 	{
-		printf("Error! Unable to allocate memory in _create_empty_(double*, unsigned int)");
+		printf("Error! Unable to allocate memory in _create_empty_(unsigned int)");
 		return 0;
 	}
 	return my_empty;
 }
 
-static int _destroy_array_(double *arr)
+static bool* _create_empty_bool_(unsigned int n)
+{
+	if (n == 0)
+	{
+		return 0;
+	}
+	bool* my_empty = (bool*) malloc(n * sizeof(bool));
+	if (my_empty == NULL)
+	{
+		printf("Error! Unable to allocate memory in _create_empty_bool_(unsigned int)");
+		return 0;
+	}
+	return my_empty;
+}
+
+static int _destroy_array_(void *arr)
 {
 	if (arr != NULL)
 	{
@@ -364,10 +379,44 @@ static inline unsigned int _str_length_gen_(double *arr, unsigned int n,
 	return 2 + ((dpoints+1)*n) + (2*n-2) + 1;
 }
 
+static inline unsigned int _str_bool_length_gen_(unsigned int n)
+{
+	return 2 + (3*(n-1)) + 2;
+}
+
 static inline unsigned int _n_digits_in_int_(int value)
 {
 	// determines the number of characters in this integer value
 	return floor(log10(abs(value))) + 1;
+}
+
+static int _bool_representation_(char *out, bool *in, unsigned int n_in)
+{
+	if (out == NULL)
+	{
+		printf("Out must be filled with empty slots");
+		return 0;
+	}
+	out[0] = '[';
+	int offset = 1;
+	unsigned int i;
+	for (i = 0; i < n_in-1; i++)
+	{
+		if (in[i])
+		{
+			out[offset++] = '1';
+		}
+		else
+		{
+			out[offset++] = '0';
+		}
+		out[offset++] = ',';
+		out[offset++] = ' ';
+	}
+	out[offset++] = (char)((int) in[n_in-1]);
+	out[offset++] = ']';
+	out[offset] = '\0';
+	return 1;
 }
 
 static int _str_representation_(char *out, double *arr, unsigned int n_arr,
@@ -443,6 +492,23 @@ static int _str_shape_func_(char* out, unsigned int val1, unsigned int val2,
 }
 
 static int _copy_array_(double *copy, double *orig, unsigned int n)
+{
+	// orig initialized, copy is empty array.
+	if (n == 0 || copy == 0 || orig == 0)
+	{
+		return 0;
+	}
+#ifdef _OPENMP
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
+#endif
+		for (unsigned int i = 0; i < n; i++)
+		{
+			copy[i] = orig[i];
+		}
+	return 1;
+}
+
+static int _copy_bool_(bool *copy, bool *orig, unsigned int n)
 {
 	// orig initialized, copy is empty array.
 	if (n == 0 || copy == 0 || orig == 0)

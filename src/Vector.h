@@ -43,9 +43,9 @@ GNU General Public License:
 #ifndef __VEC1F_H_
 #define __VEC1F_H_
 
-namespace numpy {
-
 #include "types.h"
+
+namespace numpy {
 
 class Vector
 {
@@ -440,9 +440,6 @@ class Vector
 		inline double& operator[](int idx) { return data[idx]; }
 		// indexing using the select struct
 
-		bool operator==(const Vector& rhs);
-		bool operator!=(const Vector& rhs);
-
 		Vector& operator+=(const Vector& rhs);
 		Vector& operator+=(double value);
 		Vector& operator+=(int value);
@@ -491,6 +488,29 @@ Vector operator^(const Vector& l, const Vector& r);
 Vector operator^(const Vector& l, double r);
 Vector operator^(const Vector& l, int r);
 
+Mask operator==(const Vector& l, const Vector& r);
+Mask operator==(const Vector& l, double r);
+Mask operator==(const Vector& l, int r);
+
+Mask operator!=(const Vector& l, const Vector& r);
+Mask operator!=(const Vector& l, double r);
+Mask operator!=(const Vector& l, int r);
+
+Mask operator<(const Vector& l, const Vector& r);
+Mask operator<(const Vector& l, double r);
+Mask operator<(const Vector& l, int r);
+
+Mask operator<=(const Vector& l, const Vector& r);
+Mask operator<=(const Vector& l, double r);
+Mask operator<=(const Vector& l, int r);
+
+Mask operator>(const Vector& l, const Vector& r);
+Mask operator>(const Vector& l, double r);
+Mask operator>(const Vector& l, int r);
+
+Mask operator>=(const Vector& l, const Vector& r);
+Mask operator>=(const Vector& l, double r);
+Mask operator>=(const Vector& l, int r);
 
 
 // Accessory function to calling copy in Vector.h.

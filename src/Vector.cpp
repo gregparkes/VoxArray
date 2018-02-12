@@ -477,32 +477,6 @@ namespace numpy {
 
 	//  --------------- Instance Operator overloads ------------------------
 
-	bool Vector::operator==(const Vector& rhs)
-	{
-		if (rhs.n != n) return false;
-		for (uint i = 0; i < n; i++)
-		{
-			if (!CMP(rhs.data[i], data[i]))
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-
-	bool Vector::operator!=(const Vector& rhs)
-	{
-		if (rhs.n != n) return false;
-		for (uint i = 0; i < n; i++)
-		{
-			if (!CMP(rhs.data[i], data[i]))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
 
 	Vector& Vector::operator+=(const Vector& rhs)
 	{

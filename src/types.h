@@ -32,5 +32,13 @@ typedef unsigned int uint;
 
 //#define _CUMPY_DEBUG_ 0
 
+namespace numpy {
+
+	class Vector;
+	class Matrix;
+	class Mask;
+
+}
+
 
 #endif /* TYPES_H_ */

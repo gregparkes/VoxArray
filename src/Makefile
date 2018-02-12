@@ -1,6 +1,6 @@
 CC=g++
-DEPS=types.h Vector.h Matrix.h VarStructs.h numpy.h 
-OBJ1=numstatic.o Vector.o Matrix.o numpy.o main.o
+DEPS=types.h Vector.h Matrix.h BoolVector.h VarStructs.h numpy.h 
+OBJ1=numstatic.o Vector.o Matrix.o BoolVector.o numpy.o main.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< -I.
