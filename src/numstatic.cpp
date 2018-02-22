@@ -541,6 +541,24 @@ static int _matrix_copy_row_(double *copy, double *orig, unsigned int nvec, unsi
 	return 1;
 }
 
+static int _rand_array_(double *arr, unsigned int n)
+{
+	if (n == 0 || arr == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+	srand48(time(NULL));
+#ifdef _OPENMP
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		arr[i] = drand48();
+	}
+	return 1;
+}
+
 static int _normal_distrib_(double *arr, unsigned int n, double mean,
 							double sd)
 {
@@ -567,6 +585,48 @@ static int _normal_distrib_(double *arr, unsigned int n, double mean,
 			double j = x * sqrt(-2.0*log(r)/r);
 			arr[i] = j*sd + mean;
 		}
+	}
+	return 1;
+}
+
+static int _randint_array_(double *arr, unsigned int n, unsigned int max)
+{
+	if (n == 0 || max == 0)
+	{
+		return 0;
+	}
+	srand48(time(NULL));
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for if(n>100000) schedule(static)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		arr[i] = drand48() * max;
+		if (arr[i] < 0)
+		{
+			arr[i] = _truncate_doub_(arr[i], 0) - 1;
+		} else
+		{
+			arr[i] = _truncate_doub_(arr[i], 0) + 1;
+		}
+	}
+	return 1;
+}
+
+static int _binomial_array_(double *out, double *arr1, double *arr2, unsigned int n)
+{
+	if (out == 0 || arr1 == 0 || arr2 == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for if(n.n>100000) schedule(static) shared(n,p)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		out[i] = _binomial_coefficient_(arr1[i], arr2[i]);
 	}
 	return 1;
 }
@@ -1502,7 +1562,13 @@ static int _element_div_(double *left, double *right, unsigned int n)
 #endif
 	for (unsigned int i = 0; i < n; i++)
 	{
-		left[i] /= right[i];
+		// cannot divide by 0!
+		if (CMP(right[i],0.0))
+		{
+			return 0;
+		} else {
+			left[i] /= right[i];
+		}
 	}
 	return 1;
 }

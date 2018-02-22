@@ -4,6 +4,15 @@ A standalone project that imitates much of Python's NumPy class in delivering po
 
 Still in working progress.
 
+### Vector
+
+A simple (n,) float vector containing many numerical functions.
+
+### Matrix
+
+A more complex (n,p) float vector comprised of a single memory-block with vector objects
+pointing to each column.
+
 ## License 
 
 (OSI Approved BSD 2-clause)

@@ -737,12 +737,12 @@ namespace tests {
 	{
 		PRINT_STR("Start Radians");
 		Numpy x = numpy::array("0.0, 90.0, 180.0, 360.0");
-		Numpy y = numpy::radians(x);
+		Numpy y = numpy::to_radians(x);
 		//PRINT_STR(y.str());
-		assert(CMP(y[0], x[0]));
-		assert(CMP(y[1], M_PI / 2));
-		assert(CMP(y[2], M_PI));
-		assert(CMP(y[3], M_PI * 2));
+		assert(WEAK_CMP(y[0], x[0]));
+		assert(WEAK_CMP(y[1], M_PI / 2));
+		assert(WEAK_CMP(y[2], M_PI));
+		assert(WEAK_CMP(y[3], M_PI * 2));
 
 		PRINT_STR("Test_Radians :: Passed");
 	}
@@ -751,7 +751,7 @@ namespace tests {
 	{
 		PRINT_STR("Start Degrees");
 		Numpy x = numpy::array("0.0, 1.570796, 3.14159, 4.712388");
-		Numpy y = numpy::degrees(x);
+		Numpy y = numpy::to_degrees(x);
 		//PRINT_STR(y.str());
 		assert(y[0] - x[0] < 2.0);
 		assert(y[1] - 90.0 < 2.0);

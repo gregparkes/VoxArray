@@ -45,23 +45,6 @@ GNU General Public License:
 
 namespace numpy {
 
-	/* ---------------------------------------------------------------
-
-	 Here we define static methods to be accessed as long as the user
-	 is using the numpy namespace. This is the ideal way of creating arrays
-	 to be manipulated.
-
-	 * ---------------------------------------------------------------
-	 */
-
-	/**
-	 Returns an array object with un-zeroed elements in.
-
-	 @param n : the size of the array to create.
-	 @return The array object. <created on the stack>
-	 */
-	Vector empty(uint n);
-
 	/**
 	 Returns a matrix object with un-zeroed elements in.
 
@@ -70,14 +53,6 @@ namespace numpy {
 	 @return The array object. <created on the stack>
 	 */
 	Matrix empty(uint ncols, uint nrows);
-
-	/**
-	 Returns an array object with zeroed elements in.
-
-	 @param n : the size of the array to create.
-	 @return The new array object. <created on the stack>
-	 */
-	Vector zeros(uint n);
 
 	/**
 	 Returns a matrix object with zeroed elements in.
@@ -89,14 +64,6 @@ namespace numpy {
 	Matrix zeros(uint ncols, uint nrows);
 
 	/**
-	 Returns an array object with all elements = 1 in.
-
-	 @param n : the size of the array to create.
-	 @return The new array object. <created on the stack>
-	 */
-	Vector ones(uint n);
-
-	/**
 	 Returns a matrix object with all elements = 1 in.
 
 	 @param ncols : the number of columns to create.
@@ -104,15 +71,6 @@ namespace numpy {
 	 @return The array object. <created on the stack>
 	 */
 	Matrix ones(uint ncols, uint nrows);
-
-	/**
-	 Returns an array object with filled elements in.
-
-	 @param n : the size of the array to create.
-	 @param val : the value to fill the array with.
-	 @return The new array object. <created on the stack>
-	 */
-	Vector fill(uint n, double val);
 
 	/**
 	 Returns a matrix object with filled elements in.
@@ -125,31 +83,12 @@ namespace numpy {
 	Matrix fill(uint ncols, uint nrows, double val);
 
 	/**
-	 Returns the length of the vector
-
-	 @param rhs : the vector
-	 @return Length
-	*/
-	uint len(const Vector& rhs);
-
-	/**
 	 Returns the shape of the matrix in string representation
 
 	 @param rhs : the matrix
 	 @return shape
 	*/
 	char* shape(const Matrix& rhs);
-
-	/**
-	Returns a string representation of the object.
-
-	e.g "[0.00, 1.00, 2.00, 3.00, 4.00]"
-
-	@param rhs : the array to represent.
-	@param dpoints (optional) : number of decimal places to keep in each value
-	@return The corresponding string. <created on heap, must be deleted>
-	 */
-	char* str(const Vector& rhs, uint dpoints = 5);
 
 	/**
 	Returns a string representation of the matrix.
@@ -163,38 +102,12 @@ namespace numpy {
 	char* str(const Matrix& rhs, uint dpoints = 5);
 
 	/**
-	 Returns an array object with set elements in.
-	 e.g Numpy x = numpy::array("0.75, 0.34, 20.34, 0.67, -0.65");
-
-	 @param values : list of values to add, same format as normal syntax except as string.
-	 @return The new array object. <created on the stack>
-	 */
-	Vector array(const char* input);
-
-	/**
-	 Copies an array object.
-
-	 @param rhs : the array to copy.
-	 @return The new array object. <created on the stack>
-	 */
-	Vector copy(const Vector& rhs);
-
-	/**
 	 Copies a matrix object.
 
 	 @param rhs : the matrix to copy.
 	 @return The new matrix object. <created on the stack>
 	 */
 	Matrix copy(const Matrix& rhs);
-
-	/**
-	 Return a copy of the array flattened into 1-dimension, either column/row wise.
-
-	 @param rhs : the matrix
-	 @param axis (optional) : either 0 (column-wise) or 1 (row-wise)
-	 @return Flattened array <created on the stack>
-	 */
-	Vector vectorize(const Matrix& rhs, uint axis = 0);
 
 	/**
 	 Reshape the vector into a 2-d matrix.
@@ -217,14 +130,6 @@ namespace numpy {
 	Matrix reshape(const Matrix& rhs, uint nrows, uint cols);
 
 	/**
-	 Extracts all the non-zero values from an array and copies them.
-
-	 @param rhs : the array to extract from.
-	 @return The new non-zero array object. <created on the heap, must be deleted>
-	 */
-	Vector nonzero(const Vector& rhs);
-
-	/**
 	 Extracts all the non-zero values from a matrix and copies them.
 
 	 @param rhs : the matrix to extract from.
@@ -242,18 +147,6 @@ namespace numpy {
 	 */
 	Matrix unique(const Vector& rhs);
 
-
-
-	/**
-	 Flips the elements in the array into a new copied array.
-
-	 e.g [1.0, 2.0, 3.0] -> [3.0, 2.0, 1.0]
-
-	 @param rhs : the array to flip.
-	 @return The flipped array object. <created on the stack>
-	 */
-	Vector flip(const Vector& rhs);
-
 	/**
 	 Flips the columns/rows in the matrix.
 
@@ -265,25 +158,7 @@ namespace numpy {
 	 */
 	Matrix flip(const Matrix& rhs, uint axis = 0);
 
-	/**
-	Concatenates two arrays together, with the right vector joining
-	to the right of the left vector.
-
-	e.g [1.0, 2.0] + [3.0, 4.0] = [1.0, 2.0, 3.0, 4.0]
-
-	@param lhs : the left-hand side vector
-	@param rhs : the right-hand side vector
-	@return The new array object <created on the stack>
-	 */
-	Vector vstack(const Vector& lhs, const Vector& rhs);
-
-	/**
-	 Creates a copy of a vector with unfilled elements.
-
-	 @param rhs : the array to copy
-	 @return The new array object <created on the stack>
-	 */
-	Vector empty_like(const Vector& rhs);
+	
 
 	/**
 	 Creates a copy of a matrix with unfilled elements.
@@ -293,13 +168,7 @@ namespace numpy {
 	 */
 	Matrix empty_like(const Matrix& rhs);
 
-	/**
-	 Creates a copy of a vector with zeroed elements.
-
-	 @param rhs : the array to copy
-	 @return The new array object <created on the stack>
-	 */
-	Vector zeros_like(const Vector& rhs);
+	
 
 	/**
 	 Creates a copy of a matrix with zeroed elements.
@@ -309,13 +178,7 @@ namespace numpy {
 	 */
 	Matrix zeros_like(const Matrix& rhs);
 
-	/**
-	 Creates a copy of a vector with oned elements.
-
-	 @param rhs : the array to copy
-	 @return The new array object <created on the stack>
-	 */
-	Vector ones_like(const Vector& rhs);
+	
 
 	/**
 	 Creates a copy of a matrix with oned elements.
@@ -325,14 +188,7 @@ namespace numpy {
 	 */
 	Matrix ones_like(const Matrix& rhs);
 
-	/**
-	 Creates a vector with random floats of uniform
-	 distribution N[0, 1].
-
-	 @param n (optional) : the size of the desired array, default = 1 (i.e one random number)
-	 @return The new array object <created on the stack>
-	 */
-	Vector rand(uint n = 1);
+	
 
 	/**
 	 Creates a matrix with random floats of uniform
@@ -343,18 +199,6 @@ namespace numpy {
 	 @return The new matrix object <created on the stack>
 	 */
 	Matrix rand(uint ncols, uint nrows);
-
-	/**
-	 Creates a vector with random floats in line with
-	 the normal (Gaussian) distribution - or bell-shaped
-	 curve. Default mean = 0.0, variance = 1.0.
-
-	-> p(x|mu,sig^2) = (1/(sqrt(2 sig^2 pi))e(-((x-u)^2/2 sig^2))
-
-	 @param n (optional) : the size of the desired array, default = 1
-	 @return The new array object <created on the stack>
-	 */
-	Vector randn(uint n = 1);
 
 	/**
 	 Creates a matrix with random floats in line with
@@ -369,19 +213,7 @@ namespace numpy {
 	 */
 	Matrix randn(uint ncols, uint nrows);
 
-	/**
-	 Creates a vector with random floats in line with
-	 the normal (Gaussian) distribution - or bell-shaped
-	 curve.
-
-	-> p(x|mu,sig^2) = (1/(sqrt(2 sig^2 pi))e(-((x-u)^2/2 sig^2))
-
-	 @param n : the size of the desired array
-	 @param mean : the center of the distribution
-	 @param sd : standard deviation of the distribution
-	 @return The new array object <created on the stack>
-	 */
-	Vector normal(uint n, double mean, double sd);
+	
 
 	/**
 	 Creates a matrix with random floats in line with
@@ -398,14 +230,7 @@ namespace numpy {
 	 */
 	Matrix normal(uint ncols, uint nrows, double mean, double sd);
 
-	/**
-	 Creates a vector with random integers in N[0, max]
-
-	 @param n : the size of the desired array
-	 @param max : the max number to generate
-	 @return The new array object <created on the stack>
-	 */
-	Vector randint(uint n, uint max);
+	
 
 	/**
 	 Creates a matrix with random integers in N[0, max]
@@ -417,18 +242,7 @@ namespace numpy {
 	 */
 	Matrix randint(uint ncols, uint nrows, uint max);
 
-	/**
-	 Creates a vector with random elements from the
-	 'values' array, in uniform distribution [0, 1].
-
-	 e.g -> double xs[4] = {1.0, 3.0, 2.0, 0.75};
-	 	 -> Numpy y = randchoice(10, xs, 4);
-
-	 @param n : the size of the desired array.
-	 @param values : pool of values to choose from.
-	 @return The new array object <created on the stack>
-	 */
-	Vector randchoice(uint n, const char* values);
+	
 
 	/**
 	 Creates a matrix with random elements from the
@@ -456,15 +270,6 @@ namespace numpy {
 	uint binomial(uint n = 1, double p = 0.5);
 
 	/**
-	 Creates a vector binomial response (as int) from the Binomial Distribution.
-
-	 @param n : array parameter of the distribution
-	 @param p : the array probability of getting 1 (success), in N[0, 1]
-	 @return The binomial vector response (integers) <created on the stack>
-	 */
-	Vector binomial(const Vector& n, const Vector& p);
-
-	/**
 	 Draws a value from a Poisson Distribution.
 
 	 @param lam : expectation of interval
@@ -472,22 +277,9 @@ namespace numpy {
 	 */
 	long poisson(double lam = 1.0);
 
-	/**
-	 Draws samples from a Poisson Distribution.
+	
 
-	 @param lam : vector of expectation intervals
-	 @return Poisson Vector <created on the stack>
-	 */
-	Vector poisson(const Vector& lam);
-
-	/**
-	 Returns a random sample of items from the vector.
-
-	 @param rhs : the vector to sample from
-	 @param n : number of samples to take
-	 @return Sample vector <created on the stack>
-	*/
-	Vector sample(const Vector& rhs, uint n);
+	
 
 	/**
 	 Returns a random sample of items from the whole matrix.
@@ -508,83 +300,6 @@ namespace numpy {
 	Matrix sample(const Matrix& rhs, uint n, uint axis);
 
 	/**
-	 Creates a vector with evenly-spaced elements from
-	 start to end. Array size dictated by step and
-	 (end-start).
-
-	 e.g arange(0.0, 0.5, 0.1) =
-	 	 [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
-
-	 @param start : the first element
-	 @param end : the last element
-	 @param step (optional) : the size of the each step, default value = 1.0
-	 @return The new array object <created on the stack>
-	 */
-	Vector arange(double start, double end, double step = 1.0);
-
-	/**
-	 Creates a vector with evenly-spaced elements from
-	 start to end.
-
-	 e.g linspace(0.0, 0.5, 6) =
-		 [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
-
-	 @param start : the first element
-	 @param end : the last element
-	 @param n : the size of the array.
-	 @return The new array object <created on the stack>
-	 */
-	Vector linspace(double start, double end, uint n);
-
-	/**
-	 Creates a vector with logarithmically-spaced elements from
-	 start to end.
-
-	 @param start : the first element
-	 @param end : the last element
-	 @param n : the size of the array.
-	 @return The new array object <created on the stack>
-	 */
-	Vector logspace(double start, double end, uint n);
-
-	/**
-	 Creates a vector by stripping away all the values
-	 left of the index selected from rhs (including index).
-
-	 e.g [0.1, 0.3, 0.5, 0.7] (1) -> [0.3, 0.5, 0.7]
-
-	 @param rhs : the array to strip from
-	 @param idx : the index (from left) to start copying from
-	 @return The new array object <created on the stack>
-	 */
-	Vector lstrip(const Vector& rhs, uint idx);
-
-	/**
-	 Creates a vector by stripping away all the values
-	 right of the index selected from rhs (including index).
-
-	 e.g [0.1, 0.3, 0.5, 0.7] (1) -> [0.1, 0.3]
-
-	 @param rhs : the array to strip from
-	 @param idx : the index (from right) to start copying from
-	 @return The new array object <created on the stack>
-	 */
-	Vector rstrip(const Vector& rhs, uint idx);
-
-	/**
-	 Clips (limits) the vector. Given an interval, values that fall outside of the
-	 interval are set to the interval.
-
-	 e.g clip(x, 0.0, 1.0) -> sets all values 0 < x < 1.
-
-	 @param rhs : array to clip
-	 @param a_min : minimum interval
-	 @param a_max : maximum interval
-	 @return The clipped array. <created on the stack>
-	 */
-	Vector clip(const Vector& rhs, double a_min, double a_max);
-
-	/**
 	 Clips (limits) the matrix. Given an interval, values that fall outside of the
 	 interval are set to the interval.
 
@@ -597,15 +312,7 @@ namespace numpy {
 	 */
 	Matrix clip(const Matrix& rhs, double a_min, double a_max);
 
-	/**
-	 Copies a vector and floors the elements to nearest whole number.
-
-	 e.g [1.54, 1.86, 2.23] -> [1.00, 1.00, 2.00]
-
-	 @param rhs : the array to floor.
-	 @return The new array object <created on the stack>
-	 */
-	Vector floor(const Vector& rhs);
+	
 
 	/**
 	 Copies a matrix and floors the elements to nearest whole number.
@@ -615,15 +322,7 @@ namespace numpy {
 	 */
 	Matrix floor(const Matrix& rhs);
 
-	/**
-	 Copies a vector and ceils the elements to nearest whole number.
-
-	 e.g [1.54, 1.86, 2.23] -> [2.00, 2.00, 3.00]
-
-	 @param rhs : the array to ceil.
-	 @return The new array object <created on the stack>
-	 */
-	Vector ceil(const Vector& rhs);
+	
 
 	/**
 	 Copies a matrix and ceils the elements to nearest whole number.
@@ -632,15 +331,6 @@ namespace numpy {
 	 @return The new matrix object <created on the stack>
 	 */
 	Matrix ceil(const Matrix& rhs);
-
-	/**
-	 Counts the number of instances 'value' appears in array (mode).
-
-	 @param rhs : the array to count
-	 @param value : the value to find
-	 @return The count of value in array
-	 */
-	int count(const Vector& rhs, double value);
 
 	/**
 	 Counts the number of instances 'value' appears in matrix (mode).
@@ -660,37 +350,9 @@ namespace numpy {
 	 */
 	Vector count(const Matrix& rhs, double value, uint axis);
 
-	/**
-	 Counts every unique value and places the count at the index.
+	
 
-	 @param rhs : the vector to count
-	 @return The new vector of counts at indices. <created on the stack>
-	*/
-	Vector bincount(const Vector& rhs);
-
-	/**
-	 Returns true if the vector is a column-vector. (Standard)
-
-	 @param rhs : the vector
-	 @return True or False
-	 */
-	bool isColumn(const Vector& rhs);
-
-	/**
-	 Returns true if the vector is a row-vector. (Transposed)
-
-	 @param rhs : the vector
-	 @return True or False
-	 */
-	bool isRow(const Vector& rhs);
-
-	/**
-	 Counts the number of non-zeros in array (mode).
-
-	 @param rhs : the array to count
-	 @return The count of non-zeros in array
-	 */
-	int count_nonzero(const Vector& rhs);
+	
 
 	/**
 	 Counts the number of non-zeros in matrix (mode).
@@ -709,16 +371,7 @@ namespace numpy {
 	 */
 	Vector count_nonzero(const Matrix& rhs, uint axis);
 
-	/**
-	 Copies an array and sets all values to positive.
-
-	 e.g [-1.0, -5.0, 2.0] -> [1.0, 5.0, 2.0]
-	 y = |x|
-
-	 @param rhs : the array to absolute
-	 @return The new array object <created on the stack>
-	 */
-	Vector abs(const Vector& rhs);
+	
 
 	/**
 	 Copies a matrix and sets all values to positive.
@@ -728,15 +381,7 @@ namespace numpy {
 	 */
 	Matrix abs(const Matrix& rhs);
 
-	/**
-	 Sums (adds together) all the elements in the array.
-
-	 e.g [1.0, 2.0, 3.0] -> 6.0
-
-	 @param rhs : the array to sum
-	 @return The sum of the array
-	 */
-	double sum(const Vector& rhs);
+	
 	/**
 	 Sums (adds together) all the elements in the matrix.
 
@@ -753,15 +398,7 @@ namespace numpy {
 	 */
 	Vector sum(const Matrix& rhs, uint axis);
 
-	/**
-	 Calculates the product of the elements in the array.
-
-	 e.g [1.0, 2.0, 3.0, 4.0] -> 1*2*3*4 = 24.0
-
-	 @param rhs : the array to product
-	 @return The product of the array
-	 */
-	double prod(const Vector& rhs);
+	
 
 	/**
 	 Calculates the product of all the elements in the matrix.
@@ -780,16 +417,7 @@ namespace numpy {
 	 */
 	Vector prod(const Matrix& rhs, uint axis);
 
-	/**
-	 Calculates the cumulative sum of the array into a new array.
-
-	 e.g [1.0, 2.0, 3.0] -> [1.0, 3.0, 6.0]
-	 -> a, a+b, a+b+c, a+b+c+d, ... , a+b+..+n
-
-	 @param rhs : the array to sum
-	 @return The new array cumulatively summed <created on the stack>
-	 */
-	Vector cumsum(const Vector& rhs);
+	
 
 	/**
 	 Calculates the cumulative sum of the matrix, column/row, into a new array.
@@ -803,18 +431,7 @@ namespace numpy {
 	 */
 	Matrix cumsum(const Matrix& rhs, uint axis = 0);
 
-	/**
-	 Calculates the adjacent sum of the array into a new array.
-	 Does not wrap around, i.e idx [0] does not factor in [n-1] or
-	 vice versa.
-
-	 e.g [1.0, 2.0, 3.0] -> [3.0, 6.0, 5.0]
-	 -> a+b, a+b+c, b+c+d, c+d
-
-	 @param rhs : the array to sum
-	 @return The new array adjacently summed <created on the stack>
-	 */
-	Vector adjacsum(const Vector& rhs);
+	
 
 	/**
 	 Calculates the adjacent sum of the matrix into a new matrix.
@@ -830,15 +447,7 @@ namespace numpy {
 	 */
 	Matrix adjacsum(const Matrix& rhs);
 
-	/**
-	 Calculates the cumulative product and copies into new array.
-
-	 e.g [1.0, 2.0, 3.0] -> [1.0, 2.0, 6.0]
-
-	 @param rhs : the array to product
-	 @return The new array product. <created on the stack>
-	 */
-	Vector cumprod(const Vector& rhs);
+	
 
 	/**
 	 Calculates the cumulative product of the matrix per row/column and copies into new array.
@@ -851,23 +460,8 @@ namespace numpy {
 	 */
 	Matrix cumprod(const Matrix& rhs, uint axis = 0);
 
-	/**
-	 Integrate along the vector using the composite trapezoidal rule. Integral y(x).
+	
 
-	 @param y : y vector
-	 @param x : x input vector (if left null, assumes x is evenly spaced)
-	 @param dx : spacing between sample points (default 1)
-	 @return Integral
-	 */
-	double trapz(const Vector& y, const Vector& x = null, double dx = 1.0);
-
-	/**
-	 Tests whether all elements in the vector evaluate to True.
-
-	 @param rhs : the vector to evaluate
-	 @return True or False
-	 */
-	bool all(const Vector& rhs);
 
 	/**
 	 Tests whether all elements in the matrix evaluate to True.
@@ -878,14 +472,6 @@ namespace numpy {
 	bool all(const Matrix& rhs);
 
 	/**
-	 Tests whether any elements in the vector evaluate to True.
-
-	 @param rhs : the vector to evaluate
-	 @return True or False
-	 */
-	bool any(const Vector& rhs);
-
-	/**
 	 Tests whether any elements in the matrix evaluate to True.
 
 	 @param rhs : the matrix to evaluate
@@ -893,13 +479,7 @@ namespace numpy {
 	 */
 	bool any(const Matrix& rhs);
 
-	/**
-	 Returns the smallest value in the vector.
-
-	 @param rhs : the vector to evaluate
-	 @return Smallest value
-	 */
-	double min(const Vector& rhs);
+	
 	/**
 	 Returns the smallest value in the matrix.
 
@@ -916,13 +496,7 @@ namespace numpy {
 	 */
 	Vector min(const Matrix& rhs, uint axis);
 
-	/**
-	 Returns the largest value in the vector.
-
-	 @param rhs : the vector to evaluate
-	 @return Largest value
-	 */
-	double max(const Vector& rhs);
+	
 	/**
 	 Returns the largest value in the matrix.
 
@@ -939,14 +513,7 @@ namespace numpy {
 	 */
 	Vector max(const Matrix& rhs, uint axis);
 
-	/**
-	 Returns the n-smallest values from vector rhs.
-
-	 @param rhs : the vector
-	 @param n : the number of smallest values to get
-	 @return N-smallest Vector <created on the stack>
-	*/
-	Vector nsmallest(const Vector& rhs, uint n);
+	
 
 	/**
 	 Returns the n-smallest values from the whole matrix rhs.
@@ -968,15 +535,6 @@ namespace numpy {
 	Matrix nsmallest(const Matrix& rhs, uint n, uint axis);
 
 	/**
-	 Returns the n-largest values from vector rhs.
-
-	 @param rhs : the vector
-	 @param n : the number of largest values to get
-	 @return N-largest Vector <created on the stack>
-	*/
-	Vector nlargest(const Vector& rhs, uint n);
-
-	/**
 	 Returns the n-largest values from the whole matrix rhs.
 
 	 @param rhs : the matrix
@@ -996,16 +554,6 @@ namespace numpy {
 	Matrix nlargest(const Matrix& rhs, uint n, uint axis);
 
 	/**
-	 Calculates the average mean of the vector.
-
-	 e.g (a + b + , ..., + n) / N
-
-	 @param rhs : the vector
-	 @return The mean of the vector
-	 */
-	double mean(const Vector& rhs);
-
-	/**
 	 Calculates the average mean of the matrix, per column/row.
 
 	 e.g (a + b + , ..., + n) / N
@@ -1015,17 +563,6 @@ namespace numpy {
 	 @return The means of the matrix
 	 */
 	Vector mean(const Matrix& rhs, uint axis = 0);
-
-	/**
-	 Finds the median value in the vector. By default we assume the vector is
-	 unordered, so this is a linear operation. Make sure the flag is set to true
-	 if it is sorted, to maximise efficiency.
-
-	 @param rhs : the vector
-	 @param isSorted (optional) : default to false
-	 @return Median value
-	 */
-	double median(const Vector& rhs, bool isSorted = false);
 
 	/**
 	 Finds the median value per column/row in the matrix. By default we assume the
@@ -1040,16 +577,6 @@ namespace numpy {
 	Vector median(const Matrix& rhs, uint axis = 0, bool isSorted = false);
 
 	/**
-	 Calculates the standard deviation (sd) of the vector.
-
-	e.g sqrt((1 / N)(a-m^2 + b-m^2 + , ..., + n-m^2))
-
-	 @param rhs : the vector
-	 @return The standard deviation (sd) of the vector
-	 */
-	double std(const Vector& rhs);
-
-	/**
 	 Calculates the standard deviation (sd) of the matrix, per column/row.
 
 	e.g sqrt((1 / N)(a-m^2 + b-m^2 + , ..., + n-m^2))
@@ -1059,16 +586,6 @@ namespace numpy {
 	 @return The standard deviations (sd) of the matrix
 	 */
 	Vector std(const Matrix& rhs, uint axis = 0);
-
-	/**
-	 Calculates the variance of the vector.
-
-	 e.g (a-m^2 + b-m^2 + , ..., + n-m^2) / (N-1)
-
-	 @param rhs : the vector
-	 @return The variance of the vector
-	*/
-	double var(const Vector& rhs);
 
 	/**
 	 Calculates the variance of the matrix, per column/row.
@@ -1082,30 +599,12 @@ namespace numpy {
 	Vector var(const Matrix& rhs, uint axis = 0);
 
 	/**
-	 Calculates the covariance between two vectors.
-
-	 @param v : vector 1
-	 @param w : vector 2
-	 @return The covariance
-	 */
-	double cov(const Vector& v, const Vector& w);
-
-	/**
 	 Calculates the covariance matrix from 2 or more column/row wise vectors.
 
 	 @param A : the matrix
 	 @return The covariance matrix
 	 */
 	Matrix cov(const Matrix& A);
-
-	/**
-	 Calculates the pearson-moment correlation between two vectors.
-
-	 @param v : vector 1
-	 @param w : vector 2
-	 @return The correlation (pearson)
-	 */
-	double corr(const Vector& v, const Vector& w);
 
 	/**
 	 Calculates the Pearson product-moment correlation coefficients from
@@ -1117,14 +616,6 @@ namespace numpy {
 	Matrix corr(const Matrix& A);
 
 	/**
-	 Returns the smallest index of a value in the vector.
-
-	 @param rhs : the vector
-	 @return The smallest value
-	 */
-	uint argmin(const Vector& rhs);
-
-	/**
 	 Returns the smallest index in the matrix per column/row.
 
 	 @param axis (optional) : either 0 (column-wise) or 1 (row-wise)
@@ -1133,30 +624,12 @@ namespace numpy {
 	Vector argmin(const Matrix& rhs, uint axis = 0);
 
 	/**
-	 Returns the largest index of a value in the vector.
-
-	 @param rhs : the vector
-	 @return The largest value
-	 */
-	uint argmax(const Vector& rhs);
-
-	/**
 	 Returns the largest index in the matrix per column/row.
 
 	 @param axis (optional) : either 0 (column-wise) or 1 (row-wise)
 	 @return The largest index
 	 */
 	Vector argmax(const Matrix& rhs, uint axis = 0);
-
-	/**
-	 Calculates the vector-norm of the vector.
-
-	 @param rhs : the vector
-	 @param order (optional) : must be -> order >= 1 or -1 (infinity)
-	 	 	 	    use _INF_NORM, _ONE_NORM, _TWO_NORM ideally, default = 2
-	 @return The norm of the vector
-	 */
-	double norm(const Vector& rhs, int order = _TWO_NORM);
 
 	/*
 	 Calculates the matrix-norm of the matrix.
@@ -1177,14 +650,6 @@ namespace numpy {
 	 @return Diagonal Matrix
 	 */
 	Matrix diag(const Vector& rhs);
-
-	/**
-	 Extracts the diagonal elements of a matrix.
-
-	 @param rhs : the matrix
-	 @return Diagonal elements
-	 */
-	Vector diag(const Matrix& rhs);
 
 	/**
 	 Returns a copy of the matrix with upper-triangular elements zeroed.
@@ -1211,30 +676,6 @@ namespace numpy {
 	double trace(const Matrix& rhs);
 
 	/**
-	 Calculates the Hermitian inner product of two vectors. The vectors must be
-	 both column vectors. Also known as the scalar product.
-
-	 e.g x = sum(a*b).
-
-	 @param v : the left-hand side vector
-	 @param w : the right-hand side vector
-	 @return The dot product
-	 */
-	double inner(const Vector& v, const Vector& w);
-
-	/**
-	 Calculates the dot product of two vectors. The vectors must be
-	 both column vectors. Also known as the scalar product.
-
-	 e.g x = sum(a*b).
-
-	 @param v : the left-hand side vector
-	 @param w : the right-hand side vector
-	 @return The dot product
-	 */
-	double dot(const Vector& v, const Vector& w);
-
-	/**
 	 Calculates the matrix-vector dot product. The matrix must be MxN and the vector Nx1 in dimensions.
 	 The vector must also be a column-vector.
 
@@ -1259,21 +700,9 @@ namespace numpy {
 	 */
 	Matrix dot(const Matrix& A, const Matrix& B);
 
-	/**
-	 Calculate the magnitude of a vector.
-
-	@param v : the vector
-	@return The magnitude
-	*/
-	double magnitude(const Vector& v);
-
-	/**
-	 Normalizes the array by it's magnitude.
 	
-	@param v : the vector to normalize
-	@return The normalized array
-	*/
-	Vector normalized(const Vector& v);
+
+	
 
 	/**
 	 Computes the outer product of two vectors, where v is a column-vector and w is row-vector.
@@ -1287,17 +716,7 @@ namespace numpy {
 	 */
 	Matrix outer(const Vector& v, const Vector& w);
 
-	/**
-	 Calculates the cross product of two vectors, which is the vector that is
-	 at a right angle to both v and w. Also known as the vector product.
-	 Note that the cross product makes no sense above 3 dimensions, therefore
-	 any vector v or w that are != 3 will be rejected.
-
-	 @param v : left-hand side vector
-	 @param w : right-hand side vector
-	 @return The cross product vector
-	*/
-	Vector cross(const Vector& v, const Vector& w);
+	
 	
 	/**
 	 Constructs the identity matrix.
@@ -1383,13 +802,7 @@ namespace numpy {
 	 */
 	MATRIX_COMPLEX3& svd(const Matrix& X, bool compute_uv = true);
 
-	/**
-	 Creates an (applied) sine copy of the vector.
-
-	 @param rhs : the vector
-	 @return The new sin vector <created on the stack>
-	 */
-	Vector sin(const Vector& rhs);
+	
 	/**
 	 Applies the sine function to the matrix.
 
@@ -1399,13 +812,6 @@ namespace numpy {
 	Matrix sin(const Matrix& rhs);
 
 	/**
-	 Creates an (applied) cosine copy of the vector.
-
-	 @param rhs : the vector
-	 @return The new cos vector <created on the stack>
-	 */
-	Vector cos(const Vector& rhs);
-	/**
 	 Applies the cosine function to the matrix.
 
 	 @param rhs : the matrix
@@ -1413,13 +819,7 @@ namespace numpy {
 	 */
 	Matrix cos(const Matrix& rhs);
 
-	/**
-	 Creates an (applied) tangent copy of the vector.
-
-	 @param rhs : the vector
-	 @return The new tan vector <created on the stack>
-	 */
-	Vector tan(const Vector& rhs);
+	
 	/**
 	 Applies the tangent function to the matrix.
 
@@ -1428,13 +828,7 @@ namespace numpy {
 	 */
 	Matrix tan(const Matrix& rhs);
 
-	/**
-	 Creates a radians vector from a degrees vector.
-
-	 @param rhs : the vector
-	 @return The new radians vector <created on the stack>
-	*/
-	Vector to_radians(const Vector& rhs);
+	
 
 	/**
 	 Creates a radians matrix from a degrees matrix.
@@ -1444,13 +838,7 @@ namespace numpy {
 	*/
 	Matrix to_radians(const Matrix& rhs);	
 
-	/**
-	 Creates a degrees vector from a radians vector.
-
-	 @param rhs : the vector
-	 @return The new degrees vector <created on the stack>
-	*/
-	Vector to_degrees(const Vector& rhs);
+	
 
 	/**
 	 Creates a degrees matrix from a radians matrix.
@@ -1460,13 +848,7 @@ namespace numpy {
 	*/
 	Matrix to_degrees(const Matrix& rhs);
 
-	/**
-	 Creates an (applied) exponential copy of the vector.
-
-	 @param rhs : the vector
-	 @return The new exp vector <created on the stack>
-	 */
-	Vector exp(const Vector& rhs);
+	
 	/**
 	 Applies the exponential function to the matrix.
 
@@ -1475,13 +857,7 @@ namespace numpy {
 	 */
 	Matrix exp(const Matrix& rhs);
 
-	/**
-	 Creates an (applied) log_10 copy of the vector.
-
-	 @param rhs : the vector
-	 @return The new log vector <created on the stack>
-	 */
-	Vector log(const Vector& rhs);
+	
 	/**
 	 Creates an (applied) log_10 of the matrix.
 
@@ -1490,13 +866,7 @@ namespace numpy {
 	 */
 	Matrix log(const Matrix& rhs);
 
-	/**
-	 Creates an (applied) square root copy of the vector.
-
-	 @param rhs : the vector
-	 @return The new sqrt vector <created on the stack>
-	 */
-	Vector sqrt(const Vector& rhs);
+	
 	/**
 	 Creates an (applied) square root of the matrix.
 
@@ -1521,45 +891,7 @@ namespace numpy {
 	 */
 	Vector degrees(const Vector& rhs);
 
-	/**
-	 Creates an (applied) power copy of the vector.
-
-	 e.g -> base ^ exponent, (for all indices).
-
-	 @param base : the base value
-	 @param exponent : array of exponents
-	 @return The new pow vector <created on the stack>
-	 */
-	Vector power(double base, const Vector& exponent);
-	/**
-	 Creates an (applied) power copy of the vector.
-
-	 e.g -> base ^ exponent, (for all indices).
-
-	 @param base : the base values (array)
-	 @param exponent : power value
-	 @return The new pow vector <created on the stack>
-	 */
-	Vector power(const Vector& base, double exponent);
-	/**
-	 Creates an (applied) power copy of the vector.
-
-	 e.g -> base ^ exponent, (for all indices).
-
-	 @param base : the base values (array)
-	 @param exponent : array of exponents
-	 @return The new pow vector <created on the stack>
-	 */
-	Vector power(const Vector& base, const Vector& exponent);
-
-	/**
-	 Sorts the vector elements either ascending or descending using quicksort.
-
-	 @param rhs : the vector
-	 @param sorter (optional) : indicates which direction to sort the values, ascending or descending.
-	 @return The new sorted vector. <created on the stack>
-	 */
-	Vector sort(const Vector& rhs, uint sorter = SORT_ASCEND);
+	
 
 	/**
 	 Sorts the matrix elements either ascending or descending, per column/row using quicksort.
@@ -1571,14 +903,7 @@ namespace numpy {
 	 */
 	Matrix sort(const Matrix& rhs, uint axis, uint sorter = SORT_ASCEND);
 
-	/**
-	 Calculates the 1st discrete differeence across a vector, approximating using Euler's method.
-
-	 @param rhs : the vector
-	 @param periods : periods to shift for forming difference
-	 @return The new difference vector. <created on the stack> 
-	*/
-	Vector diff(const Vector& rhs, uint periods = 1);
+	
 
 	/**
 	 Calculates the 1st discrete differeence across a matrix, approximating using Euler's method.
@@ -1590,13 +915,7 @@ namespace numpy {
 	*/
 	Matrix diff(const Matrix& rhs, uint axis, uint periods = 1);
 
-	/**
-	 Transposes the vector from column vector -> row vector or vice versa.
-
-	 @param rhs : the vector
-	 @return The new transposed vector. <created on the stack>
-	 */
-	Vector transpose(const Vector& rhs);
+	
 
 	/**
 	 Transposes the matrix.
@@ -1617,62 +936,7 @@ namespace numpy {
 	 */
 	Matrix hstack(const Vector& lhs, const Vector& rhs);
 
-	/**
-	Rotates a 2-D vector by a certain number of degrees.
-
-	@param v : the vector to rotate
-	@param degrees : the number of degrees to rotate by.
-	@return The rotated vector.
-	*/
-	Vector rotate_vector2d(const Vector& v, double degrees);
-
-	/**
-	Calculates the angle between a set of vectors, up to n-dimensions.
-
-	@param l : the left vector
-	@param r : the right vector
-	@return TThe angle between them
-	*/
-	double angle(const Vector& l, const Vector& r);
-
-	/**
-	 Calculates the projection using some lengths and directions. Practically applicable
-	 in 2,3-D but can extend to n-dimension if needed.
-
-	@param length : length vector
-	@param dir : direction vector
-	@return Projection vector
-	*/
-	Vector project(const Vector& length, const Vector& dir);
-
-	/**
-	 Calculates the perpendicular vector associated with length and direction vectors.
-
-	@param length : length vector
-	@param dir : direction vector
-	@return Perpendicular vector
-	*/
-	Vector perpendicular(const Vector& length, const Vector& dir);
-
-	/**
-	 Calculates the Reflection vector associated with source and normal vectors.
-
-	@param source : source vector
-	@param normal : normal vector
-	@return Reflection vector
-	*/
-	Vector reflection(const Vector& source, const Vector& normal);
-
-
-
-	/* --------------------------------------------------------------------------------------- *
-	 *
-	 * Now we handle our global operator overloads of +, -, *, / etc. This applies to all
-	 * classes of Vector, Matrix and higher dimensions. Special rules apply when we multiply
-	 * transposes etc, but for the most part, this provides extended vector operations.
-	 *
-	 ----------------------------------------------------------------------------------------*/
-
+	
 
 }
 

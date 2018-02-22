@@ -49,11 +49,7 @@ namespace numpy {
 	 * The static functions here. ---------------------------------
 	 */
 
-	Vector empty(uint n)
-	{
-		Vector np(n);
-		return np;
-	}
+	
 
 	Matrix empty(uint ncol, uint nrow)
 	{
@@ -61,15 +57,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector zeros(uint n)
-	{
-		Vector np(n);
-		if (!_fill_array_(np.data, n, 0.0))
-		{
-			throw std::invalid_argument("Fill Error");
-		}
-		return np;
-	}
+	
 
 	Matrix zeros(uint ncol, uint nrow)
 	{
@@ -81,15 +69,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector ones(uint n)
-	{
-		Vector np(n);
-		if (!_fill_array_(np.data, n, 1.0))
-		{
-			throw std::invalid_argument("Fill Error");
-		}
-		return np;
-	}
+	
 
 	Matrix ones(uint ncol, uint nrow)
 	{
@@ -101,15 +81,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector fill(uint n, double val)
-	{
-		Vector np(n);
-		if (!_fill_array_(np.data, n, val))
-		{
-			throw std::invalid_argument("Fill Error");
-		}
-		return np;
-	}
+	
 
 	Matrix fill(uint ncol, uint nrow, double val)
 	{
@@ -140,16 +112,7 @@ namespace numpy {
 		return strg;
 	}
 
-	char* str(const Vector& rhs, uint dpoints)
-	{
-		unsigned int str_len = _str_length_gen_(rhs.data, rhs.n, dpoints);
-		char *strg = new char[str_len];
-		if (!_str_representation_(strg, rhs.data, rhs.n, dpoints, 1))
-		{
-			throw std::invalid_argument("Problem with creating string representation");
-		}
-		return strg;
-	}
+	
 
 	char* str(const Matrix& rhs, uint dpoints)
 	{
@@ -179,46 +142,11 @@ namespace numpy {
 		return strg;
 	}
 
-	uint len(const Vector& rhs)
-	{
-		return rhs.n;
-	}
+	
 
-	Vector array(const char *input)
-	{
-		if (input == null)
-		{
-			throw std::invalid_argument("input must not be null");
-		}
-		int n = strlen(input);
-		Vector np;
-		// now we somehow parse the string
-		if (n > -1)
-		{
-			double *vals = _parse_string_to_array_(input, &n);
-			if (vals == null)
-			{
-				throw std::runtime_error("Unable to parse string into array");
-			}
-			np.data = vals;
-			np.n = n;
-		} else {
-			throw std::range_error("n must be > -1");
-		}
-		return np;
-	}
+	
 
-	Vector copy(const Vector& rhs)
-	{
-		Vector np(rhs.n);
-		if (!_copy_array_(np.data, rhs.data, rhs.n))
-		{
-			throw std::invalid_argument("copy failed!");
-		}
-		np.column = rhs.column;
-		np.flag_delete = rhs.flag_delete;
-		return np;
-	}
+	
 
 	Matrix copy(const Matrix& rhs)
 	{
@@ -242,46 +170,9 @@ namespace numpy {
 		return m;
 	}
 
-	Vector vectorize(const Matrix& rhs, uint axis)
-	{
-		Vector np(rhs.nvec*rhs.vectors[0]->n);
-		if (axis == 0)
-		{
-		#ifdef _OPENMP
-			#pragma omp parallel for if(rhs.nvec>100000) schedule(static)
-		#endif
-			for (uint y = 0; y < rhs.nvec; y++)
-			{
-				for (uint x = 0; x < rhs.vectors[y]->n; x++)
-				{
-					np.data[x+y*rhs.vectors[y]->n] = rhs.vectors[y]->data[x];
-				}
-			}
-		} else if (axis == 1)
-		{
-		#ifdef _OPENMP
-			#pragma omp parallel for if(rhs.vectors[0]->n>100000) schedule(static)
-		#endif
-			for (uint x = 0; x < rhs.vectors[0]->n; x++)
-			{
-				for (uint y = 0; y < rhs.nvec; y++)
-				{
-					np.data[y+x*rhs.nvec] = rhs.vectors[y]->data[x];
-				}
-			}
-		} else {
-			throw std::invalid_argument("axis must be 0 or 1.");
-		}
-		return np;
-	}
+	
 
-	Vector nonzero(const Vector& rhs)
-	{
-		int cnz = _count_nonzero_array_(rhs.data, rhs.n);
-		Vector np(cnz);
-		_nonzero_array_(np.data, rhs.data, rhs.n);
-		return np;
-	}
+	
 
 	Vector nonzero(const Matrix& rhs)
 	{
@@ -325,19 +216,7 @@ namespace numpy {
 		return hstack(newunique, counts);
 	}
 
-	Vector flip(const Vector& rhs)
-	{
-		Vector np(rhs.n);
-		uint i;
-	#ifdef _OPENMP
-		#pragma omp parallel for if(rhs.n>100000) schedule(static)
-	#endif
-		for (i = 0; i < rhs.n; i++)
-		{
-			np.data[i] = rhs.data[rhs.n-1-i];
-		}
-		return np;
-	}
+	
 
 	Matrix flip(const Matrix& rhs, uint axis)
 	{
@@ -370,35 +249,9 @@ namespace numpy {
 		return result;
 	}
 
-	Vector vstack(const Vector& lhs, const Vector& rhs)
-	{
-		Vector np(lhs.n + rhs.n);
-		for (uint i = 0; i < lhs.n; i++)
-		{
-			np.data[i] = lhs.data[i];
-		}
-		for (uint i = 0; i < rhs.n; i++)
-		{
-			np.data[i+lhs.n] = rhs.data[i];
-		}
-		return np;
-	}
-
-	Vector empty_like(const Vector& rhs)
-	{
-		return Vector(rhs.n);
-	}
-
 	Matrix empty_like(const Matrix& rhs)
 	{
 		return Matrix(rhs.nvec, rhs.vectors[0]->n);
-	}
-
-	Vector zeros_like(const Vector& rhs)
-	{
-		Vector np(rhs.n);
-		_fill_array_(np.data, np.n, 0.0);
-		return np;
 	}
 
 	Matrix zeros_like(const Matrix& rhs)
@@ -408,13 +261,6 @@ namespace numpy {
 		return res;
 	}
 
-	Vector ones_like(const Vector& rhs)
-	{
-		Vector np(rhs.n);
-		_fill_array_(np.data, np.n, 1.0);
-		return np;
-	}
-
 	Matrix ones_like(const Matrix& rhs)
 	{
 		Matrix res(rhs.nvec, rhs.vectors[0]->n);
@@ -422,23 +268,7 @@ namespace numpy {
 		return res;
 	}
 
-	Vector rand(uint n)
-	{
-		if (n == 0)
-		{
-			throw std::range_error("n cannot = 0");
-		}
-		Vector np(n);
-		srand48(time(NULL));
-	#ifdef _OPENMP
-		#pragma omp parallel for if(n>100000) schedule(static)
-	#endif
-		for (uint i = 0; i < n; i++)
-		{
-			np.data[i] = drand48();
-		}
-		return np;
-	}
+	
 
 	Matrix rand(uint ncol, uint nrow)
 	{
@@ -459,19 +289,7 @@ namespace numpy {
 	}
 
 	// with sd = 1.0, mean = 0.0
-	Vector randn(uint n)
-	{
-		if (n == 0)
-		{
-			throw std::range_error("n cannot = 0");
-		}
-		Vector np(n);
-		if (!_normal_distrib_(np.data, n, 0.0, 1.0))
-		{
-			throw std::invalid_argument("Error with creating normal distribution");
-		}
-		return np;
-	}
+	
 
 	Matrix randn(uint ncol, uint nrow)
 	{
@@ -487,19 +305,7 @@ namespace numpy {
 		return res;
 	}
 
-	Vector normal(uint n, double mean, double sd)
-	{
-		if (n == 0)
-		{
-			throw std::range_error("n cannot = 0");
-		}
-		Vector np(n);
-		if (!_normal_distrib_(np.data, n, mean, sd))
-		{
-			throw std::invalid_argument("Error with creating normal distribution");
-		}
-		return np;
-	}
+	
 
 	Matrix normal(uint ncol, uint nrow, double mean, double sd)
 	{
@@ -515,28 +321,7 @@ namespace numpy {
 		return res;
 	}
 
-	Vector randint(uint n, uint max)
-	{
-		if (n == 0)
-		{
-			throw std::range_error("n cannot = 0");
-		}
-		if (max == 0)
-		{
-			throw std::range_error("max cannot = 0");
-		}
-		srand48(time(NULL));
-		Vector np(n);
-	#ifdef _OPENMP
-		#pragma omp parallel for if(n>100000) schedule(static)
-	#endif
-		for (uint i = 0; i < n; i++)
-		{
-			np.data[i] = drand48() * max;
-		}
-		np.ceil();
-		return np;
-	}
+	
 
 	Matrix randint(uint ncol, uint nrow, uint max)
 	{
@@ -562,41 +347,6 @@ namespace numpy {
 			throw std::invalid_argument("Unable to ceil array");
 		}
 		return res;
-	}
-
-	Vector randchoice(uint n, const char *values)
-	{
-		if (n == 0)
-		{
-			throw std::range_error("n cannot = 0");
-		}
-		if (values == null)
-		{
-			throw std::invalid_argument("input must not be null");
-		}
-		int strn = strlen(values);
-		Vector np(n);
-		// now we somehow parse the string
-
-		double *vals = _parse_string_to_array_(values, &strn);
-		if (vals == null)
-		{
-			throw std::runtime_error("Unable to parse string into array");
-		}
-		srand48(time(NULL));
-	#ifdef _OPENMP
-		#pragma omp parallel for if(n>100000) schedule(static)
-	#endif
-		for (uint i = 0; i < n; i++)
-		{
-			// create random float
-			double idx_f = drand48() * strn;
-			// pass to an array and floor it (i.e 2.90 becomes 2, an index for values*)
-			int idx = (int) _truncate_doub_(idx_f, 0);
-			// set data using index and values
-			np.data[i] = vals[idx];
-		}
-		return np;
 	}
 
 	Matrix randchoice(uint ncol, uint nrow, const char* values)
@@ -639,134 +389,9 @@ namespace numpy {
 		return (uint) _binomial_coefficient_(n,p);
 	}
 
-	Vector binomial(const Vector& n, const Vector& p)
-	{
-		if (n.n != p.n)
-		{
-			throw std::range_error("n and p vectors must be same length");
-		}
-		Vector np(n.n);
-	#ifdef _OPENMP
-		#pragma omp parallel for if(n.n>100000) schedule(static) shared(n,p)
-	#endif
-		for (uint i = 0; i < n.n; i++)
-		{
-			np.data[i] = _binomial_coefficient_(n.data[i], p.data[i]);
-		}
-		return np;
-	}
-
 	long poisson(double lam)
 	{
 		return _poisson_coefficient_(lam);
-	}
-
-	Vector poisson(const Vector& lam)
-	{
-		Vector res = empty_like(lam);
-		for (uint i = 0; i < lam.n; i++)
-		{
-			res.data[i] = _poisson_coefficient_(lam.data[i]);
-		}
-		return res;
-	}
-
-	Vector arange(double start, double end, double step)
-	{
-		if (step <= 0)
-		{
-			throw std::range_error("step cannot be <= 0");
-		}
-		if (start > end)
-		{
-			//swap them
-			double temp = start;
-			start = end;
-			end = temp;
-		}
-		uint n = (uint) ((end - start) / step) + 1;
-		Vector np(n);
-		np.data[0] = start;
-		np.data[n-1] = end;
-	#ifdef _OPENMP
-		#pragma omp parallel for default(none) shared(np,n,start,step) if(n>100000) schedule(static)
-	#endif
-		for (uint i = 1; i < n-1; i++)
-		{
-			np.data[i] = start + step * i;
-		}
-		return np;
-	}
-
-	Vector linspace(double start, double end, uint n)
-	{
-		if (n == 0)
-		{
-			throw std::invalid_argument("n cannot be <= 0");
-		}
-		if (start > end)
-		{
-			//swap them
-			double temp = start;
-			start = end;
-			end = temp;
-		}
-		Vector np(n);
-		np.data[0] = start;
-		np.data[n-1] = end;
-		double step = (end-start) / (n-1);
-	#ifdef _OPENMP
-		#pragma omp parallel for default(none) shared(np,n,start,step) if(n>100000) schedule(static)
-	#endif
-		for (uint i = 1; i < n-1; i++)
-		{
-			np.data[i] = start + step * i;
-		}
-		return np;
-	}
-
-	Vector logspace(double start, double end, uint n)
-	{
-		Vector np = linspace(start, end, n);
-		_pow_base_array_(np.data, np.n, 10.0);
-		return np;
-	}
-
-	Vector lstrip(const Vector& rhs, uint idx)
-	{
-		if (idx == 0)
-		{
-			throw std::invalid_argument("idx cannot be <= 0");
-		}
-		if (idx >= rhs.n)
-		{
-			throw std::range_error("idx cannot be > rhs size");
-		}
-		Vector np(rhs.n - idx);
-		_copy_array_(np.data, rhs.data+idx, rhs.n-idx);
-		return np;
-	}
-
-	Vector rstrip(const Vector& rhs, uint idx)
-	{
-		if (idx == 0)
-		{
-			throw std::invalid_argument("idx cannot be <= 0");
-		}
-		if (idx >= rhs.n)
-		{
-			throw std::range_error("idx cannot be > rhs size");
-		}
-		Vector np(idx+1);
-		_copy_array_(np.data, rhs.data, idx+1);
-		return np;
-	}
-
-	Vector clip(const Vector& rhs, double a_min, double a_max)
-	{
-		Vector np = copy(rhs);
-		_clip_array_(np.data, np.n, a_min, a_max);
-		return np;
 	}
 
 	Matrix clip(const Matrix& rhs, double a_min, double a_max)
@@ -776,15 +401,7 @@ namespace numpy {
 		return res;
 	}
 
-	Vector floor(const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		if (!_floor_array_(np.data, np.n))
-		{
-			throw std::invalid_argument("Unable to floor array.");
-		}
-		return np;
-	}
+	
 
 	Matrix floor(const Matrix& rhs)
 	{
@@ -796,15 +413,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector ceil(const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		if (!_ceil_array_(np.data, np.n))
-		{
-			throw std::invalid_argument("Unable to ceil array.");
-		}
-		return np;
-	}
+	
 
 	Matrix ceil(const Matrix& rhs)
 	{
@@ -816,10 +425,7 @@ namespace numpy {
 		return m;
 	}
 
-	int count(const Vector& rhs, double value)
-	{
-		return _count_array_(rhs.data, rhs.n, value);
-	}
+	
 
 	int count(const Matrix& rhs, double value)
 	{
@@ -852,20 +458,7 @@ namespace numpy {
 		}
 	}
 
-	bool isColumn(const Vector& rhs)
-	{
-		return rhs.column;
-	}
 
-	bool isRow(const Vector& rhs)
-	{
-		return ! rhs.column;
-	}
-
-	int count_nonzero(const Vector& rhs)
-	{
-		return _count_nonzero_array_(rhs.data, rhs.n);
-	}
 
 	int count_nonzero(const Matrix& rhs)
 	{
@@ -896,12 +489,7 @@ namespace numpy {
 		}
 	}
 
-	Vector abs(const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		_absolute_array_(np.data, np.n);
-		return np;
-	}
+	
 
 	Matrix abs(const Matrix& rhs)
 	{
@@ -910,10 +498,7 @@ namespace numpy {
 		return res;
 	}
 
-	double sum(const Vector& rhs)
-	{
-		return _summation_array_(rhs.data, rhs.n);
-	}
+	
 
 	double sum(const Matrix& rhs)
 	{
@@ -945,10 +530,7 @@ namespace numpy {
 
 	}
 
-	double prod(const Vector& rhs)
-	{
-		return _prod_array_(rhs.data, rhs.n);
-	}
+	
 
 	double prod(const Matrix& rhs)
 	{
@@ -979,15 +561,7 @@ namespace numpy {
 		}
 	}
 
-	Vector cumsum(const Vector& rhs)
-	{
-		Vector np = zeros(rhs.n);
-		if (!_cumulative_sum_(np.data, rhs.data, rhs.n))
-		{
-			throw std::invalid_argument("cumsum failed!");
-		}
-		return np;
-	}
+	
 
 	Matrix cumsum(const Matrix& rhs, uint axis)
 	{
@@ -1025,19 +599,7 @@ namespace numpy {
 		}
 	}
 
-	Vector adjacsum(const Vector& rhs)
-	{
-		// Default - Does not wrap adjacency.
-
-		Vector np(rhs.n);
-		np.data[0] = rhs.data[0] + rhs.data[1];
-		np.data[rhs.n-1] = rhs.data[rhs.n-1] + rhs.data[rhs.n-2];
-		for (uint i = 1; i < rhs.n-1; i++)
-		{
-			np.data[i] = rhs.data[i] + rhs.data[i-1] + rhs.data[i+1];
-		}
-		return np;
-	}
+	
 
 	Matrix adjacsum(const Matrix& rhs)
 	{
@@ -1072,50 +634,23 @@ namespace numpy {
 		return m;
 	}
 
-	Vector cumprod(const Vector& rhs)
-	{
-		Vector np = ones(rhs.n);
-		if (!_cumulative_prod_(np.data, rhs.data, rhs.n))
-		{
-			throw std::invalid_argument("cumprod failed!");
-		}
-		return np;
-	}
+	
 
-	double trapz(const Vector& y, const Vector& x, double dx)
-	{
-		double total = 0.0;
-		for (uint i = 1; i < y.n-1; i++)
-		{
-			total += 2*y.data[i];
-		}
-		return (dx/2) * (y.data[0] + total + y.data[y.n-1]);
-	}
-
-	bool all(const Vector& rhs)
-	{
-		return _all_true_(rhs.data, rhs.n);
-	}
+	
 
 	bool all(const Matrix& rhs)
 	{
 		return _all_true_(rhs.data, rhs.nvec*rhs.vectors[0]->n);
 	}
 
-	bool any(const Vector& rhs)
-	{
-		return _any_true_(rhs.data, rhs.n);
-	}
+	
 
 	bool any(const Matrix& rhs)
 	{
 		return _any_true_(rhs.data, rhs.nvec*rhs.vectors[0]->n);
 	}
 
-	double min(const Vector& rhs)
-	{
-		return _min_value_(rhs.data, rhs.n);
-	}
+	
 
 	double min(const Matrix& rhs)
 	{
@@ -1146,10 +681,7 @@ namespace numpy {
 		}
 	}
 
-	double max(const Vector& rhs)
-	{
-		return _max_value_(rhs.data, rhs.n);
-	}
+	
 
 	double max(const Matrix& rhs)
 	{
@@ -1180,10 +712,7 @@ namespace numpy {
 		}
 	}
 
-	double mean(const Vector& rhs)
-	{
-		return sum(rhs) / rhs.n;
-	}
+	
 
 	Vector mean(const Matrix& rhs, uint axis)
 	{
@@ -1209,23 +738,9 @@ namespace numpy {
 		}
 	}
 
-	double median(const Vector& rhs, bool isSorted)
-	{
-		if (isSorted)
-		{
-			return rhs.data[rhs.n / 2];
-		}
-		else
-		{
-			Vector s = sort(rhs);
-			return s.data[s.n / 2];
-		}
-	}
+	
 
-	double std(const Vector& rhs)
-	{
-		return _std_array_(rhs.data, rhs.n);
-	}
+
 
 	Vector std(const Matrix& rhs, uint axis)
 	{
@@ -1251,10 +766,7 @@ namespace numpy {
 		}
 	}
 
-	double var(const Vector& rhs)
-	{
-		return _var_array_(rhs.data, rhs.n);
-	}
+
 
 	Vector var(const Matrix& rhs, uint axis)
 	{
@@ -1280,11 +792,7 @@ namespace numpy {
 		}
 	}
 
-	double cov(const Vector& v, const Vector& w)
-	{
-		return dot(v, w) / (v.n - 1);
-	}
-
+	
 	Matrix cov(const Matrix& A)
 	{
 		Matrix m = empty(A.nvec, A.nvec);
@@ -1333,10 +841,7 @@ namespace numpy {
 		return res;
 	}
 
-	uint argmin(const Vector& rhs)
-	{
-		return _min_index_(rhs.data, rhs.n);
-	}
+	
 
 	Vector argmin(const Matrix& rhs, uint axis)
 	{
@@ -1364,10 +869,7 @@ namespace numpy {
 		}
 	}
 
-	uint argmax(const Vector& rhs)
-	{
-		return _max_index_(rhs.data, rhs.n);
-	}
+	
 
 	Vector argmax(const Matrix& rhs, uint axis)
 	{
@@ -1395,27 +897,7 @@ namespace numpy {
 		}
 	}
 
-	double norm(const Vector& rhs, int order)
-	{
-		if (order == _ONE_NORM)
-		{
-			return _absolute_summation_array_(rhs.data, rhs.n);
-		} else if (order >= 2)
-		{
-			// Create a copy for the C function to use (to power data on)
-			Vector cp = copy(rhs);
-			// The Euclidean norm - the normal norm, or norm-2
-			return _vector2_norm_(cp.data, cp.n, order);
-		} else if (order == _INF_NORM)
-		{
-			// order = 3 - infinity norm
-			return max(rhs);
-		}
-		else
-		{
-			throw std::invalid_argument("order must be 1,2..,n or inf (-1)");
-		}
-	}
+	
 
 	double norm(const Matrix& rhs, int order)
 	{
@@ -1458,15 +940,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector diag(const Matrix& rhs)
-	{
-		Vector v = empty(rhs.nvec);
-		for (uint i = 0; i < rhs.nvec; i++)
-		{
-			v.data[i] = rhs.vectors[i]->data[i];
-		}
-		return v;
-	}
+	
 
 	Matrix tril(const Matrix& rhs, bool diag)
 	{
@@ -1524,20 +998,9 @@ namespace numpy {
 		return result;
 	}
 
-	double inner(const Vector& v, const Vector& w)
-	{
-		return dot(v, w);
-	}
+	
 
-	double dot(const Vector& lhs, const Vector& rhs)
-	{
-		if (lhs.n != rhs.n)
-		{
-			throw std::range_error("lhs must be the same size as the rhs vector");
-		}
-		// apparently the dot of column.row is the same result as column.column or row.row
-		return _vector_dot_array_(lhs.data, rhs.data, rhs.n);
-	}
+	
 
 	Vector dot(const Matrix& lhs, const Vector& rhs)
 	{
@@ -1582,17 +1045,9 @@ namespace numpy {
 		return m;
 	}
 
-	double magnitude(const Vector& v)
-	{
-		return _square_root_(dot(v, v));
-	}
+	
 
-	Vector normalized(const Vector& v)
-	{
-		Vector np = copy(v);
-		np *= (1.0 / magnitude(v));
-		return np;
-	}
+	
 
 	Matrix outer(const Vector& v, const Vector& w)
 	{
@@ -1613,19 +1068,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector cross(const Vector& v, const Vector& w)
-	{
-		if (v.n != 3 || w.n != 3)
-		{
-			throw std::logic_error("v and w must have a length == 3");
-		}
-		// 3d
-		double o1, o2, o3;
-		o1 = v.data[1] * w.data[2] - w.data[1] * v.data[2];
-		o2 = w.data[0] * v.data[2] - v.data[0] * w.data[2];
-		o3 = v.data[0] * w.data[1] - w.data[0] * v.data[1];
-		return Vector(o1, o2, o3);
-	}
+	
 
 	Matrix eye(uint ncol, uint nrow)
 	{
@@ -1773,15 +1216,7 @@ namespace numpy {
 		return x;
 	}
 
-	Vector sin(const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		if (!_sine_array_(np.data, np.n))
-		{
-			throw std::invalid_argument("Unable to sine-ify array.");
-		}
-		return np;
-	}
+	
 
 	Matrix sin(const Matrix& rhs)
 	{
@@ -1793,15 +1228,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector cos(const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		if (!_cos_array_(np.data, np.n))
-		{
-			throw std::invalid_argument("Unable to cos-ify array.");
-		}
-		return np;
-	}
+	
 
 	Matrix cos(const Matrix& rhs)
 	{
@@ -1813,15 +1240,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector tan(const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		if (!_tan_array_(np.data, np.n))
-		{
-			throw std::invalid_argument("Unable to tan-ify array.");
-		}
-		return np;
-	}
+	
 
 	Matrix tan(const Matrix& rhs)
 	{
@@ -1833,15 +1252,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector to_radians(const Vector& rhs)
-	{
-		Vector v = copy(rhs);
-		if (!_to_radians_array_(v.data, v.n))
-		{
-			throw std::invalid_argument("Unable to convert to radians.");
-		}
-		return v;
-	}
+	
 
 	Matrix to_radians(const Matrix& rhs)
 	{
@@ -1853,15 +1264,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector to_degrees(const Vector& rhs)
-	{
-		Vector v = copy(rhs);
-		if (!_to_degrees_array_(v.data, v.n))
-		{
-			throw std::invalid_argument("Unable to convert to degrees.");
-		}
-		return v;
-	}
+	
 
 	Matrix to_degrees(const Matrix& rhs)
 	{
@@ -1873,15 +1276,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector exp(const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		if (!_exp_array_(np.data, np.n))
-		{
-			throw std::invalid_argument("Unable to exp-ify array.");
-		}
-		return np;
-	}
+	
 
 	Matrix exp(const Matrix& rhs)
 	{
@@ -1893,15 +1288,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector log(const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		if (!_log10_array_(np.data, np.n))
-		{
-			throw std::invalid_argument("Unable to log-ify array.");
-		}
-		return np;
-	}
+	
 
 	Matrix log(const Matrix& rhs)
 	{
@@ -1913,15 +1300,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector sqrt(const Vector& rhs)
-	{
-		Vector np = copy(rhs);
-		if (!_pow_array_(np.data, np.n, 0.5))
-		{
-			throw std::invalid_argument("Unable to sqrt-ify array.");
-		}
-		return np;
-	}
+	
 
 	Matrix sqrt(const Matrix& rhs)
 	{
@@ -1933,68 +1312,7 @@ namespace numpy {
 		return m;
 	}
 
-	Vector radians(const Vector& rhs)
-	{
-		Vector np(rhs.n);
-		for (uint i = 0; i < rhs.n; i++)
-		{
-			np.data[i] = rhs.data[i] * (M_PI / 180);
-		}
-		return np;
-	}
-
-	Vector degrees(const Vector& rhs)
-	{
-		Vector np(rhs.n);
-		for (uint i = 0; i < rhs.n; i++)
-		{
-			np.data[i] = rhs.data[i] * (180 / M_PI);
-		}
-		return np;
-	}
-
-	Vector power(double base, const Vector& exponent)
-	{
-		Vector np(exponent.n);
-		for (uint i = 0; i < np.n; i++)
-		{
-			np.data[i] = pow(base, exponent.data[i]);
-		}
-		return np;
-	}
-	Vector power(const Vector& base, double exponent)
-	{
-		Vector np = copy(base);
-		if (!_pow_array_(np.data, np.n, exponent))
-		{
-			throw std::invalid_argument("Unable to exp-ify array.");
-		}
-		return np;
-	}
-	Vector power(const Vector& base, const Vector& exponent)
-	{
-		if (base.n != exponent.n)
-		{
-			throw std::invalid_argument("base size and exponent size must be equal");
-		}
-		Vector np(base.n);
-	#ifdef _OPENMP
-		#pragma omp parallel for schedule(static) if(np.n>100000)
-	#endif
-		for (uint i = 0; i < np.n; i++)
-		{
-			np.data[i] = pow(base.data[i], exponent.data[i]);
-		}
-		return np;
-	}
-
-	Vector transpose(const Vector& rhs)
-	{
-		// we essentially do nothing apart from create a copy
-		Vector np = copy(rhs);
-		np.column = !np.column;
-		return np;
-	}
+	
 
 	Matrix transpose(const Matrix& rhs)
 	{
@@ -2029,16 +1347,7 @@ namespace numpy {
 
 	}
 
-	Vector sort(const Vector& rhs, uint sorter)
-	{
-		Vector np = copy(rhs);
-		_quicksort_(np.data, 0, np.n-1);
-		if (sorter == SORT_DESCEND)
-		{
-			np.flip();
-		}
-		return np;
-	}
+	
 
 	Matrix sort(const Matrix& rhs, uint axis, uint sorter)
 	{
@@ -2086,47 +1395,7 @@ namespace numpy {
 		return result;
 	}
 
-	Vector rotate_vector2d(const Vector& v, double degrees)
-	{
-		if (v.n != 2)
-		{
-			throw std::invalid_argument("v must be of length 2!");
-		}
-		degrees = DEG2RAD(degrees);
-		double s = _sine_(degrees);
-		double c = _cosine_(degrees);
-
-		Vector np = empty(2);
-		np.data[0] = (v.data[0] * c) - (v.data[1] * s);
-		np.data[1] = (v.data[0] * s) + (v.data[1] * c);
-		return np;
-	}
-
-	double angle(const Vector& l, const Vector& r)
-	{
-		return acosf(dot(l, r) / sqrtf(dot(l,l) * dot(r,r)));
-	}
-
-	Vector project(const Vector& length, const Vector& direction)
-	{
-		if (length.n != direction.n)
-		{
-			throw std::invalid_argument("length and direction size must be the same!");
-		}
-		double d = dot(length, direction);
-		double mag_sq = dot(direction, direction);
-		return (direction * (d / mag_sq));
-	}
-
-	Vector perpendicular(const Vector& length, const Vector& dir)
-	{
-		return length - project(length, dir);
-	}
-
-	Vector reflection(const Vector& source, const Vector& normal)
-	{
-		return source - normal * (dot(source, normal) * 2.0);
-	}
+	
 
 }
 
