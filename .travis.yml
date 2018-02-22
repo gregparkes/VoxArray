@@ -1,14 +1,6 @@
 sudo: false
 language: cpp
 
-addons:
-	apt:
-		sources:
-		- ubuntu-toolchain-r-test
-
 script:
 - cd src/
 - make clean && make && ./test_numpy
-
-notifications:
-	email: false
