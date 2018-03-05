@@ -180,15 +180,7 @@ namespace numpy {
 
     uint Mask::sum()
     {
-    	uint count = 0;
-    	for (uint i = 0; i < n; i++)
-    	{
-    		if (data[i])
-    		{
-    			count++;
-    		}
-    	}
-    	return count;
+    	return (uint) (_boolean_summation_array_(data, n));
     }
 
     double Mask::mean()

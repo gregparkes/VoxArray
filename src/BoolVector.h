@@ -153,11 +153,11 @@ class Mask
 
         Mask& operator|(const Mask& rhs);
 
-    private:
+    /* ----------------- PUBLIC VARIABLES -------------------------- */
 
-        bool *data;
-        uint n;
-        bool flag_delete;
+    bool *data;
+    uint n;
+    bool flag_delete;
 
 };  
 

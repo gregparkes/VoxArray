@@ -148,6 +148,36 @@ namespace numpy {
 	Vector copy(const Vector& rhs);
 
 	/**
+	 Selects values from array a using selected indices (converted to integer)
+
+	 @param a : the array to take from
+	 @param indices : the (integer) array containing indices (not deleted)
+	 @param size : the size of the indices array being pointed to
+	 @return The selected indices <created on the stack>
+	*/
+	Vector take(const Vector& a, const uint* indices, uint size);
+
+	/**
+	 Selects values from array a using selected indices (converted to integer)
+
+	 @param a : the array to take from
+	 @param indices : the (integer) array containing indices
+	 @return The selected indices <created on the stack>
+	*/
+	Vector take(const Vector& a, const Vector& indices);
+
+	/**
+	 Takes elements from array based on a boolean mask. Can also use vector[mask].
+	 
+	 @param a : the vector to search in
+	 @param m : the mask to apply (true or false) in order to extract elements.
+	 @param keep_shape : if false, drops the false values, else sets them to 0 but 
+	 	maintains vector shape (still copies)
+	 @return The selected subarray <created on the stack>
+	*/
+	Vector where(const Vector& a, const Mask& m, bool keep_shape=false);
+
+	/**
 	 Creates a vector with random floats of uniform distribution
 	 distribution N[0, 1].
 
@@ -224,6 +254,8 @@ namespace numpy {
 	/**
 	 Returns a random sample of items from the vector.
 
+	 *WARNING* may NOT return the exact size sample as n - more reliable with larger vectors.
+
 	 @param rhs : the vector to sample from
 	 @param n : number of samples to take
 	 @return Sample vector <created on the stack>
@@ -268,6 +300,17 @@ namespace numpy {
 	@return The new array object <created on the stack>
 	 */
 	Vector vstack(const Vector& lhs, const Vector& rhs);
+
+	/**
+	 Concatenates two arrays together, flattening to 1-D.
+
+	 e.g np.concat([1.0, 2.0], [3.0, 4.0]) = np([1.0, 2.0, 3.0, 4.0])
+
+	 @param lhs : the left-hand side vector
+	 @param rhs : the right-hand side vector
+	 @return The new array object <created on the stack> 
+	*/
+	Vector concat(const Vector& lhs, const Vector& rhs);
 
 	/**
 	 Creates a vector with evenly-spaced elements from
@@ -943,6 +986,8 @@ class Vector
 		 */
 		inline bool isRow() { return !column; }
 
+		inline double& ix(int idx) { return data[idx]; }
+
 	/********************************************************************************************
 
 		OTHER FUNCTIONS 
@@ -1256,6 +1301,10 @@ class Vector
 
 		// direct indexing
 		inline double& operator[](int idx) { return data[idx]; }
+
+		// indirect indexing using masks - use a copy
+		Vector operator[](const Mask& m);
+
 		// indexing using the select struct
 
 		Vector& operator+=(const Vector& rhs);
@@ -1270,6 +1319,33 @@ class Vector
 		Vector& operator/=(const Vector& rhs);
 		Vector& operator/=(double value);
 		Vector& operator/=(int value);
+
+		/* ------------------- Mask Selector Query FUNCTION CHAINING ------------------------- */
+
+		// less than <
+		Mask lt(const Vector& r);
+		Mask lt(double value);
+		Mask lt(int value);
+		// less than or equals <=
+		Mask lte(const Vector& r);
+		Mask lte(double value);
+		Mask lte(int value);
+		// more than >
+		Mask mt(const Vector& r);
+		Mask mt(double value);
+		Mask mt(int value);
+		// more than or equal >=
+		Mask mte(const Vector& r);
+		Mask mte(double value);
+		Mask mte(int value);
+		// equal ==
+		Mask eq(const Vector& r);
+		Mask eq(double value);
+		Mask eq(int value);
+		// not equal !=
+		Mask neq(const Vector& r);
+		Mask neq(double value);
+		Mask neq(int value);
 
 	// variables to be publicly accessed.?
 

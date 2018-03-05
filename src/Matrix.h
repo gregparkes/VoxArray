@@ -445,6 +445,22 @@ class Matrix
 		Matrix& sort(uint axis = 0, uint sorter = SORT_ASCEND);
 
 		/**
+		 Sort the matrix row/column-wise by a single row/column's values
+
+		 e.g sort_by(0, 0)
+
+		 [[1, 2, 2],	 [[3, 0, 0],
+		  [2, 2, 1], ->   [2, 2, 1],
+		  [3, 0, 0]]	  [1, 2, 2]]
+
+		 @param index : the index to sort on
+		 @param axis (optional) : either 0 (column-wise) or 1 (row-wise)
+		 @param sorter (optional) : indicates which direction to sort the values, ascending or descending.
+		 @return The reference to this object. <object not created>
+		*/
+		Matrix& sort_by(uint index, uint axis = 0, uint sorter = SORT_ASCEND);
+
+		/**
 		 * OPERATOR OVERLOADS
 		 */
 

@@ -12,6 +12,7 @@
 #include <cstring>
 
 #include "Vector.h"
+#include "BoolVector.h"
 #include "Matrix.h"
 #include "numstatic.cpp"
 
@@ -135,6 +136,65 @@ namespace numpy {
 		return np;
 	}
 
+	Vector take(const Vector& a, const uint* indices, uint size)
+	{
+		if (indices == NULL)
+		{
+			throw std::invalid_argument("indices must be an array!");
+		}
+		if (size <= 0)
+		{
+			throw std::invalid_argument("indices array must be > 0");
+		}
+		Vector res = empty(size);
+		if (!_copy_from_index_array_(res.data, a.data, (double*) indices, size))
+		{
+			throw std::invalid_argument("Unable to copy from index vector in 'take()'.");
+		}
+		return res;
+	}
+
+	Vector take(const Vector& a, const Vector& indices)
+	{
+		// our maximum index cannot be greater than the size!
+		if (max(indices) >= a.n)
+		{
+			std::invalid_argument("Max IDX cannot be >= the size of our array");
+		}
+		Vector res = empty_like(indices);
+		if (!_copy_from_index_array_(res.data, a.data, indices.data, res.n))
+		{
+			throw std::invalid_argument("Unable to copy from index vector in 'take()'.");
+		}
+		return res;
+	}
+
+	Vector where(const Vector& a, const Mask& m, bool keep_shape)
+	{
+		if (a.n != m.n)
+		{
+			std::invalid_argument("array and mask must be the same size!");
+		}
+		// calculate the new size of out array if not keep shape
+		uint newn = 0;
+		if (keep_shape)
+		{
+			newn = a.n;
+		}
+		else
+		{
+			newn = _boolean_summation_array_(m.data, m.n);
+		}
+		// create new results vector
+		Vector res = empty(newn);
+		// if we keep the shape, simply copy across and set to 0. - else keep_shape returns resdata
+		if (!_copy_from_mask_array_(res.data, a.data, m.data, m.n, keep_shape))
+		{
+			throw std::invalid_argument("Unable to copy from mask vector in 'where()'.");
+		}
+		return res;
+	}
+
 	Vector rand(uint n)
 	{
 		if (n == 0)
@@ -239,6 +299,18 @@ namespace numpy {
 		{
 			res.data[i] = _poisson_coefficient_(lam.data[i]);
 		}
+		return res;
+	}
+
+	Vector sample(const Vector& rhs, uint n)
+	{
+		// calculate the probability as a proportion of the size of the dataset
+		double probability = ((double) n / (double) rhs.n);
+		// generate uniform random vector
+		Vector urv = rand(rhs.n);
+		// select samples with value < probability; this conditional will generate a *MASK* object
+		// which immediately goes into the const Mask& property.
+		Vector res = where(urv, urv < probability);
 		return res;
 	}
 
@@ -1465,6 +1537,144 @@ namespace numpy {
 			np.data[i] = _c_power_(base.data[i], exponent.data[i]);
 		}
 		return np;
+	}
+
+	Mask operator==(const Vector& l, const Vector& r)
+	{
+		if (l.n != r.n)
+		{
+			throw std::range_error("l and r not same size!");
+		}
+		Mask res(l.n);
+		_element_equals_(res.data, l.data, r.data, l.n);
+		return res;
+	}
+	Mask operator==(const Vector& l, double r)
+	{
+		Mask res(l.n);
+		_equals_array_(res.data, l.data, l.n, r);
+		return res;
+	}
+	Mask operator==(const Vector& l, int r)
+	{
+		Mask res(l.n);
+		_equals_array_(res.data, l.data, l.n, (double) r);
+		return res;
+	}
+
+	Mask operator!=(const Vector& l, const Vector& r)
+	{
+		if (l.n != r.n)
+		{
+			throw std::range_error("l and r not same size!");
+		}
+		Mask res(l.n);
+		_element_not_equals_(res.data, l.data, r.data, l.n);
+		return res;
+	}
+	Mask operator!=(const Vector& l, double r)
+	{
+		Mask res(l.n);
+		_not_equals_array_(res.data, l.data, l.n, r);
+		return res;
+	}
+	Mask operator!=(const Vector& l, int r)
+	{
+		Mask res(l.n);
+		_not_equals_array_(res.data, l.data, l.n, (double) r);
+		return res;
+	}
+
+	Mask operator<(const Vector& l, const Vector& r)
+	{
+		if (l.n != r.n)
+		{
+			throw std::range_error("l and r not same size!");
+		}
+		Mask res(l.n);
+		_element_less_than_(res.data, l.data, r.data, l.n, false);
+		return res;
+	}
+	Mask operator<(const Vector& l, double r)
+	{
+		Mask res(l.n);
+		_less_than_array_(res.data, l.data, l.n, r, false);
+		return res;
+	}
+	Mask operator<(const Vector& l, int r)
+	{
+		Mask res(l.n);
+		_less_than_array_(res.data, l.data, l.n, (double) r, false);
+		return res;
+	}
+
+	Mask operator<=(const Vector& l, const Vector& r)
+	{
+		if (l.n != r.n)
+		{
+			throw std::range_error("l and r not same size!");
+		}
+		Mask res(l.n);
+		_element_less_than_(res.data, l.data, r.data, l.n, true);
+		return res;
+	}
+	Mask operator<=(const Vector& l, double r)
+	{
+		Mask res(l.n);
+		_less_than_array_(res.data, l.data, l.n, r, true);
+		return res;
+	}
+	Mask operator<=(const Vector& l, int r)
+	{
+		Mask res(l.n);
+		_less_than_array_(res.data, l.data, l.n, (double) r, true);
+		return res;
+	}
+
+	Mask operator>(const Vector& l, const Vector& r)
+	{
+		if (l.n != r.n)
+		{
+			throw std::range_error("l and r not same size!");
+		}
+		Mask res(l.n);
+		_element_greater_than_(res.data, l.data, r.data, l.n, false);
+		return res;
+	}
+	Mask operator>(const Vector& l, double r)
+	{
+		Mask res(l.n);
+		_greater_than_array_(res.data, l.data, l.n, r, false);
+		return res;
+	}
+	Mask operator>(const Vector& l, int r)
+	{
+		Mask res(l.n);
+		_greater_than_array_(res.data, l.data, l.n, (double) r, false);
+		return res;
+	}
+
+	Mask operator>=(const Vector& l, const Vector& r)
+	{
+		if (l.n != r.n)
+		{
+			throw std::range_error("l and r not same size!");
+		}
+		Mask res(l.n);
+		_element_greater_than_(res.data, l.data, r.data, l.n, true);
+		return res;
+	}
+	Mask operator>=(const Vector& l, double r)
+	{
+		Mask res(l.n);
+		_greater_than_array_(res.data, l.data, l.n, r, true);
+		return res;
+	}
+	Mask operator>=(const Vector& l, int r)
+	{
+		Mask res(l.n);
+		_greater_than_array_(res.data, l.data, l.n, (double) r, true);
+		return res;
 	}
 
 	/********************************************************************************************

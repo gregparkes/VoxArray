@@ -839,29 +839,6 @@ namespace tests {
 		PRINT_STR("Test_Dot :: Passed");
 	}
 
-	static void test_indexing()
-	{
-		PRINT_STR("Start Indexing");
-		Numpy x = numpy::linspace(0.0, 5.0, 6);
-		//PRINT_STR(numpy::str(x));
-		assert(x[3] == 3.0);
-		Numpy y = x.select(3);
-		for (int i = 0; i < 3; i++)
-		{
-			assert(CMP(x[i], 3.0));
-		}
-		Numpy z = x.select($, $, -1);
-		//PRINT_STR(numpy::str(z));
-		Numpy ab = x.select($, 2);
-		//PRINT_STR(ab.str());
-		Numpy ac = x.select(2, $);
-		//PRINT_STR(numpy::str(ac));
-		Numpy ad = x.select(2, $, 2);
-		//PRINT_STR(numpy::str(ad));
-
-		PRINT_STR("Test_Indexing :: Passed");
-	}
-
 	static void test_sort()
 	{
 		PRINT_STR("Start Sort");
@@ -956,7 +933,6 @@ static void call_all_tests()
 	test_dot();
 	test_unique();
 	test_hstack();
-	//test_indexing();
 	test_sort();
 }
 

@@ -541,6 +541,81 @@ static int _matrix_copy_row_(double *copy, double *orig, unsigned int nvec, unsi
 	return 1;
 }
 
+/* Where copy must be the same size as indices, not orig */
+static int _copy_from_index_array_(double *copy, double *orig, double *indices, 
+	unsigned int size)
+{
+	if (copy == 0 || orig == 0 || indices == 0 || size == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for if(nvec>__OMP_OPT_VALUE__) schedule(static)
+#endif
+	for (i = 0; i < size; i++)
+	{
+		int idx = (int) indices[i];
+		if (idx > -1)
+		{
+			copy[i] = orig[idx];
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+static int _copy_from_mask_array_(double *copy, double *orig, bool *mask, unsigned int size,
+	bool keep_shape)
+{
+	if (copy == 0 || orig == 0 || mask == 0 || size == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+
+	if (keep_shape)
+	{
+#ifdef _OPENMP
+		#pragma omp parallel for if(nvec>__OMP_OPT_VALUE__) schedule(static)
+#endif
+		// size applies to copy, orig and mask
+		for (i = 0; i < size; i++)
+		{
+			if (mask[i])
+			{
+				// copy across if true
+				copy[i] = orig[i];
+			}
+			else
+			{
+				// default, set to 0
+				copy[i] = 0.0;
+			}
+		}
+	}
+	else
+	{
+		// now we know that SIZE applies to orig and mask, NOT to copy
+		unsigned int copy_idx = 0;
+#ifdef _OPENMP
+		#pragma omp parallel for if(nvec>__OMP_OPT_VALUE__) schedule(static)
+#endif
+		for (i = 0; i < size; i++)
+		{
+			if (mask[i])
+			{
+				// set to copy and increment copy_index
+				copy[copy_idx++] = orig[i];
+			}
+		}
+	}
+	return 1;
+}
+
 static int _rand_array_(double *arr, unsigned int n)
 {
 	if (n == 0 || arr == 0)
@@ -1189,9 +1264,8 @@ static int _pow_base_array_(double *arr, unsigned int n, double base)
 
 static double _vector2_norm_(double *arr, unsigned int n, unsigned int p = 2)
 {
-	_pow_array_(arr, n, p);
-	double sumpow = _summation_array_(arr, n);
-	return _c_power_(sumpow, 1/p);
+	_pow_array_(arr, n, (double) p);
+	return _c_power_(_summation_array_(arr, n), 1.0 / (double) p);
 }
 
 static void swap(double *a, double *b)
@@ -1448,6 +1522,90 @@ static double _eigenvalue_det_(double a, double b)
 
 */
 
+static int _equals_array_(bool *out, double *arr, unsigned int n, double value)
+{
+	if (out == 0 || arr == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		out[i] = CMP(arr[i], value);
+	}
+	return 1;
+}
+
+static int _not_equals_array_(bool *out, double *arr, unsigned int n, double value)
+{
+	if (out == 0 || arr == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		out[i] = !CMP(arr[i], value);
+	}
+	return 1;
+}
+
+static int _less_than_array_(bool *out, double *arr, unsigned int n, double value,
+	bool include_equals)
+{
+	if (out == 0 || arr == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		if (include_equals)
+		{
+			out[i] = (arr[i] <= value);
+		}
+		else
+		{
+			out[i] = (arr[i] < value);
+		}
+	}
+	return 1;
+}
+
+static int _greater_than_array_(bool *out, double *arr, unsigned int n, double value,
+	bool include_equals)
+{
+	if (out == 0 || arr == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		if (include_equals)
+		{
+			out[i] = (arr[i] >= value);
+		}
+		else
+		{
+			out[i] = (arr[i] > value);
+		}
+	}
+	return 1;
+}
+
 static int _add_array_(double *arr, unsigned int n, double value)
 {
 	if (arr == 0 || n == 0)
@@ -1589,6 +1747,90 @@ static int _element_div_(double *out, double *in, unsigned int n)
 			return 0;
 		} else {
 			out[i] /= in[i];
+		}
+	}
+	return 1;
+}
+
+static int _element_equals_(bool *out, double *left, double *right, unsigned int n)
+{
+	if (out == 0 || left == 0 || right == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		out[i] = CMP(left[i],right[i]);
+	}
+	return 1;
+}
+
+static int _element_not_equals_(bool *out, double *left, double *right, unsigned int n)
+{
+	if (out == 0 || left == 0 || right == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		out[i] = !CMP(left[i],right[i]);
+	}
+	return 1;
+}
+
+static int _element_less_than_(bool *out, double *left, double *right, unsigned int n,
+	bool include_equals)
+{
+	if (out == 0 || left == 0 || right == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		if (include_equals)
+		{
+			out[i] = (left[i] <= right[i]);
+		}
+		else
+		{
+			out[i] = (left[i] < right[i]);
+		}
+	}
+	return 1;
+}
+
+static int _element_greater_than_(bool *out, double *left, double *right, unsigned int n,
+	bool include_equals)
+{
+	if (out == 0 || left == 0 || right == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		if (include_equals)
+		{
+			out[i] = (left[i] >= right[i]);
+		}
+		else
+		{
+			out[i] = (left[i] > right[i]);
 		}
 	}
 	return 1;
