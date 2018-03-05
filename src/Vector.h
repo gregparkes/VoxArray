@@ -959,32 +959,6 @@ class Vector
 		char* str(uint dpoints = 5);
 
 		/**
-		 Indexes the vector and returns a splice of the selection.
-
-		 e.g select(3) returns all from element 3 onwards.
-		 	 select($) returns a copy
-
-		 @param start (optional) : indicates where to start copying from indexwise.
-		 @return The new select array <created on the stack>
-		 */
-		Vector select(uint start = $);
-
-		/**
-		 Indexes the vector and returns a splice of the selection.
-
-		 e.g select(3) returns all from element 3 onwards.
-			 select($, 6) returns all from 0 to 6
-			 select(3, $) returns all from 3 to n-1
-			 select(2, $, 2) returns all from 2 to n-1 skipping even elements
-
-		 @param start : indicates where to start copying from indexwise, or $ for all
-		 @param end : indicates which index to stop copying at, or $ for all
-		 @param step (optional) : indicates the step size, default is 1, will not accept $/0.
-		 @return The new select array <created on the stack>
-		 */
-		Vector select(uint start, uint end, int step = 1);
-
-		/**
 		 Copies an array object.
 
 		 @return The new array object. <created on the stack>

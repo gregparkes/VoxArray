@@ -115,21 +115,14 @@ class Mask
 
          @return The reference to this object. <object not created>
         */
-        Mask& logical_and();
+        Mask& logical_and(const Mask& rhs);
 
         /**
          Computes the logical_or of every element in the array
 
          @return The reference to this object. <object not created>
         */
-        Mask& logical_or();
-
-        /**
-         Computes the logical_xor of every element in the array
-
-         @return The reference to this object. <object not created>
-        */
-        Mask& logical_xor();
+        Mask& logical_or(const Mask& rhs);
 
         /**
          Calculate the sum of the true values present.
@@ -154,11 +147,11 @@ class Mask
 
         /* --------- OPERATOR OVERLOADS ---------------- */
 
-        Mask& operator!() const;
+        Mask& operator!();
 
-        Mask& operator&&(const Mask& rhs);
+        Mask& operator&(const Mask& rhs);
 
-        Mask& operator||(const Mask& rhs);
+        Mask& operator|(const Mask& rhs);
 
     private:
 

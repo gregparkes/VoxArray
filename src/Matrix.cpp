@@ -46,8 +46,8 @@ GNU General Public License:
 #include "Matrix.h"
 #include "numstatic.cpp"
 
+#define N_COLS (vectors[0]->n)
 #define BUFFSIZE(x) (x->nvec*x->vectors[0]->n)
-#define COLSIZE (this->vectors[0]->n)
 
 
 namespace numpy {
@@ -96,7 +96,7 @@ namespace numpy {
 
 	char* Matrix::str(uint dpoints)
 	{
-		uint str_len = _str_length_gen_(vectors[0]->data, COLSIZE, dpoints);
+		uint str_len = _str_length_gen_(vectors[0]->data, N_COLS, dpoints);
 		uint total_length = str_len + 2; // one at start, then \n and space
 		char* strg = new char[total_length*nvec+1];
 		char* ptr = strg;
@@ -126,14 +126,14 @@ namespace numpy {
 	{
 		// determine length of each integer in characters.
 		// then it's (int1,int2) so character lengths + 3, allocate memory
-		if (vectors[0]->n == 0 || nvec == 0)
+		if (N_COLS == 0 || nvec == 0)
 		{
 			throw std::invalid_argument("column or row length cannot = 0");
 		}
-		uint n_digit_row = _n_digits_in_int_(COLSIZE);
+		uint n_digit_row = _n_digits_in_int_(N_COLS);
 		uint n_digit_col = _n_digits_in_int_(nvec);
 		char* strg = new char[n_digit_row + n_digit_col + 4];
-		if (!_str_shape_func_(strg, COLSIZE, nvec, n_digit_row, n_digit_col,
+		if (!_str_shape_func_(strg, N_COLS, nvec, n_digit_row, n_digit_col,
 				n_digit_row + n_digit_col + 4))
 		{
 			throw std::invalid_argument("Problem with creating string representation");
@@ -143,12 +143,12 @@ namespace numpy {
 
 	uint Matrix::nfloats()
 	{
-		return (nvec * vectors[0]->n);
+		return (nvec * N_COLS);
 	}
 
 	Matrix Matrix::copy()
 	{
-		Matrix m(nvec, COLSIZE);
+		Matrix m(nvec, N_COLS);
 		uint nbyn = BUFFSIZE(this);
 		if (!_copy_array_(m.data, data, nbyn))
 		{
@@ -182,9 +182,9 @@ namespace numpy {
 		#endif
 			for (uint i = 0; i < nvec; i++)
 			{
-				for (uint j = 0; j < COLSIZE; j++)
+				for (uint j = 0; j < N_COLS; j++)
 				{
-					vectors[i]->data[j] = vectors[i]->data[vectors[0]->n-1-j];
+					vectors[i]->data[j] = vectors[i]->data[N_COLS-1-j];
 				}
 			}
 		} else
@@ -217,10 +217,10 @@ namespace numpy {
 			return res;
 		} else if (axis == 1)
 		{
-			Vector res(COLSIZE);
-			for (uint i = 0; i < COLSIZE; i++)
+			Vector res(N_COLS);
+			for (uint i = 0; i < N_COLS; i++)
 			{
-				res.data[i] = _matrix_rowwise_summation_(data, nvec, COLSIZE, i);
+				res.data[i] = _matrix_rowwise_summation_(data, nvec, N_COLS, i);
 			}
 			return res;
 		} else
@@ -246,8 +246,8 @@ namespace numpy {
 			return res;
 		} else if (axis == 1)
 		{
-			Vector res(COLSIZE);
-			for (uint i = 0; i < COLSIZE; i++)
+			Vector res(N_COLS);
+			for (uint i = 0; i < N_COLS; i++)
 			{
 				double total = 1.0;
 				for (uint j = 0; j < nvec; j++)
@@ -297,8 +297,8 @@ namespace numpy {
 		}
 		else if (axis == 1)
 		{
-			Vector v(COLSIZE);
-			for (uint i = 0; i < COLSIZE; i++)
+			Vector v(N_COLS);
+			for (uint i = 0; i < N_COLS; i++)
 			{
 				uint count = 0;
 				for (uint j = 0; j < nvec; j++)
@@ -335,10 +335,10 @@ namespace numpy {
 			return np;
 		} else if (axis == 1)
 		{
-			Vector np(COLSIZE);
-			for (uint i = 0; i < COLSIZE; i++)
+			Vector np(N_COLS);
+			for (uint i = 0; i < N_COLS; i++)
 			{
-				np.data[i] = _matrix_rowwise_count_nonzero_(data, nvec, COLSIZE, i);
+				np.data[i] = _matrix_rowwise_count_nonzero_(data, nvec, N_COLS, i);
 			}
 			return np;
 		} else
@@ -364,8 +364,8 @@ namespace numpy {
 			return v;
 		} else if (axis == 1)
 		{
-			Vector v(COLSIZE);
-			for (uint i = 0; i < COLSIZE; i++)
+			Vector v(N_COLS);
+			for (uint i = 0; i < N_COLS; i++)
 			{
 				v.data[i] = _matrix_rowwise_summation_(data, nvec, vectors[i]->n, i) / nvec;
 			}
@@ -388,8 +388,8 @@ namespace numpy {
 			return v;
 		} else if (axis == 1)
 		{
-			Vector v(COLSIZE);
-			for (uint i = 0; i < COLSIZE; i++)
+			Vector v(N_COLS);
+			for (uint i = 0; i < N_COLS; i++)
 			{
 				v.data[i] = _matrix_rowwise_std_(data, nvec, vectors[i]->n, i);
 			}
@@ -412,8 +412,8 @@ namespace numpy {
 			return v;
 		} else if (axis == 1)
 		{
-			Vector v(COLSIZE);
-			for (uint i = 0; i < COLSIZE; i++)
+			Vector v(N_COLS);
+			for (uint i = 0; i < N_COLS; i++)
 			{
 				v.data[i] = _matrix_rowwise_var_(data, nvec, vectors[i]->n, i);
 			}
@@ -477,10 +477,10 @@ namespace numpy {
 		}
 		else if (axis == 1)
 		{
-			Vector v(COLSIZE);
+			Vector v(N_COLS);
 			for (uint i = 0; i < v.n; i++)
 			{
-				v.data[i] = _matrix_rowwise_min_index_(data, nvec, COLSIZE, i);
+				v.data[i] = _matrix_rowwise_min_index_(data, nvec, N_COLS, i);
 			}
 			return v;
 		}
@@ -503,10 +503,10 @@ namespace numpy {
 		}
 		else if (axis == 1)
 		{
-			Vector v(COLSIZE);
+			Vector v(N_COLS);
 			for (uint i = 0; i < v.n; i++)
 			{
-				v.data[i] = _matrix_rowwise_max_index_(data, nvec, COLSIZE, i);
+				v.data[i] = _matrix_rowwise_max_index_(data, nvec, N_COLS, i);
 			}
 			return v;
 		}
@@ -533,10 +533,10 @@ namespace numpy {
 			return v;
 		} else if (axis == 1)
 		{
-			Vector v(vectors[0]->n);
-			for (uint i = 0; i < vectors[0]->n; i++)
+			Vector v(N_COLS);
+			for (uint i = 0; i < N_COLS; i++)
 			{
-				v.data[i] = _matrix_rowwise_min_value_(data, nvec, vectors[i]->n, i);
+				v.data[i] = _matrix_rowwise_min_value_(data, nvec, N_COLS, i);
 			}
 			return v;
 		} else
@@ -562,8 +562,8 @@ namespace numpy {
 			return v;
 		} else if (axis == 1)
 		{
-			Vector v(vectors[0]->n);
-			for (uint i = 0; i < vectors[0]->n; i++)
+			Vector v(N_COLS);
+			for (uint i = 0; i < N_COLS; i++)
 			{
 				v.data[i] = _matrix_rowwise_max_value_(data, nvec, vectors[i]->n, i);
 			}
@@ -576,7 +576,7 @@ namespace numpy {
 
 	double Matrix::norm(int order)
 	{
-		if (nvec != vectors[0]->n)
+		if (nvec != N_COLS)
 		{
 			throw std::invalid_argument("rhs matrix must be square");
 		}
@@ -591,10 +591,10 @@ namespace numpy {
 		}
 		else if (order == _INF_NORM)
 		{
-			Vector res(vectors[0]->n);
-			for (uint i = 0; i < vectors[0]->n; i++)
+			Vector res(N_COLS);
+			for (uint i = 0; i < N_COLS; i++)
 			{
-				res.data[i] = _absolute_matrix_rowwise_summation_(data, nvec, COLSIZE, i);
+				res.data[i] = _absolute_matrix_rowwise_summation_(data, nvec, N_COLS, i);
 			}
 			return res.max();
 		}
@@ -678,8 +678,8 @@ namespace numpy {
 
 	bool Matrix::operator==(const Matrix& rhs)
 	{
-		if (rhs.nvec != nvec || rhs.vectors[0]->n != vectors[0]->n) return false;
-		for (uint i = 0; i < nvec*vectors[0]->n; i++)
+		if (rhs.nvec != nvec || rhs.vectors[0]->n != N_COLS) return false;
+		for (uint i = 0; i < nvec*N_COLS; i++)
 		{
 			if (!CMP(rhs.data[i], data[i]))
 			{
@@ -691,8 +691,8 @@ namespace numpy {
 
 	bool Matrix::operator!=(const Matrix& rhs)
 	{
-		if (rhs.nvec != nvec || rhs.vectors[0]->n != vectors[0]->n) return false;
-		for (uint i = 0; i < nvec*vectors[0]->n; i++)
+		if (rhs.nvec != nvec || rhs.vectors[0]->n != N_COLS) return false;
+		for (uint i = 0; i < nvec*N_COLS; i++)
 		{
 			if (!CMP(rhs.data[i], data[i]))
 			{
@@ -704,7 +704,7 @@ namespace numpy {
 
 	Matrix& Matrix::operator+=(const Matrix& rhs)
 	{
-		if (rhs.nvec != nvec || rhs.vectors[0]->n != vectors[0]->n)
+		if (rhs.nvec != nvec || rhs.vectors[0]->n != N_COLS)
 		{
 			throw std::invalid_argument("lhs and rhs are not the same size.");
 		}
@@ -724,7 +724,7 @@ namespace numpy {
 
 	Matrix& Matrix::operator-=(const Matrix& rhs)
 	{
-		if (rhs.nvec != nvec || rhs.vectors[0]->n != vectors[0]->n)
+		if (rhs.nvec != nvec || rhs.vectors[0]->n != N_COLS)
 		{
 			throw std::invalid_argument("lhs and rhs are not the same size.");
 		}
@@ -744,7 +744,7 @@ namespace numpy {
 
 	Matrix& Matrix::operator*=(const Matrix& rhs)
 	{
-		if (rhs.nvec != nvec || rhs.vectors[0]->n != vectors[0]->n)
+		if (rhs.nvec != nvec || rhs.vectors[0]->n != N_COLS)
 		{
 			throw std::invalid_argument("lhs and rhs are not the same size.");
 		}
@@ -764,7 +764,7 @@ namespace numpy {
 
 	Matrix& Matrix::operator/=(const Matrix& rhs)
 	{
-		if (rhs.nvec != nvec || rhs.vectors[0]->n != vectors[0]->n)
+		if (rhs.nvec != nvec || rhs.vectors[0]->n != N_COLS)
 		{
 			throw std::invalid_argument("lhs and rhs are not the same size.");
 		}

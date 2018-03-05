@@ -672,6 +672,27 @@ static bool _any_true_(double *arr, unsigned int n)
 	return false;
 }
 
+static int _boolean_summation_array_(bool *arr, unsigned int n)
+{
+	if (arr == 0 || n == 0)
+	{
+		return -1;
+	}
+	unsigned int total = 0;
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:total)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		if (arr[i])
+		{
+			total++;
+		}
+	}
+	return total;
+}
+
 static double _summation_array_(double *arr, unsigned int n)
 {
 	double total = arr[0];
@@ -1550,9 +1571,9 @@ static int _element_mult_(double *left, double *right, unsigned int n)
 	return 1;
 }
 
-static int _element_div_(double *left, double *right, unsigned int n)
+static int _element_div_(double *out, double *in, unsigned int n)
 {
-	if (n == 0 || left == 0 || right == 0)
+	if (n == 0 || out == 0 || in == 0)
 	{
 		return 0;
 	}
@@ -1563,15 +1584,68 @@ static int _element_div_(double *left, double *right, unsigned int n)
 	for (unsigned int i = 0; i < n; i++)
 	{
 		// cannot divide by 0!
-		if (CMP(right[i],0.0))
+		if (CMP(in[i],0.0))
 		{
 			return 0;
 		} else {
-			left[i] /= right[i];
+			out[i] /= in[i];
 		}
 	}
 	return 1;
 }
+
+static int _element_not_(bool *data, unsigned int n)
+{
+	if (data == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		data[i] = !data[i];
+	}
+	return 1;
+}
+
+static int _element_and_(bool *left, bool *right, unsigned int n)
+{
+	if (left == 0 || right == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		left[i] = (left[i] & right[i]);
+	}
+	return 1;
+}
+
+static int _element_or_(bool *left, bool *right, unsigned int n)
+{
+	if (left == 0 || right == 0 || n == 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n>__OMP_OPT_VALUE__)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		left[i] = (left[i] | right[i]);
+	}
+	return 1;
+}
+
+
 
 #endif
 

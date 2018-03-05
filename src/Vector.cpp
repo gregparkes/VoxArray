@@ -927,69 +927,6 @@ namespace numpy {
 		return strg;
 	}
 
-	Vector Vector::select(uint start)
-	{
-		if (start >= n)
-		{
-			throw std::invalid_argument("start must be -1 < start < n");
-		}
-		if (start == 0)
-		{
-			return copy();
-		} else {
-			// get a strip return
-			Vector np(n - start);
-			for (uint i = start, j = 0; i < n; i++, j++)
-			{
-				np.data[j] = data[i];
-			}
-			return np;
-		}
-	}
-
-	Vector Vector::select(uint start, uint end, int step)
-	{
-		if (start >= n)
-		{
-			throw std::invalid_argument("start must be -1 < start < n");
-		}
-		if (end >= n)
-		{
-			throw std::invalid_argument("end must be -1 < end < n");
-		}
-		if (step == 0)
-		{
-			throw std::invalid_argument("step must not = 0");
-		}
-		if (end == $)
-		{
-			// select all from end
-			end = n;
-		}
-		int newn = (int) (_truncate_doub_((end - start) / _absolute_(step), 1));
-		if (start == $ && end != n && (step == 1 || step == -1))
-		{
-			newn += 1;
-			end += 1;
-		}
-		Vector np(newn);
-		// if we have negative step, swap end and start
-		if (step < 0)
-		{
-			// reverse
-			for (uint i = (end - 1), j = 0; i >= start; i+=step, j++)
-			{
-				np.data[j] = data[i];
-			}
-		} else {
-			for (uint i = start, j = 0; i < end; j++, i+=step)
-			{
-				np.data[j] = data[i];
-			}
-		}
-		return np;
-	}
-
 	Vector Vector::copy()
 	{
 		Vector np(n);
