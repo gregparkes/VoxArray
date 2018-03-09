@@ -1264,8 +1264,9 @@ static int _pow_base_array_(double *arr, unsigned int n, double base)
 
 static double _vector2_norm_(double *arr, unsigned int n, unsigned int p = 2)
 {
-	_pow_array_(arr, n, (double) p);
-	return _c_power_(_summation_array_(arr, n), 1.0 / (double) p);
+	_pow_array_(arr, n, p);
+	double summer = _summation_array_(arr, n);
+	return _c_power_(summer, 1.0 / p);
 }
 
 static void swap(double *a, double *b)
