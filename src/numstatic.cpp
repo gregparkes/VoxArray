@@ -14,10 +14,16 @@
 #include <stdio.h>
 #include <omp.h>
 #include <iostream>
+#include <stdexcept>
+
+/* DEFINITIONS */
 
 #define __OMP_OPT_VALUE__ 50000
-// decimal constant
-#define FLT_EPSILON 1.1920929E-07F 
+#define FLT_EPSILON 1.1920929E-07F
+#define INVALID(x) (throw std::invalid_argument(x))
+#define RANGE(x) (throw std::range_error(x))
+#define INVALID_AXIS() (throw std::invalid_argument("axis must be 0 or 1"))
+
 
 static inline double _absolute_(double value)
 {
@@ -296,6 +302,26 @@ static int _count_array_(double *arr, unsigned int n, double value)
 		}
 	}
 	return count;
+}
+
+static int _bincount_array_(double *bins, double *arr, unsigned int nbins, unsigned int narr)
+{
+	if (nbins == 0 || narr == 0 || bins == 0 || arr == 0)
+	{
+		return 0;
+	}
+	/* Here we assume bins is all zeros, arr is the numbers to count, 
+	and n refers to each array size */
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
+#endif
+	for (i = 0; i < narr; i++)
+	{
+		// add one to bins where it's cast index == arr[i]
+		bins[(int) arr[i]]++;
+	}
+	return 1;
 }
 
 static int _matrix_rowwise_count_(double *arr, unsigned int nvec, unsigned int ncol, unsigned int rowidx,

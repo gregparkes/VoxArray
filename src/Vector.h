@@ -148,6 +148,14 @@ namespace numpy {
 	Vector copy(const Vector& rhs);
 
 	/**
+	 Copies and converts the vector into an (1,N) matrix (one column).
+	 
+	 @param rhs : the array to convert.
+	 @return The new matrix object. <created on the stack>
+		*/
+	Matrix to_matrix(const Vector& rhs);
+
+	/**
 	 Selects values from array a using selected indices (converted to integer)
 
 	 @param a : the array to take from
@@ -304,13 +312,15 @@ namespace numpy {
 	/**
 	 Concatenates two arrays together, flattening to 1-D.
 
-	 e.g np.concat([1.0, 2.0], [3.0, 4.0]) = np([1.0, 2.0, 3.0, 4.0])
+	 e.g np.concat([1.0, 2.0], [3.0, 4.0], 0) = np([1.0, 2.0, 3.0, 4.0])
+	 e.g np.concat([1.0, 2.0], [3.0, 4.0], 1) = np([[1.0, 3.0],
+	 												 2.0, 4.0]])
 
 	 @param lhs : the left-hand side vector
 	 @param rhs : the right-hand side vector
-	 @return The new array object <created on the stack> 
+	 @return The new matrix (1-2,N) object <created on the stack> 
 	*/
-	Vector concat(const Vector& lhs, const Vector& rhs);
+	Matrix concat(const Vector& lhs, const Vector& rhs, uint axis);
 
 	/**
 	 Creates a vector with evenly-spaced elements from
@@ -427,6 +437,17 @@ namespace numpy {
 	Vector bincount(const Vector& rhs);
 
 	/**
+	 Finds all of the unique elements in the vector.
+	 1 - The first column contains all the unique elements.
+	 2 (optional) - The second column contains all of the counts of those elements.
+
+	 @param rhs : the vector
+	 @param get_counts (optional) : set to true if you want column 2 to be the counts of elements.  
+	 @return New matrix (N,1-2) with all unique elements.
+	 */
+	Matrix unique(const Vector& rhs, bool get_counts = false);
+
+	/**
 	 Returns true if the vector is a column-vector. (Standard)
 
 	 @param rhs : the vector
@@ -460,6 +481,42 @@ namespace numpy {
 	 @return The new array object <created on the stack>
 	 */
 	Vector abs(const Vector& rhs);
+
+	/**
+	 Adds together a + b into copy c.
+
+	 @param a : the left-hand side vector
+	 @param b : the right-hand side vector
+	 @return The new array object <created on the stack>
+	*/
+	Vector add(const Vector& a, const Vector& b);
+
+	/**
+	 Substracts together a - b into copy c.
+
+	 @param a : the left-hand side vector
+	 @param b : the right-hand side vector
+	 @return The new array object <created on the stack>
+	*/
+	Vector sub(const Vector& a, const Vector& b);
+
+	/**
+	 Multiplies together a * b into copy c.
+
+	 @param a : the left-hand side vector
+	 @param b : the right-hand side vector
+	 @return The new array object <created on the stack>
+	*/
+	Vector mult(const Vector& a, const Vector& b);
+
+	/**
+	 Divides together a / b into copy c.
+
+	 @param a : the left-hand side vector
+	 @param b : the right-hand side vector
+	 @return The new array object <created on the stack>
+	*/
+	Vector div(const Vector& a, const Vector& b);
 
 	/**
 	 Sums (adds together) all the elements in the array.
@@ -618,19 +675,19 @@ namespace numpy {
 	 Returns the n-smallest values from vector rhs.
 
 	 @param rhs : the vector
-	 @param n : the number of smallest values to get
+	 @param n (optional) : the number of smallest values to get, default 5
 	 @return N-smallest Vector <created on the stack>
 	*/
-	Vector nsmallest(const Vector& rhs, uint n);
+	Vector nsmallest(const Vector& rhs, uint n = 5);
 
 	/**
 	 Returns the n-largest values from vector rhs.
 
 	 @param rhs : the vector
-	 @param n : the number of largest values to get
+	 @param n (optional) : the number of largest values to get, default 5
 	 @return N-largest Vector <created on the stack>
 	*/
-	Vector nlargest(const Vector& rhs, uint n);
+	Vector nlargest(const Vector& rhs, uint n = 5);
 
 	/**
 	 Calculates the covariance between two vectors.
@@ -1011,6 +1068,13 @@ class Vector
 		Vector copy();
 
 		/**
+		 Copies and converts the vector into an (N,1) matrix (one column).
+
+		 @return The new matrix object. <created on the stack>
+		*/
+		Matrix to_matrix();
+
+		/**
 		 Flips the elements in the array into a new copied array.
 
 		 e.g [1.0, 2.0, 3.0] -> [3.0, 2.0, 1.0]
@@ -1346,6 +1410,24 @@ class Vector
 		Mask neq(const Vector& r);
 		Mask neq(double value);
 		Mask neq(int value);
+
+		/* ---------------- ELEMENT-WISE MATHEMATICS FUNCTION CHAINING --------------  */
+
+		Vector& add(const Vector& rhs);
+		Vector& add(double value);
+		Vector& add(int value);
+
+		Vector& sub(const Vector& rhs);
+		Vector& sub(double value);
+		Vector& sub(int value);
+
+		Vector& mult(const Vector& rhs);
+		Vector& mult(double value);
+		Vector& mult(int value);
+
+		Vector& div(const Vector& rhs);
+		Vector& div(double value);
+		Vector& div(int value);
 
 	// variables to be publicly accessed.?
 

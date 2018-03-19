@@ -45,7 +45,7 @@ namespace numpy {
 		Vector np(n);
 		if (!_fill_array_(np.data, n, 0.0))
 		{
-			throw std::invalid_argument("Fill Error");
+			INVALID("Fill Error");
 		}
 		return np;
 	}
@@ -62,7 +62,7 @@ namespace numpy {
 		Vector np(n);
 		if (!_fill_array_(np.data, n, 1.0))
 		{
-			throw std::invalid_argument("Fill Error");
+			INVALID("Fill Error");
 		}
 		return np;
 	}
@@ -79,9 +79,14 @@ namespace numpy {
 		Vector np(n);
 		if (!_fill_array_(np.data, n, val))
 		{
-			throw std::invalid_argument("Fill Error");
+			INVALID("Fill Error");
 		}
 		return np;
+	}
+
+	uint len(const Vector& rhs)
+	{
+		return rhs.n;
 	}
 
 	char* str(const Vector& rhs, uint dpoints)
@@ -90,21 +95,16 @@ namespace numpy {
 		char *strg = new char[str_len];
 		if (!_str_representation_(strg, rhs.data, rhs.n, dpoints, 1))
 		{
-			throw std::invalid_argument("Problem with creating string representation");
+			INVALID("Problem with creating string representation");
 		}
 		return strg;
-	}
-
-	uint len(const Vector& rhs)
-	{
-		return rhs.n;
 	}
 
 	Vector array(const char *input)
 	{
 		if (input == null)
 		{
-			throw std::invalid_argument("input must not be null");
+			INVALID("input must not be null");
 		}
 		int n = strlen(input);
 		Vector np;
@@ -119,7 +119,7 @@ namespace numpy {
 			np.data = vals;
 			np.n = n;
 		} else {
-			throw std::range_error("n must be > -1");
+			RANGE("n must be > -1");
 		}
 		return np;
 	}
@@ -129,27 +129,37 @@ namespace numpy {
 		Vector np(rhs.n);
 		if (!_copy_array_(np.data, rhs.data, rhs.n))
 		{
-			throw std::invalid_argument("copy failed!");
+			INVALID("copy failed!");
 		}
 		np.column = rhs.column;
 		np.flag_delete = rhs.flag_delete;
 		return np;
 	}
 
+	Matrix to_matrix(const Vector& rhs)
+	{
+		Matrix m(1, rhs.n);
+		if (!_copy_array_(m.data, rhs.data, rhs.n))
+		{
+			INVALID("copy failed!");
+		}
+		return m;
+	}
+
 	Vector take(const Vector& a, const uint* indices, uint size)
 	{
 		if (indices == NULL)
 		{
-			throw std::invalid_argument("indices must be an array!");
+			INVALID("indices must be an array!");
 		}
 		if (size <= 0)
 		{
-			throw std::invalid_argument("indices array must be > 0");
+			INVALID("indices array must be > 0");
 		}
 		Vector res = empty(size);
 		if (!_copy_from_index_array_(res.data, a.data, (double*) indices, size))
 		{
-			throw std::invalid_argument("Unable to copy from index vector in 'take()'.");
+			INVALID("Unable to copy from index vector in 'take()'.");
 		}
 		return res;
 	}
@@ -159,12 +169,12 @@ namespace numpy {
 		// our maximum index cannot be greater than the size!
 		if (max(indices) >= a.n)
 		{
-			std::invalid_argument("Max IDX cannot be >= the size of our array");
+			INVALID("Max IDX cannot be >= the size of our array");
 		}
 		Vector res = empty_like(indices);
 		if (!_copy_from_index_array_(res.data, a.data, indices.data, res.n))
 		{
-			throw std::invalid_argument("Unable to copy from index vector in 'take()'.");
+			INVALID("Unable to copy from index vector in 'take()'.");
 		}
 		return res;
 	}
@@ -173,7 +183,7 @@ namespace numpy {
 	{
 		if (a.n != m.n)
 		{
-			std::invalid_argument("array and mask must be the same size!");
+			INVALID("array and mask must be the same size!");
 		}
 		// calculate the new size of out array if not keep shape
 		uint newn = 0;
@@ -190,7 +200,7 @@ namespace numpy {
 		// if we keep the shape, simply copy across and set to 0. - else keep_shape returns resdata
 		if (!_copy_from_mask_array_(res.data, a.data, m.data, m.n, keep_shape))
 		{
-			throw std::invalid_argument("Unable to copy from mask vector in 'where()'.");
+			INVALID("Unable to copy from mask vector in 'where()'.");
 		}
 		return res;
 	}
@@ -199,7 +209,7 @@ namespace numpy {
 	{
 		if (n == 0)
 		{
-			throw std::range_error("n cannot = 0");
+			RANGE("n cannot = 0");
 		}
 		Vector np(n);
 		_rand_array_(np.data, np.n);
@@ -210,12 +220,12 @@ namespace numpy {
 	{
 		if (n == 0)
 		{
-			throw std::range_error("n cannot = 0");
+			RANGE("n cannot = 0");
 		}
 		Vector np(n);
 		if (!_normal_distrib_(np.data, n, 0.0, 1.0))
 		{
-			throw std::invalid_argument("Error with creating normal distribution");
+			INVALID("Error with creating normal distribution");
 		}
 		return np;
 	}
@@ -224,12 +234,12 @@ namespace numpy {
 	{
 		if (n == 0)
 		{
-			throw std::range_error("n cannot = 0");
+			RANGE("n cannot = 0");
 		}
 		Vector np(n);
 		if (!_normal_distrib_(np.data, n, mean, sd))
 		{
-			throw std::invalid_argument("Error with creating normal distribution");
+			INVALID("Error with creating normal distribution");
 		}
 		return np;
 	}
@@ -238,11 +248,11 @@ namespace numpy {
 	{
 		if (n == 0)
 		{
-			throw std::range_error("n cannot = 0");
+			RANGE("n cannot = 0");
 		}
 		if (max == 0)
 		{
-			throw std::range_error("max cannot = 0");
+			RANGE("max cannot = 0");
 		}
 		Vector np(n);
 		_randint_array_(np.data, n, max);
@@ -253,11 +263,11 @@ namespace numpy {
 	{
 		if (n == 0)
 		{
-			throw std::range_error("n cannot = 0");
+			RANGE("n cannot = 0");
 		}
 		if (values == null)
 		{
-			throw std::invalid_argument("input must not be null");
+			INVALID("input must not be null");
 		}
 		int strn = strlen(values);
 		Vector np(n);
@@ -285,7 +295,7 @@ namespace numpy {
 	{
 		if (n.n != p.n)
 		{
-			throw std::range_error("n and p vectors must be same length");
+			RANGE("n and p vectors must be same length");
 		}
 		Vector np = empty_like(n);
 		_binomial_array_(np.data, n.data, p.data, np.n);
@@ -343,14 +353,23 @@ namespace numpy {
 		return np;
 	}
 
+	Matrix concat(const Vector& lhs, const Vector& rhs, uint axis)
+	{
+		if (axis == 0)
+		{
+			return to_matrix(vstack(lhs, rhs));
+		}
+		else if (axis == 1)
+		{
+			return hstack(lhs, rhs);
+		} else { INVALID_AXIS(); }
+	}
+
 	Vector vectorize(const Matrix& rhs, uint axis)
 	{
 		Vector np(rhs.nvec*rhs.vectors[0]->n);
 		if (axis == 0)
 		{
-		#ifdef _OPENMP
-			#pragma omp parallel for if(rhs.nvec>100000) schedule(static)
-		#endif
 			for (uint y = 0; y < rhs.nvec; y++)
 			{
 				for (uint x = 0; x < rhs.vectors[y]->n; x++)
@@ -360,9 +379,6 @@ namespace numpy {
 			}
 		} else if (axis == 1)
 		{
-		#ifdef _OPENMP
-			#pragma omp parallel for if(rhs.vectors[0]->n>100000) schedule(static)
-		#endif
 			for (uint x = 0; x < rhs.vectors[0]->n; x++)
 			{
 				for (uint y = 0; y < rhs.nvec; y++)
@@ -370,9 +386,8 @@ namespace numpy {
 					np.data[y+x*rhs.nvec] = rhs.vectors[y]->data[x];
 				}
 			}
-		} else {
-			throw std::invalid_argument("axis must be 0 or 1.");
-		}
+		} else { INVALID_AXIS(); }
+
 		return np;
 	}
 
@@ -380,7 +395,7 @@ namespace numpy {
 	{
 		if (step <= 0)
 		{
-			throw std::range_error("step cannot be <= 0");
+			RANGE("step cannot be <= 0");
 		}
 		if (start > end)
 		{
@@ -393,9 +408,6 @@ namespace numpy {
 		Vector np(n);
 		np.data[0] = start;
 		np.data[n-1] = end;
-	#ifdef _OPENMP
-		#pragma omp parallel for default(none) shared(np,n,start,step) if(n>100000) schedule(static)
-	#endif
 		for (uint i = 1; i < n-1; i++)
 		{
 			np.data[i] = start + step * i;
@@ -407,7 +419,7 @@ namespace numpy {
 	{
 		if (n == 0)
 		{
-			throw std::invalid_argument("n cannot be <= 0");
+			INVALID("n cannot be <= 0");
 		}
 		if (start > end)
 		{
@@ -420,9 +432,6 @@ namespace numpy {
 		np.data[0] = start;
 		np.data[n-1] = end;
 		double step = (end-start) / (n-1);
-	#ifdef _OPENMP
-		#pragma omp parallel for default(none) shared(np,n,start,step) if(n>100000) schedule(static)
-	#endif
 		for (uint i = 1; i < n-1; i++)
 		{
 			np.data[i] = start + step * i;
@@ -441,11 +450,11 @@ namespace numpy {
 	{
 		if (idx == 0)
 		{
-			throw std::invalid_argument("idx cannot be <= 0");
+			INVALID("idx cannot be <= 0");
 		}
 		if (idx >= rhs.n)
 		{
-			throw std::range_error("idx cannot be > rhs size");
+			RANGE("idx cannot be > rhs size");
 		}
 		Vector np(rhs.n - idx);
 		_copy_array_(np.data, rhs.data+idx, rhs.n-idx);
@@ -479,7 +488,7 @@ namespace numpy {
 		Vector np = copy(rhs);
 		if (!_floor_array_(np.data, np.n))
 		{
-			throw std::invalid_argument("Unable to floor array.");
+			INVALID("Unable to floor array.");
 		}
 		return np;
 	}
@@ -489,7 +498,7 @@ namespace numpy {
 		Vector np = copy(rhs);
 		if (!_ceil_array_(np.data, np.n))
 		{
-			throw std::invalid_argument("Unable to ceil array.");
+			INVALID("Unable to ceil array.");
 		}
 		return np;
 	}
@@ -497,6 +506,69 @@ namespace numpy {
 	int count(const Vector& rhs, double value)
 	{
 		return _count_array_(rhs.data, rhs.n, value);
+	}
+
+	Vector bincount(const Vector& rhs)
+	{
+		// 1. obtain maximum value
+		// 2. create array based on max value (not greater than FLT_EPSILON or 100k)
+		// 3. Go through rhs and add each occurence to the appropriate index.
+
+		int max_v = (int) max(rhs);
+
+		if (max_v >= 100000)
+		{
+			RANGE("in bincount() the max value is above 100k - too large!");
+		}
+		// cast to uint and create array
+		Vector res = zeros(max_v);
+		if (!_bincount_array_(res.data, rhs.data, res.n, rhs.n))
+		{
+			INVALID("Unable to perform bincount on array");
+		}
+		return res;
+	}
+
+	Matrix unique(const Vector& rhs, bool get_counts)
+	{
+		// first, calculate the number of unique values.
+		Vector unique = zeros(rhs.n);
+		uint counter = 1;
+		unique.data[0] = rhs.data[0];
+		for (uint i = 1; i < rhs.n; i++)
+		{
+			bool flag = true;
+			for (uint j = 0; j < counter; j++)
+			{
+				if (CMP(rhs.data[i], rhs.data[j]))
+				{
+					// not unique
+					flag = false;
+					break;
+				}
+			}
+			if (flag) {
+				unique.data[counter++] = rhs.data[i];
+			}
+			// unique
+		}
+		// strip away excess space for concise vector.
+		Vector newunique = rstrip(unique, counter - 1);
+		if (!get_counts) //if we don't include counts - convert to matrix and return.
+		{
+			return to_matrix(newunique);
+		}
+		else // add counts vector and concat with hstack
+		{
+			Vector counts = empty_like(newunique);
+			for (uint i = 0; i < newunique.n; i++)
+			{
+				counts[i] = count(rhs, newunique[i]);
+			}
+			// printf("%s\n%s\n", newunique.str(), counts.str());
+			return hstack(newunique, counts);
+		}
+		
 	}
 
 	int count_nonzero(const Vector& rhs)
@@ -521,6 +593,26 @@ namespace numpy {
 		return np;
 	}
 
+	Vector add(const Vector& a, const Vector& b)
+	{
+		return (a + b);
+	}
+
+	Vector sub(const Vector& a, const Vector& b)
+	{
+		return (a - b);
+	}
+
+	Vector mult(const Vector& a, const Vector& b)
+	{
+		return (a * b);
+	}
+
+	Vector div(const Vector& a, const Vector& b)
+	{
+		return (a / b);
+	}
+
 	double sum(const Vector& rhs)
 	{
 		return _summation_array_(rhs.data, rhs.n);
@@ -535,12 +627,12 @@ namespace numpy {
 	{
 		if (isSorted)
 		{
-			return rhs.data[rhs.n / 2];
+			return rhs.data[(int) (rhs.n / 2)];
 		}
 		else
 		{
 			Vector s = sort(rhs);
-			return s.data[s.n / 2];
+			return s.data[(int) (s.n / 2)];
 		}
 	}
 
@@ -564,7 +656,7 @@ namespace numpy {
 		Vector np = zeros(rhs.n);
 		if (!_cumulative_sum_(np.data, rhs.data, rhs.n))
 		{
-			throw std::invalid_argument("cumsum failed!");
+			INVALID("cumsum failed!");
 		}
 		return np;
 	}
@@ -588,13 +680,18 @@ namespace numpy {
 		Vector np = ones(rhs.n);
 		if (!_cumulative_prod_(np.data, rhs.data, rhs.n))
 		{
-			throw std::invalid_argument("cumprod failed!");
+			INVALID("cumprod failed!");
 		}
 		return np;
 	}
 
 	double trapz(const Vector& y, double dx)
 	{
+		/* array must be at least 3 long for this method to work */
+		if (y.n < 3)
+		{
+			RANGE("Trapz requires an array y length to be at least 3");
+		} 
 		double total = 0.0;
 		for (uint i = 1; i < y.n-1; i++)
 		{
@@ -633,9 +730,26 @@ namespace numpy {
 		return _max_index_(rhs.data, rhs.n);
 	}
 
+	Vector nsmallest(const Vector& rhs, uint idx)
+	{
+		Vector r_sorted = sort(rhs);
+		return rstrip(r_sorted, idx-1);
+	}
+
+	Vector nlargest(const Vector& rhs, uint idx)
+	{
+		Vector r_sorted = sort(rhs);
+		return lstrip(r_sorted, rhs.n - idx)
+	}
+
 	double cov(const Vector& v, const Vector& w)
 	{
 		return dot(v, w) / (v.n - 1);
+	}
+
+	double corr(const Vector& v, const Vector& w)
+	{
+		return cov(v, w) / (_square_root_(var(v) * var(w)));
 	}
 
 	double norm(const Vector& rhs, int order)
@@ -656,7 +770,7 @@ namespace numpy {
 		}
 		else
 		{
-			throw std::invalid_argument("order must be 1,2..,n or inf (-1)");
+			INVALID("order must be 1,2..,n or inf (-1)");
 		}
 	}
 
@@ -674,7 +788,7 @@ namespace numpy {
 	{
 		if (lhs.n != rhs.n)
 		{
-			throw std::range_error("lhs must be the same size as the rhs vector");
+			RANGE("lhs must be the same size as the rhs vector");
 		}
 		// apparently the dot of column.row is the same result as column.column or row.row
 		return _vector_dot_array_(lhs.data, rhs.data, rhs.n);
@@ -709,10 +823,9 @@ namespace numpy {
 
 	Vector minmax(const Vector& v)
 	{
-		Vector np = copy(v);
-		double curr_max = np.max();
-		double curr_min = np.min();
-		return ((np - curr_min) / (curr_max - curr_min));
+		double curr_max = v.max();
+		double curr_min = v.min();
+		return ((v - curr_min) / (curr_max - curr_min));
 	}
 
 	Vector cross(const Vector& v, const Vector& w)
@@ -734,7 +847,7 @@ namespace numpy {
 		Vector np = copy(rhs);
 		if (!_sine_array_(np.data, np.n))
 		{
-			throw std::invalid_argument("Unable to sine-ify array.");
+			INVALID("Unable to sine-ify array.");
 		}
 		return np;
 	}
@@ -744,7 +857,7 @@ namespace numpy {
 		Vector np = copy(rhs);
 		if (!_cos_array_(np.data, np.n))
 		{
-			throw std::invalid_argument("Unable to cos-ify array.");
+			INVALID("Unable to cos-ify array.");
 		}
 		return np;
 	}
@@ -754,7 +867,7 @@ namespace numpy {
 		Vector np = copy(rhs);
 		if (!_tan_array_(np.data, np.n))
 		{
-			throw std::invalid_argument("Unable to tan-ify array.");
+			INVALID("Unable to tan-ify array.");
 		}
 		return np;
 	}
@@ -764,7 +877,7 @@ namespace numpy {
 		Vector v = copy(rhs);
 		if (!_to_radians_array_(v.data, v.n))
 		{
-			throw std::invalid_argument("Unable to convert to radians.");
+			INVALID("Unable to convert to radians.");
 		}
 		return v;
 	}
@@ -774,7 +887,7 @@ namespace numpy {
 		Vector v = copy(rhs);
 		if (!_to_degrees_array_(v.data, v.n))
 		{
-			throw std::invalid_argument("Unable to convert to degrees.");
+			INVALID("Unable to convert to degrees.");
 		}
 		return v;
 	}
@@ -784,7 +897,7 @@ namespace numpy {
 		Vector np = copy(rhs);
 		if (!_exp_array_(np.data, np.n))
 		{
-			throw std::invalid_argument("Unable to exp-ify array.");
+			INVALID("Unable to exp-ify array.");
 		}
 		return np;
 	}
@@ -794,7 +907,7 @@ namespace numpy {
 		Vector np = copy(rhs);
 		if (!_log10_array_(np.data, np.n))
 		{
-			throw std::invalid_argument("Unable to log-ify array.");
+			INVALID("Unable to log-ify array.");
 		}
 		return np;
 	}
@@ -804,7 +917,7 @@ namespace numpy {
 		Vector np = copy(rhs);
 		if (!_pow_array_(np.data, np.n, 0.5))
 		{
-			throw std::invalid_argument("Unable to sqrt-ify array.");
+			INVALID("Unable to sqrt-ify array.");
 		}
 		return np;
 	}
@@ -823,7 +936,7 @@ namespace numpy {
 		Vector np = copy(base);
 		if (!_pow_array_(np.data, np.n, exponent))
 		{
-			throw std::invalid_argument("Unable to exp-ify array.");
+			INVALID("Unable to exp-ify array.");
 		}
 		return np;
 	}
@@ -831,12 +944,9 @@ namespace numpy {
 	{
 		if (base.n != exponent.n)
 		{
-			throw std::invalid_argument("base size and exponent size must be equal");
+			INVALID("base size and exponent size must be equal");
 		}
 		Vector np(base.n);
-	#ifdef _OPENMP
-		#pragma omp parallel for schedule(static) if(np.n>100000)
-	#endif
 		for (uint i = 0; i < np.n; i++)
 		{
 			np.data[i] = pow(base.data[i], exponent.data[i]);
@@ -888,7 +998,7 @@ namespace numpy {
 	{
 		if (length.n != direction.n)
 		{
-			throw std::invalid_argument("length and direction size must be the same!");
+			INVALID("length and direction size must be the same!");
 		}
 		double d = dot(length, direction);
 		double mag_sq = dot(direction, direction);
@@ -902,7 +1012,7 @@ namespace numpy {
 
 	Vector reflection(const Vector& source, const Vector& normal)
 	{
-		return source - normal * (dot(source, normal) * 2.0);
+		return source - (normal * (dot(source, normal) * 2.0));
 	}
 
 
@@ -932,7 +1042,7 @@ namespace numpy {
 #endif
 		if (n == 0)
 		{
-			throw std::range_error("n cannot = 0");
+			RANGE("n cannot = 0");
 		}
 		this->n = n;
 		this->column = column;
@@ -982,7 +1092,7 @@ namespace numpy {
 #endif
 			if (!_destroy_array_(data))
 			{
-				throw std::invalid_argument("Unable to destroy array");
+				INVALID("Unable to destroy array");
 			}
 		}
 
@@ -994,7 +1104,7 @@ namespace numpy {
 		char *strg = new char[str_len];
 		if (!_str_representation_(strg, data, n, dpoints, 1))
 		{
-			throw std::invalid_argument("Problem with creating string representation");
+			INVALID("Problem with creating string representation");
 		}
 		return strg;
 	}
@@ -1004,11 +1114,21 @@ namespace numpy {
 		Vector np(n);
 		if (!_copy_array_(np.data, data, n))
 		{
-			throw std::invalid_argument("copy failed!");
+			INVALID("copy failed!");
 		}
 		column = np.column;
 		flag_delete = np.flag_delete;
 		return np;
+	}
+
+	Matrix Vector::to_matrix()
+	{
+		Matrix m(1, rhs.n);
+		if (!_copy_array_(m.data, data, n))
+		{
+			INVALID("copy failed!");
+		}
+		return m;
 	}
 
 	Vector& Vector::flip()
@@ -1088,7 +1208,7 @@ namespace numpy {
 	{
 		if (order == 0 || order < -1 )
 		{
-			throw std::invalid_argument("order must be 1,2..,n or inf");
+			INVALID("order must be 1,2..,n or inf");
 		}
 		if (order == 1)
 		{
@@ -1121,7 +1241,7 @@ namespace numpy {
 	{
 		if (! _sine_array_(data, n))
 		{
-			throw std::invalid_argument("Unable to sine-ify array.");
+			INVALID("Unable to sine-ify array.");
 		}
 		return *this;
 	}
@@ -1130,7 +1250,7 @@ namespace numpy {
 	{
 		if (! _cos_array_(data, n))
 		{
-			throw std::invalid_argument("Unable to cos-ify array.");
+			INVALID("Unable to cos-ify array.");
 		}
 		return *this;
 	}
@@ -1139,7 +1259,7 @@ namespace numpy {
 	{
 		if (! _tan_array_(data, n))
 		{
-			throw std::invalid_argument("Unable to tan-ify array.");
+			INVALID("Unable to tan-ify array.");
 		}
 		return *this;
 	}
@@ -1148,7 +1268,7 @@ namespace numpy {
 	{
 		if (! _exp_array_(data, n))
 		{
-			throw std::invalid_argument("Unable to exp-ify array.");
+			INVALID("Unable to exp-ify array.");
 		}
 		return *this;
 	}
@@ -1157,7 +1277,7 @@ namespace numpy {
 	{
 		if (! _log10_array_(data, n))
 		{
-			throw std::invalid_argument("Unable to log-ify array.");
+			INVALID("Unable to log-ify array.");
 		}
 		return *this;
 	}
@@ -1166,7 +1286,7 @@ namespace numpy {
 	{
 		if (! _pow_array_(data, n, 0.5))
 		{
-			throw std::invalid_argument("Unable to sqrt-ify array.");
+			INVALID("Unable to sqrt-ify array.");
 		}
 		return *this;
 	}
@@ -1176,7 +1296,7 @@ namespace numpy {
 	{
 		if (!_to_radians_array_(data, n))
 		{
-			throw std::invalid_argument("Unable to convert to radians.");
+			INVALID("Unable to convert to radians.");
 		}
 		return *this;
 	}
@@ -1185,7 +1305,7 @@ namespace numpy {
 	{
 		if (!_to_degrees_array_(data, n))
 		{
-			throw std::invalid_argument("Unable to convert to radians.");
+			INVALID("Unable to convert to radians.");
 		}
 		return *this;
 	}
@@ -1194,7 +1314,7 @@ namespace numpy {
 	{
 		if (! _pow_base_array_(data, n, base))
 		{
-			throw std::invalid_argument("Unable to pow-ify array.");
+			INVALID("Unable to pow-ify array.");
 		}
 		return *this;
 	}
@@ -1203,7 +1323,7 @@ namespace numpy {
 	{
 		if (! _pow_array_(data, n, exponent))
 		{
-			throw std::invalid_argument("Unable to pow-ify array.");
+			INVALID("Unable to pow-ify array.");
 		}
 		return *this;
 	}
@@ -1218,7 +1338,7 @@ namespace numpy {
 	{
 		if (!_floor_array_(data, n))
 		{
-			throw std::invalid_argument("Unable to ceil array.");
+			INVALID("Unable to ceil array.");
 		}
 		return *this;
 	}
@@ -1227,7 +1347,7 @@ namespace numpy {
 	{
 		if (!_ceil_array_(data, n))
 		{
-			throw std::invalid_argument("Unable to ceil array.");
+			INVALID("Unable to ceil array.");
 		}
 		return *this;
 	}
@@ -1236,7 +1356,7 @@ namespace numpy {
 	{
 		if (n != rhs.n)
 		{
-			throw std::range_error("lhs must be the same size as the rhs vector");
+			RANGE("lhs must be the same size as the rhs vector");
 		}
 		if (!rhs.column & column)
 		{
@@ -1255,7 +1375,7 @@ namespace numpy {
 	{
 		if (n != rhs.n)
 		{
-			throw std::range_error("lhs must be the same size as the rhs vector");
+			RANGE("lhs must be the same size as the rhs vector");
 		}
 		return _square_root_(dot(*this - rhs));
 	}
@@ -1281,14 +1401,173 @@ namespace numpy {
 		return *this;
 	}
 
+	// -------------Function operators -------------------------
+
+	Vector& Vector::add(const Vector& rhs)
+	{
+		data += rhs.data;
+		return *this;
+	}
+	Vector& Vector::add(double value)
+	{
+		data += value;
+		return *this;
+	}
+	Vector& Vector::add(int value)
+	{
+		data += value;
+		return *this;
+	}
+
+	Vector& Vector::sub(const Vector& rhs)
+	{
+		data -= rhs.data;
+		return *this;
+	}
+	Vector& Vector::sub(double value)
+	{
+		data -= value;
+		return *this;
+	}
+	Vector& Vector::sub(int value)
+	{
+		data -= value;
+		return *this;
+	}
+
+	Vector& Vector::mult(const Vector& rhs)
+	{
+		data *= rhs.data;
+		return *this;
+	}
+	Vector& Vector::mult(double value)
+	{
+		data *= value;
+		return *this;
+	}
+	Vector& Vector::mult(int value)
+	{
+		data *= value;
+		return *this;
+	}
+
+	Vector& Vector::div(const Vector& rhs)
+	{
+		data /= rhs.data;
+		return *this;
+	}
+	Vector& Vector::div(double value)
+	{
+		data /= value;
+		return *this;
+	}
+	Vector& Vector::div(int value)
+	{
+		data /= value;
+		return *this;
+	}
+
+	Mask Vector::lt(const Vector& r)
+	{
+		return ((*this) < r);
+	}
+	Mask Vector::lt(double value)
+	{
+		return ((*this) < r);
+	}
+	Mask Vector::lt(int value)
+	{
+		return ((*this) < r);
+	}
+
+	Mask Vector::lte(const Vector& r)
+	{
+		return ((*this) <= r);
+	}
+	Mask Vector::lte(double value)
+	{
+		return ((*this) <= r);
+	}
+	Mask Vector::lte(int value)
+	{
+		return ((*this) <= r);
+	}
+
+	Mask Vector::mt(const Vector& r)
+	{
+		return ((*this) > r);
+	}
+	Mask Vector::mt(double value)
+	{
+		return ((*this) > r);
+	}
+	Mask Vector::mt(int value)
+	{
+		return ((*this) > r);
+	}
+
+	Mask Vector::mte(const Vector& r)
+	{
+		return ((*this) >= r);
+	}
+	Mask Vector::mte(double value)
+	{
+		return ((*this) >= r);
+	}
+	Mask Vector::mte(int value)
+	{
+		return ((*this) >= r);
+	}
+
+	Mask Vector::eq(const Vector& r)
+	{
+		return ((*this) == r);
+	}
+	Mask Vector::eq(double value)
+	{
+		return ((*this) == r);
+	}
+	Mask Vector::eq(int value)
+	{
+		return ((*this) == r);
+	}
+
+	Mask Vector::neq(const Vector& r)
+	{
+		return ((*this) != r);
+	}
+	Mask Vector::neq(double value)
+	{
+		return ((*this) != r);
+	}
+	Mask Vector::neq(int value)
+	{
+		return ((*this) != r);
+	}
+
+
 	//  --------------- Instance Operator overloads ------------------------
 
+	Vector Vector::operator[](const Mask& rhs)
+	{
+		if (rhs.n != n)
+		{
+			INVALID("rhs size != array size");
+		}
+		// new array size is the sum of trues.
+		Vector res = empty(rhs.sum());
+		if (!_copy_from_mask_array_(res.data, data, rhs.data, m.n, false))
+		{
+			INVALID("Unable to copy from mask vector in 'operator[]'.");
+		}
+		return res;
+	}
 
 	Vector& Vector::operator+=(const Vector& rhs)
 	{
 		if (rhs.n != n)
 		{
-			throw std::invalid_argument("rhs size != array size");
+			INVALID("rhs size != array size");
 		}
 		_element_add_(data, rhs.data, n);
 		return *this;
@@ -1308,7 +1587,7 @@ namespace numpy {
 	{
 		if (rhs.n != n)
 		{
-			throw std::invalid_argument("rhs size != array size");
+			INVALID("rhs size != array size");
 		}
 		_element_sub_(data, rhs.data, n);
 		return *this;
@@ -1328,7 +1607,7 @@ namespace numpy {
 	{
 		if (rhs.n != n)
 		{
-			throw std::invalid_argument("rhs size != array size");
+			INVALID("rhs size != array size");
 		}
 		if (!column & rhs.column)
 		{
@@ -1358,7 +1637,7 @@ namespace numpy {
 	{
 		if (rhs.n != n)
 		{
-			throw std::invalid_argument("rhs size != array size");
+			RANGE("rhs size != array size");
 		}
 		if (!_element_div_(data, rhs.data, n))
 		{
@@ -1405,7 +1684,7 @@ namespace numpy {
 	{
 		if (lhs.n != rhs.n)
 		{
-			throw std::range_error("lhs and rhs vector not the same size");
+			RANGE("lhs and rhs vector not the same size");
 		}
 		Vector np = _copy_vector_(lhs);
 		np += rhs;
@@ -1440,7 +1719,7 @@ namespace numpy {
 	{
 		if (lhs.n != rhs.n)
 		{
-			throw std::range_error("lhs and rhs vector not same size");
+			RANGE("lhs and rhs vector not same size");
 		}
 		Vector np = _copy_vector_(lhs);
 		np -= rhs;
@@ -1463,7 +1742,7 @@ namespace numpy {
 	{
 		if (lhs.n != rhs.n)
 		{
-			throw std::range_error("lhs and rhs vector not same size");
+			RANGE("lhs and rhs vector not same size");
 		}
 		Vector np = _copy_vector_(lhs);
 		np *= rhs;
@@ -1486,7 +1765,7 @@ namespace numpy {
 	{
 		if (value == 0)
 		{
-			throw std::invalid_argument("cannot divide by 0!");
+			throw std::logic_error("cannot divide by 0!");
 		}
 		Vector np = _copy_vector_(lhs);
 		np /= (double) value;
@@ -1496,7 +1775,7 @@ namespace numpy {
 	{
 		if (CMP(value, 0.0))
 		{
-			throw std::invalid_argument("cannot divide by 0!");
+			throw std::logic_error("cannot divide by 0!");
 		}
 		Vector np = _copy_vector_(lhs);
 		np /= value;
@@ -1506,7 +1785,7 @@ namespace numpy {
 	{
 		if (lhs.n != rhs.n)
 		{
-			throw std::range_error("lhs and rhs vector not same size");
+			RANGE("lhs and rhs vector not same size");
 		}
 		Vector np = _copy_vector_(lhs);
 		np /= rhs;
@@ -1529,7 +1808,7 @@ namespace numpy {
 	{
 		if (base.n != exponent.n)
 		{
-			throw std::range_error("base and exponent vector not same size");
+			RANGE("base and exponent vector not same size");
 		}
 		Vector np = _copy_vector_(base);
 		for (uint i = 0; i < base.n; i++)
@@ -1543,7 +1822,7 @@ namespace numpy {
 	{
 		if (l.n != r.n)
 		{
-			throw std::range_error("l and r not same size!");
+			RANGE("l and r not same size!");
 		}
 		Mask res(l.n);
 		_element_equals_(res.data, l.data, r.data, l.n);
@@ -1566,7 +1845,7 @@ namespace numpy {
 	{
 		if (l.n != r.n)
 		{
-			throw std::range_error("l and r not same size!");
+			RANGE("l and r not same size!");
 		}
 		Mask res(l.n);
 		_element_not_equals_(res.data, l.data, r.data, l.n);
@@ -1589,7 +1868,7 @@ namespace numpy {
 	{
 		if (l.n != r.n)
 		{
-			throw std::range_error("l and r not same size!");
+			RANGE("l and r not same size!");
 		}
 		Mask res(l.n);
 		_element_less_than_(res.data, l.data, r.data, l.n, false);
@@ -1612,7 +1891,7 @@ namespace numpy {
 	{
 		if (l.n != r.n)
 		{
-			throw std::range_error("l and r not same size!");
+			RANGE("l and r not same size!");
 		}
 		Mask res(l.n);
 		_element_less_than_(res.data, l.data, r.data, l.n, true);
@@ -1635,7 +1914,7 @@ namespace numpy {
 	{
 		if (l.n != r.n)
 		{
-			throw std::range_error("l and r not same size!");
+			RANGE("l and r not same size!");
 		}
 		Mask res(l.n);
 		_element_greater_than_(res.data, l.data, r.data, l.n, false);
@@ -1658,7 +1937,7 @@ namespace numpy {
 	{
 		if (l.n != r.n)
 		{
-			throw std::range_error("l and r not same size!");
+			RANGE("l and r not same size!");
 		}
 		Mask res(l.n);
 		_element_greater_than_(res.data, l.data, r.data, l.n, true);

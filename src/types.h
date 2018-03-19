@@ -33,10 +33,15 @@ typedef unsigned int uint;
 //#define _CUMPY_DEBUG_ 0
 
 namespace numpy {
-
+	
+	""" classes """
 	class Vector;
 	class Matrix;
 	class Mask;
+	
+	""" structs """
+	struct MATRIX_COMPLEX2;
+	struct MATRIX_COMPLEX3;
 
 }
 
