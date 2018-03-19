@@ -34,12 +34,12 @@ typedef unsigned int uint;
 
 namespace numpy {
 	
-	""" classes """
+	/* classes */
 	class Vector;
 	class Matrix;
 	class Mask;
 	
-	""" structs """
+	/* structs */
 	struct MATRIX_COMPLEX2;
 	struct MATRIX_COMPLEX3;
 
