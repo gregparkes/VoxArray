@@ -91,9 +91,18 @@ namespace numpy {
 
 	char* str(const Vector& rhs, uint dpoints)
 	{
+		// if our data is pointing to nothing - throw an error
+		if (rhs.data == NULL)
+		{
+			INVALID("in str(), data is pointing to no values (NULL)");
+		}
 		unsigned int str_len = _str_length_gen_(rhs.data, rhs.n, dpoints);
+		if (!rhs.column)
+		{
+			str_len += 2;
+		}
 		char *strg = new char[str_len];
-		if (!_str_representation_(strg, rhs.data, rhs.n, dpoints, 1))
+		if (!_str_representation_(strg, rhs.data, rhs.n, dpoints, 1, !rhs.column))
 		{
 			INVALID("Problem with creating string representation");
 		}
@@ -138,30 +147,12 @@ namespace numpy {
 
 	Matrix to_matrix(const Vector& rhs)
 	{
-		Matrix m(1, rhs.n);
+		Matrix m = empty(1, rhs.n);
 		if (!_copy_array_(m.data, rhs.data, rhs.n))
 		{
 			INVALID("copy failed!");
 		}
 		return m;
-	}
-
-	Vector take(const Vector& a, const uint* indices, uint size)
-	{
-		if (indices == NULL)
-		{
-			INVALID("indices must be an array!");
-		}
-		if (size <= 0)
-		{
-			INVALID("indices array must be > 0");
-		}
-		Vector res = empty(size);
-		if (!_copy_from_index_array_(res.data, a.data, (double*) indices, size))
-		{
-			INVALID("Unable to copy from index vector in 'take()'.");
-		}
-		return res;
 	}
 
 	Vector take(const Vector& a, const Vector& indices)
@@ -389,6 +380,22 @@ namespace numpy {
 		} else { INVALID_AXIS(); }
 
 		return np;
+	}
+
+	Vector arange(uint end)
+	{
+		if (end < 0)
+		{
+			RANGE("in arange(), end must be >= 0");
+		}
+		// cast end to an unsigned int
+		uint n = end;
+		Vector v(n);
+		for (uint i = 0; i < n; i++)
+		{
+			v.data[i] = (double) i;
+		}
+		return v;
 	}
 
 	Vector arange(double start, double end, double step)
@@ -739,7 +746,7 @@ namespace numpy {
 	Vector nlargest(const Vector& rhs, uint idx)
 	{
 		Vector r_sorted = sort(rhs);
-		return lstrip(r_sorted, rhs.n - idx)
+		return lstrip(r_sorted, rhs.n - idx);
 	}
 
 	double cov(const Vector& v, const Vector& w)
@@ -823,8 +830,8 @@ namespace numpy {
 
 	Vector minmax(const Vector& v)
 	{
-		double curr_max = v.max();
-		double curr_min = v.min();
+		double curr_max = max(v);
+		double curr_min = min(v);
 		return ((v - curr_min) / (curr_max - curr_min));
 	}
 
@@ -1045,7 +1052,8 @@ namespace numpy {
 			RANGE("n cannot = 0");
 		}
 		this->n = n;
-		this->column = column;
+		// false/0 = column, true/1 = row
+		this->column = !column;
 		data = _create_empty_(n);
 		if (data == NULL)
 		{
@@ -1054,33 +1062,70 @@ namespace numpy {
 		this->flag_delete = true;
 	}
 
-	Vector::Vector(double val1, double val2, double val3, double val4)
+	Vector::Vector(double v1, double v2)
 	{
 #ifdef _CUMPY_DEBUG_
-		printf("constructing vector values %x\n", this);
-#endif
+		printf("constructing vector set2 %x\n", this);
+#endif	
+		if (isinf(v1) || isinf(v2))
+		{
+			INVALID("values cannot = infinity in Vector(v1, v2)");
+		}
+		this->n = 2;
 		this->column = true;
-		this->flag_delete = true;
-		if (val4 - 99999.99999 > 1e-14)
-		{
-			this->n = 4;
-		} else if (val3 - 99999.99999 > 1e-14)
-		{
-			this->n = 3;
-		} else {
-			this->n = 2;
-		}
 		data = _create_empty_(n);
-		data[0] = val1;
-		data[1] = val2;
-		if (n > 2)
+		if (data == NULL)
 		{
-			data[2] = val3;
-			if (n > 3)
-			{
-				data[3] = val4;
-			}
+			throw std::runtime_error("Unable to allocate memory");
 		}
+		data[0] = v1;
+		data[1] = v2;
+		this->flag_delete = true;
+	}
+
+	Vector::Vector(double v1, double v2, double v3)
+	{
+#ifdef _CUMPY_DEBUG_
+		printf("constructing vector set2 %x\n", this);
+#endif	
+		if (isinf(v1) || isinf(v2) || isinf(v3))
+		{
+			INVALID("values cannot = infinity in Vector(v1, v2, v3)");
+		}
+		this->n = 3;
+		this->column = true;
+		data = _create_empty_(n);
+		if (data == NULL)
+		{
+			throw std::runtime_error("Unable to allocate memory");
+		}
+		data[0] = v1;
+		data[1] = v2;
+		data[2] = v3;
+		this->flag_delete = true;
+	}
+
+	Vector::Vector(double v1, double v2, double v3, double v4)
+	{
+#ifdef _CUMPY_DEBUG_
+		printf("constructing vector set2 %x\n", this);
+#endif	
+		if (isinf(v1) || isinf(v2) || isinf(v3) || isinf(v4))
+		{
+			INVALID("values cannot = infinity in Vector(v1, v2, v3, v4)");
+		}
+		this->n = 4;
+		this->column = true;
+		data = _create_empty_(n);
+		if (data == NULL)
+		{
+			throw std::runtime_error("Unable to allocate memory");
+		}
+		data[0] = v1;
+		data[1] = v2;
+		data[2] = v3;
+		data[3] = v4;
+		this->flag_delete = true;
 	}
 
 	Vector::~Vector()
@@ -1100,9 +1145,18 @@ namespace numpy {
 
 	char* Vector::str(uint dpoints)
 	{
+		if (data == NULL)
+		{
+			INVALID("in str(), data is pointing to no values (NULL)");
+		}
 		unsigned int str_len = _str_length_gen_(data, n, dpoints);
+		// if we are row-based, add a ".T" at the end to indicate transpose row.
+		if (!column)
+		{
+			str_len += 2;
+		}
 		char *strg = new char[str_len];
-		if (!_str_representation_(strg, data, n, dpoints, 1))
+		if (!_str_representation_(strg, data, n, dpoints, 1, !column))
 		{
 			INVALID("Problem with creating string representation");
 		}
@@ -1123,7 +1177,7 @@ namespace numpy {
 
 	Matrix Vector::to_matrix()
 	{
-		Matrix m(1, rhs.n);
+		Matrix m = empty(1, n);
 		if (!_copy_array_(m.data, data, n))
 		{
 			INVALID("copy failed!");
@@ -1405,65 +1459,81 @@ namespace numpy {
 
 	Vector& Vector::add(const Vector& rhs)
 	{
-		data += rhs.data;
+		if (rhs.n != n)
+		{
+			INVALID("rhs size != array size");
+		}
+		_element_add_(data, rhs.data, n);
 		return *this;
 	}
 	Vector& Vector::add(double value)
 	{
-		data += value;
+		_add_array_(data, n, value);
 		return *this;
 	}
 	Vector& Vector::add(int value)
 	{
-		data += value;
+		_add_array_(data, n, (double) value);
 		return *this;
 	}
 
 	Vector& Vector::sub(const Vector& rhs)
 	{
-		data -= rhs.data;
+		if (rhs.n != n)
+		{
+			INVALID("rhs size != array size");
+		}
+		_element_sub_(data, rhs.data, n);
 		return *this;
 	}
 	Vector& Vector::sub(double value)
 	{
-		data -= value;
+		_sub_array_(data, n, value);
 		return *this;
 	}
 	Vector& Vector::sub(int value)
 	{
-		data -= value;
+		_sub_array_(data, n, (double) value);
 		return *this;
 	}
 
 	Vector& Vector::mult(const Vector& rhs)
 	{
-		data *= rhs.data;
+		if (rhs.n != n)
+		{
+			INVALID("rhs size != array size");
+		}
+		_element_mult_(data, rhs.data, n);
 		return *this;
 	}
 	Vector& Vector::mult(double value)
 	{
-		data *= value;
+		_mult_array_(data, n, value);
 		return *this;
 	}
 	Vector& Vector::mult(int value)
 	{
-		data *= value;
+		_mult_array_(data, n, (double) value);
 		return *this;
 	}
 
 	Vector& Vector::div(const Vector& rhs)
 	{
-		data /= rhs.data;
+		if (rhs.n != n)
+		{
+			INVALID("rhs size != array size");
+		}
+		_element_div_(data, rhs.data, n);
 		return *this;
 	}
 	Vector& Vector::div(double value)
 	{
-		data /= value;
+		_div_array_(data, n, value);
 		return *this;
 	}
 	Vector& Vector::div(int value)
 	{
-		data /= value;
+		_div_array_(data, n, (double) value);
 		return *this;
 	}
 
@@ -1471,11 +1541,11 @@ namespace numpy {
 	{
 		return ((*this) < r);
 	}
-	Mask Vector::lt(double value)
+	Mask Vector::lt(double r)
 	{
 		return ((*this) < r);
 	}
-	Mask Vector::lt(int value)
+	Mask Vector::lt(int r)
 	{
 		return ((*this) < r);
 	}
@@ -1484,11 +1554,11 @@ namespace numpy {
 	{
 		return ((*this) <= r);
 	}
-	Mask Vector::lte(double value)
+	Mask Vector::lte(double r)
 	{
 		return ((*this) <= r);
 	}
-	Mask Vector::lte(int value)
+	Mask Vector::lte(int r)
 	{
 		return ((*this) <= r);
 	}
@@ -1497,11 +1567,11 @@ namespace numpy {
 	{
 		return ((*this) > r);
 	}
-	Mask Vector::mt(double value)
+	Mask Vector::mt(double r)
 	{
 		return ((*this) > r);
 	}
-	Mask Vector::mt(int value)
+	Mask Vector::mt(int r)
 	{
 		return ((*this) > r);
 	}
@@ -1510,11 +1580,11 @@ namespace numpy {
 	{
 		return ((*this) >= r);
 	}
-	Mask Vector::mte(double value)
+	Mask Vector::mte(double r)
 	{
 		return ((*this) >= r);
 	}
-	Mask Vector::mte(int value)
+	Mask Vector::mte(int r)
 	{
 		return ((*this) >= r);
 	}
@@ -1523,11 +1593,11 @@ namespace numpy {
 	{
 		return ((*this) == r);
 	}
-	Mask Vector::eq(double value)
+	Mask Vector::eq(double r)
 	{
 		return ((*this) == r);
 	}
-	Mask Vector::eq(int value)
+	Mask Vector::eq(int r)
 	{
 		return ((*this) == r);
 	}
@@ -1536,11 +1606,11 @@ namespace numpy {
 	{
 		return ((*this) != r);
 	}
-	Mask Vector::neq(double value)
+	Mask Vector::neq(double r)
 	{
 		return ((*this) != r);
 	}
-	Mask Vector::neq(int value)
+	Mask Vector::neq(int r)
 	{
 		return ((*this) != r);
 	}
@@ -1554,9 +1624,10 @@ namespace numpy {
 		{
 			INVALID("rhs size != array size");
 		}
+		uint res_n = _boolean_summation_array_(rhs.data, rhs.n);
 		// new array size is the sum of trues.
-		Vector res = empty(rhs.sum());
-		if (!_copy_from_mask_array_(res.data, data, rhs.data, m.n, false))
+		Vector res = empty(res_n);
+		if (!_copy_from_mask_array_(res.data, data, rhs.data, rhs.n, false))
 		{
 			INVALID("Unable to copy from mask vector in 'operator[]'.");
 		}

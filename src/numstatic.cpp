@@ -368,6 +368,9 @@ static int _nonzero_array_(double *copy, double *orig, unsigned int orig_size)
 		return 0;
 	}
 	unsigned int idx = 0;
+#ifdef _OPENMP
+	#pragma omp parallel for if(orig_size > __OMP_OPT_VALUE__) schedule(static)
+#endif
 	for (unsigned int i = 0; i < orig_size; i++)
 	{
 		if (orig[i] != 0.0)
@@ -446,7 +449,8 @@ static int _bool_representation_(char *out, bool *in, unsigned int n_in)
 }
 
 static int _str_representation_(char *out, double *arr, unsigned int n_arr,
-								unsigned int dpoints, int if_end_of_string)
+								unsigned int dpoints, int if_end_of_string, 
+								bool row_based = false)
 {
 	// Each entry is going to be 0.5454 so 6 characters long.
 	// E.g [4.0000, 3.0000, 2.0000, 7.0000, 3.0000]
@@ -488,6 +492,11 @@ static int _str_representation_(char *out, double *arr, unsigned int n_arr,
 	}
 	offset += dpoints;
 	out[++offset] = ']';
+	if (row_based)
+	{
+		out[++offset] = '.';
+		out[++offset] = 'T';
+	}
 	if (if_end_of_string) {
 		out[++offset] = '\0';
 	}
@@ -699,7 +708,7 @@ static int _randint_array_(double *arr, unsigned int n, unsigned int max)
 	srand48(time(NULL));
 	unsigned int i;
 #ifdef _OPENMP
-	#pragma omp parallel for if(n>100000) schedule(static)
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
 #endif
 	for (i = 0; i < n; i++)
 	{
@@ -723,7 +732,7 @@ static int _binomial_array_(double *out, double *arr1, double *arr2, unsigned in
 	}
 	unsigned int i;
 #ifdef _OPENMP
-	#pragma omp parallel for if(n.n>100000) schedule(static) shared(n,p)
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) shared(n,p)
 #endif
 	for (i = 0; i < n; i++)
 	{
@@ -920,7 +929,7 @@ static double _matrix_rowwise_prod_(double *arr, unsigned int nvec, unsigned int
 {
 	double total = arr[rowidx];
 #ifdef _OPENMP
-	#pragma omp parallel for if(nvec>__OMP_OPT_VALUE__) schedule(static) reduction(+:total)
+	#pragma omp parallel for if(nvec>__OMP_OPT_VALUE__) schedule(static) reduction(*:total)
 #endif
 	for (unsigned int colidx = 1; colidx < nvec; colidx++)
 	{
@@ -937,13 +946,13 @@ static int _cumulative_sum_(double *zeros, double *oldarr, unsigned int n)
 	}
 	// std::cout << "Getting here" << std::endl;
 #ifdef _OPENMP
-	#pragma omp parallel for if((n)>__OMP_OPT_VALUE__) schedule(static)
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
 #endif
 	for (unsigned int j = 0; j < n; j++)
 	{
 		for (unsigned int i = j; i > 0; i--)
 		{
-			zeros[j] = zeros[j] + oldarr[i];
+			zeros[j] += oldarr[i];
 		}
 	}
 	return 1;
@@ -1032,6 +1041,9 @@ static unsigned int _min_index_(double* arr, unsigned int n)
 	double minval;
 	unsigned int minidx = 0;
 	minval = arr[0];
+#ifdef _OPENMP
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(min:minval,minidx)
+#endif
 	for (unsigned int i = 0; i < n; i++)
 	{
 		if (arr[i] < minval)
@@ -1306,7 +1318,7 @@ static int _partition_(double *arr, const int left, const int right) {
     int mid = left + (right - left) / 2;
     double pivot = arr[mid];
     // move the mid point value to the front.
-    swap(&arr[mid],&arr[left]);
+    swap(&arr[mid], &arr[left]);
     int i = left + 1;
     int j = right;
     while (i <= j) {

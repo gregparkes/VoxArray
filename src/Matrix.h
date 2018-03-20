@@ -734,7 +734,7 @@ namespace numpy {
 	 @param A : the matrix
 	 @return MATRIX_COMPLEX struct
 	 */
-	MATRIX_COMPLEX2& lu(const Matrix& A);
+	MATRIX_COMPLEX2 lu(const Matrix& A);
 
 	/**
 	 Solves the linear system Ax = b.
@@ -950,7 +950,7 @@ class Matrix
 		 @param j : index corresponding to the column number
 		 @return Value at location [i,j]
 		*/
-		inline double& ix(uint i, uint j) { return data[i+j*vectors[0]->n]; }
+		double& ix(uint i, uint j);
 
 		/**
 		 Access the underlying vector object, given column index.

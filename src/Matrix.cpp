@@ -41,8 +41,9 @@ GNU General Public License:
 #ifndef __MATRIX_cpp__
 #define __MATRIX_cpp__
 
+#include <cstring>
 
-
+#include "Vector.h"
 #include "Matrix.h"
 #include "VarStructs.h"
 #include "numstatic.cpp"
@@ -960,7 +961,7 @@ namespace numpy {
 		// vector b_k should now contain eigenvalues
 	}
 
-	MATRIX_COMPLEX2& lu(const Matrix& A)
+	MATRIX_COMPLEX2 lu(const Matrix& A)
 	{
 		// set diag of L = 1
 		Matrix L = eye(A.nvec, A.vectors[0]->n);
@@ -1303,6 +1304,11 @@ namespace numpy {
 			m.vectors[i]->n = vectors[i]->n;
 		}
 		return m;
+	}
+
+	double& Matrix::ix(uint i, uint j)
+	{
+		return data[i+j*vectors[0]->n];
 	}
 
 	Matrix& Matrix::flip(uint axis)

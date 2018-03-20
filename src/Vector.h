@@ -159,16 +159,6 @@ namespace numpy {
 	 Selects values from array a using selected indices (converted to integer)
 
 	 @param a : the array to take from
-	 @param indices : the (integer) array containing indices (not deleted)
-	 @param size : the size of the indices array being pointed to
-	 @return The selected indices <created on the stack>
-	*/
-	Vector take(const Vector& a, const uint* indices, uint size);
-
-	/**
-	 Selects values from array a using selected indices (converted to integer)
-
-	 @param a : the array to take from
 	 @param indices : the (integer) array containing indices
 	 @return The selected indices <created on the stack>
 	*/
@@ -321,6 +311,15 @@ namespace numpy {
 	 @return The new matrix (1-2,N) object <created on the stack> 
 	*/
 	Matrix concat(const Vector& lhs, const Vector& rhs, uint axis);
+
+	/**
+	 Creates an evenly spaced vector incrementing by 1.0 until it reaches end.
+	 End must be a positive value 0 < inf.
+
+	 @param end : the end value to reach.
+	 @return The new array object <created on the stack> 
+	*/
+	Vector arange(uint end);
 
 	/**
 	 Creates a vector with evenly-spaced elements from
@@ -998,9 +997,11 @@ class Vector
 		Vector(uint n, bool column = AXIS_COLUMN);
 
 		/**
-		 Some constructor that simply input values, such as basic 2,3,4-D vectors
+		 Some constructors that simply input values, such as basic 2,3,4-D vectors
 		 */
-		Vector(double val1, double val2, double val3 = 99999.99999, double val4 = 99999.99999);
+		Vector(double v1, double v2);
+		Vector(double v1, double v2, double v3);
+		Vector(double v1, double v2, double v3, double v4);
 
 		/**
 		 Deletes memory.

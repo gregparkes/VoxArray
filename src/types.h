@@ -29,6 +29,7 @@ typedef unsigned int uint;
 // this is the select all symbol
 #define $ 0x00
 #define SELECT_ALL 0x00
+#define _INFINITY_ (1.0/0.0)
 
 //#define _CUMPY_DEBUG_ 0
 

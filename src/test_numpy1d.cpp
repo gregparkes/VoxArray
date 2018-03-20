@@ -40,11 +40,60 @@ GNU General Public License:
 #include "numpy.h"
 
 #define PRINT_STR(x) (std::cout << x << std::endl)
+#define PRINT_SUCCESS(x) (std::cout << ">>> " << x << " >>>" << std::endl)
+#define PRINT_FAIL(x) (std::cout << "??? " << x << " ???" << std::endl)
 #define PRINT_OBJ(x) (std::cout << x.str() << std::endl)
 #define CMP(x,y) (fabs(x - y) < 1E-13)
 #define WEAK_CMP(x,y) (fabs(x -y) < 1E-5)
 
 namespace tests {
+
+	static void test_constructors()
+	{
+		PRINT_STR("Start Constructors");
+		numpy::Vector x = numpy::Vector();
+		// expect an error!
+		try {
+			std::cout << x.str() << std::endl;
+			PRINT_FAIL("Failed error test in test_constructors()");
+		} catch (const std::invalid_argument& e)
+		{
+			PRINT_SUCCESS("Passed null constructor test");
+		} catch (...)
+		{
+			PRINT_FAIL("Unknown catch for test_constructors()");
+		}
+		// normal empty constructor
+		try {
+			numpy::Vector y = numpy::Vector(7);
+			numpy::Vector z = numpy::Vector(5, (bool) AXIS_ROW);
+		} catch (...)
+		{
+			PRINT_FAIL("Unknown catch for test_constructors() for normal constructor");
+		}
+		// constructors with few values in
+		try {
+			numpy::Vector a = numpy::Vector(1.0, 3.0);
+			numpy::Vector b = numpy::Vector(3.0, -4.0, 2.0);
+			numpy::Vector c = numpy::Vector(1.0, 2.0, -3.0, -4.0);
+			PRINT_OBJ(c);
+			assert(CMP(a.data[0], 1.0));
+			assert(CMP(a.data[1], 3.0));
+			assert(CMP(b.data[0], 3.0));
+			assert(CMP(b.data[1], -4.0));
+			assert(CMP(b.data[2], 2.0));
+			assert(CMP(c.data[0], 1.0));
+			assert(CMP(c.data[1], 2.0));
+			assert(CMP(c.data[2], -3.0));
+			assert(CMP(c.data[3], -4.0));
+		} catch (...)
+		{
+			PRINT_FAIL("Unknown catch for test_constructors() for test case");
+		}
+		
+		
+		PRINT_STR("test_constructors :: Passed");
+	}
 
 	static void test_zeros()
 	{
@@ -89,62 +138,6 @@ namespace tests {
 		PRINT_STR("Test_Empty :: Passed");
 	}
 
-	static void test_fill()
-	{
-		PRINT_STR("Start Fill");
-		Numpy arr = numpy::fill(16, 15.0);
-		assert(arr.n == 16);
-		for (int i = 0; i < 16; i++)
-		{
-			assert(CMP(arr.data[i],15.0));
-		}
-		PRINT_STR("Test_Fill :: Passed");
-	}
-
-	static void test_str()
-	{
-		PRINT_STR("Start Str");
-		Numpy x = numpy::zeros(6);
-		PRINT_STR(numpy::str(x));
-		Numpy y = numpy::rand(6);
-		PRINT_STR(numpy::str(y));
-		PRINT_STR(y.str());
-
-		PRINT_STR("Test_Str :: Passed");
-	}
-
-	static void test_array()
-	{
-		PRINT_STR("Start Array");
-		Numpy arr = numpy::array("0.0, 3.42, 5.4, 5.45, 2.45, 9.65");
-		//PRINT_STR(arr.str());
-		assert(arr.n == 6);
-		for (int i = 0; i < 6; i++)
-		{
-			assert(CMP(arr.data[i],arr[i]));
-		}
-
-		PRINT_STR("Test_Array :: Passed");
-	}
-
-	static void test_copy()
-	{
-		PRINT_STR("Start Copy");
-		Numpy x = numpy::ones(16);
-		Numpy y = numpy::copy(x);
-		assert(y.n == x.n);
-		for (int i = 0; i < 16; i++)
-		{
-			assert(CMP(x.data[i], y.data[i]));
-		}
-		Numpy z = x.copy();
-		for (int i = 0; i < 16; i++)
-		{
-			assert(CMP(x.data[i], z.data[i]));
-		}
-		PRINT_STR("Test_Copy :: Passed");
-	}
-
 	static void test_empty_like()
 	{
 		PRINT_STR("Start Empty_Like");
@@ -184,6 +177,137 @@ namespace tests {
 		PRINT_STR("Test_Ones_Like :: Passed");
 	}
 
+	static void test_fill()
+	{
+		PRINT_STR("Start Fill");
+		Numpy arr = numpy::fill(16, 15.0);
+		assert(arr.n == 16);
+		for (int i = 0; i < 16; i++)
+		{
+			assert(CMP(arr.data[i],15.0));
+		}
+		PRINT_STR("Test_Fill :: Passed");
+	}
+
+	static void test_len()
+	{
+		PRINT_STR("Start len");
+		Numpy arr = numpy::ones(10);
+		assert(len(arr) == 10);
+		Numpy arr2 = numpy::zeros(5);
+		assert(len(arr2) == 5);
+		PRINT_STR("Test_Len :: Passed");
+	}
+
+	static void test_str()
+	{
+		PRINT_STR("Start Str");
+		Numpy x = numpy::zeros(6);
+		PRINT_STR(numpy::str(x));
+		Numpy y = numpy::rand(6);
+		PRINT_STR(numpy::str(y));
+		PRINT_STR(y.str());
+
+		PRINT_STR("Test_Str :: Passed");
+	}
+
+	static void test_array()
+	{
+		PRINT_STR("Start Array");
+		Numpy arr = numpy::array("0.0, 3.42, 5.4, 5.45");
+		Numpy arr2 = Numpy(0.0, 3.42, 5.4, 5.45);
+		//PRINT_STR(arr.str());
+		assert(arr.len() == 4);
+		for (int i = 0; i < arr.len(); i++)
+		{
+			assert(CMP(arr.data[i],arr2.data[i]));
+		}
+		// second test
+		Numpy arr3 = numpy::array("302.45, 605.4, -321.7685, -0.44443");
+		Numpy arr4 = numpy::Vector(302.45, 605.4, -321.7685, -0.44443);
+		assert(arr3.len() == 4);
+		for (int i = 0; i < arr3.len(); i++)
+		{
+			assert(CMP(arr3.data[i], arr4.data[i]));
+		}
+
+		PRINT_STR("Test_Array :: Passed");
+	}
+
+	static void test_copy()
+	{
+		PRINT_STR("Start Copy");
+		Numpy x = numpy::ones(16);
+		Numpy y = numpy::copy(x);
+		assert(y.n == x.n);
+		for (int i = 0; i < 16; i++)
+		{
+			assert(CMP(x.data[i], y.data[i]));
+		}
+		Numpy z = x.copy();
+		for (int i = 0; i < 16; i++)
+		{
+			assert(CMP(x.data[i], z.data[i]));
+		}
+		PRINT_STR("Test_Copy :: Passed");
+	}
+
+	static void test_to_matrix()
+	{
+		PRINT_STR("Start To_Matrix");
+		Numpy x = numpy::ones(6);
+		Mat y = numpy::to_matrix(x);
+		PRINT_OBJ(y);
+		assert(y.nvec == 1);
+		assert(y.vectors[0]->n == 6);
+		for (int i = 0; i < 6; i++)
+		{
+			assert(CMP(y.vectors[0]->data[i], 1.0));
+			assert(CMP(y.data[i], 1.0));
+		}
+
+		PRINT_STR("test_to_matrix :: Passed");
+	}
+
+	static void test_arange()
+	{
+		PRINT_STR("Start Arange");
+		// test the single case
+		Numpy a = numpy::arange(6);
+		assert(a.n == 6);
+		for (int i = 0; i < 6; i++)
+		{
+			assert(CMP(a.data[i], (double) i));
+		}
+		Numpy x = numpy::arange(0.0, 1.0, 0.1);
+		assert(x.n == 11);
+		for (int i = 0; i < 11; i++)
+		{
+			double y = i * 0.1;
+			//printf("%lf %lf %lf %lf\n", x.data[i], y, x.data[i] - y, 1e-5);
+			assert(CMP(x.data[i], y));
+		}
+
+		PRINT_STR("Test_Arange :: Passed");
+	}
+
+	static void test_take()
+	{
+		PRINT_STR("Start Take");
+		Numpy x = numpy::arange(6);
+		Numpy z = Numpy(2, 3, 4);
+
+		// test take using another numpy array
+		Numpy a = take(x, z);
+		assert(a.len() == 3);
+		for (int i = 0; i < a.len(); i++)
+		{
+			assert(CMP(a.data[i], z.data[i]));
+		}
+
+		PRINT_STR("test_take :: Passed");
+	}
+
 	static void test_rand()
 	{
 		PRINT_STR("Start Rand");
@@ -213,20 +337,7 @@ namespace tests {
 		PRINT_STR("Test_Randn :: Passed");
 	}
 
-	static void test_arange()
-	{
-		PRINT_STR("Start Arange");
-		Numpy x = numpy::arange(0.0, 1.0, 0.1);
-		assert(x.n == 11);
-		for (int i = 0; i < 11; i++)
-		{
-			double y = i * 0.1;
-			//printf("%lf %lf %lf %lf\n", x.data[i], y, x.data[i] - y, 1e-5);
-			assert(CMP(x.data[i], y));
-		}
-
-		PRINT_STR("Test_Arange :: Passed");
-	}
+	
 
 	static void test_linspace()
 	{
@@ -728,7 +839,7 @@ namespace tests {
 		PRINT_STR(numpy::norm(x, 2));
 		assert(CMP(numpy::norm(x, _INF_NORM), 3.0));
 		assert(CMP(numpy::norm(x, _ONE_NORM), 6.0));
-		assert(WEAK_CMP(numpy::norm(x, _TWO_NORM), 1.0));
+		assert(WEAK_CMP(numpy::norm(x, _TWO_NORM), 3.74166));
 
 		PRINT_STR("Test_Norm :: Passed");
 	}
@@ -855,22 +966,6 @@ namespace tests {
 		PRINT_STR("Test_Sort :: Passed");
 	}
 
-	static void test_unique()
-	{
-		PRINT_STR("Start Unique");
-		Numpy x = numpy::array("6.0, 7.0, 5.0, 7.0, 3.0, 6.0, 9.0, 4.0, 5.0, 6.0");
-		Numpy ans = numpy::array("6.0, 7.0, 5.0, 3.0, 9.0, 4.0");
-		Numpy counts = numpy::array("3.0, 2.0, 2.0, 1.0, 1.0, 1.0");
-		Mat uniques = numpy::unique(x);
-		//PRINT_STR(uniques.str()) << uniques.vectors[0]->str());
-		for (uint i = 0; i < uniques.vectors[0]->n; i++)
-		{
-			assert(ans.data[i] == uniques.vectors[0]->data[i]);
-			assert(counts.data[i] == uniques.vectors[1]->data[i]);
-		}
-		PRINT_STR("Test_Unique :: Passed");
-	}
-
 
 
 
@@ -882,13 +977,17 @@ static void call_all_tests()
 {
 	//The tests here
 	using namespace tests;
+	test_constructors();
 	test_empty();
 	test_zeros();
 	test_ones();
 	test_fill();
+	test_len();
 	test_str();
 	test_array();
 	test_copy();
+	test_to_matrix();
+	test_take();
 	test_empty_like();
 	test_zeros_like();
 	test_ones_like();
@@ -931,7 +1030,6 @@ static void call_all_tests()
 	test_min();
 	test_max();
 	test_dot();
-	test_unique();
 	test_hstack();
 	test_sort();
 }

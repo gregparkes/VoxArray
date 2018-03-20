@@ -45,6 +45,29 @@ GNU General Public License:
 
 namespace numpy {
 
+/********************************************************************************************
+
+    STATIC FUNCTIONS 
+
+*///////////////////////////////////////////////////////////////////////////////////////////
+
+uint sum(const Mask& rhs)
+{
+	return (uint) (_boolean_summation_array_(rhs.data, rhs.n));
+}
+
+double mean(const Mask& rhs)
+{
+	return (double) (sum(rhs) / rhs.n);
+}
+
+
+/********************************************************************************************
+
+        CLASS & MEMBER FUNCTIONS 
+
+*///////////////////////////////////////////////////////////////////////////////////////////
+
 	Mask::Mask()
 	{
 #ifdef _CUMPY_DEBUG_
@@ -62,7 +85,7 @@ namespace numpy {
 #endif
 		if (n == 0)
 		{
-			throw std::range_error("n cannot = 0");
+			RANGE("n cannot = 0");
 		}
 		this->n = n;
 		data = _create_empty_bool_(n);
@@ -80,7 +103,7 @@ namespace numpy {
 #endif
 		if (r.n == 0)
 		{
-			throw std::range_error("n cannot = 0");
+			RANGE("n cannot = 0");
 		}
 		this->n = r.n;
 		data = _create_empty_bool_(this->n);
@@ -113,7 +136,7 @@ namespace numpy {
 #endif
 			if (!_destroy_array_(data))
 			{
-				throw std::invalid_argument("Unable to destroy array");
+				INVALID("Unable to destroy array");
 			}
 		}
     }
@@ -125,7 +148,7 @@ namespace numpy {
     	char *strg = new char[str_len];
     	if (!_bool_representation_(strg, data, n))
 		{
-			throw std::invalid_argument("Problem with creating bool representation");
+			INVALID("Problem with creating bool representation");
 		}
 		return strg;
     }
@@ -145,7 +168,7 @@ namespace numpy {
     	Mask m(n);
 		if (!_copy_bool_(m.data, data, n))
 		{
-			throw std::invalid_argument("copy failed!");
+			INVALID("copy failed!");
 		}
 		flag_delete = m.flag_delete;
 		return m;
@@ -162,7 +185,7 @@ namespace numpy {
     {
     	if (n != rhs.n)
 		{
-			throw std::invalid_argument("masks must be the same size.");
+			INVALID("masks must be the same size.");
 		}
     	_element_and_(data, rhs.data, n);
     	return *this;
@@ -172,7 +195,7 @@ namespace numpy {
     {
     	if (n != rhs.n)
 		{
-			throw std::invalid_argument("masks must be the same size.");
+			INVALID("masks must be the same size.");
 		}
     	_element_or_(data, rhs.data, n);
     	return *this;
@@ -219,7 +242,7 @@ namespace numpy {
 	{
 		if (n != rhs.n)
 		{
-			throw std::invalid_argument("masks must be the same size.");
+			INVALID("masks must be the same size.");
 		}
 		_element_and_(data, rhs.data, n);
 		return *this;
@@ -229,7 +252,7 @@ namespace numpy {
 	{
 		if (n != rhs.n)
 		{
-			throw std::invalid_argument("masks must be the same size.");
+			INVALID("masks must be the same size.");
 		}
 		_element_or_(data, rhs.data, n);
 		return *this;
