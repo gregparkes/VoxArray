@@ -60,6 +60,12 @@ static inline double _cosine_(double v)
 	return cos(v);
 }
 
+/** Given an integer, determine how many characters long it is (using logarithms of exponents)*/
+static unsigned int _integer_char_length_(double a)
+{
+	return (unsigned int) (log10(fabs(a))) + 1;
+}
+
 static inline bool AlmostEqualRelativeAndAbs(double a, double b, double maxdiff,
 		 double maxreldiff = FLT_EPSILON)
 {
@@ -83,6 +89,12 @@ static inline bool AlmostEqualRelativeAndAbs(double a, double b, double maxdiff,
 
 #define CMP(x, y) AlmostEqualRelativeAndAbs(x, y, 0.005)
 
+static bool _is_integer_(double d)
+{
+	int trun = (int) d;
+	// recast and compare
+	return CMP(((double) trun), d);
+}
 
 static double correct_degrees(double degrees)
 {
@@ -130,20 +142,25 @@ static double _factorial_(double v)
  * This code is taken from https://rosettacode.org/wiki/Evaluate_binomial_coefficients
  * With permission.
  */
-static double _binomial_coefficient_(double v, double p)
+static double _binomial_coefficient_(double n, double x)
 {
-	if (v == p)
+	if (n == x)
 	{
 		return 1.0;
-	} else if (p == 1)
+	} else if (x == 1)
 	{
-		return v;
-	} else if (p > v)
+		return n;
+	} else if (x > n)
 	{
 		return 0.0;
 	} else {
-		return (_factorial_(v))/(_factorial_(p)*_factorial_((v - p)));
+		return (_factorial_(n))/(_factorial_(x)*_factorial_((n - x)));
 	}
+}
+
+static double _distribution_binomial_(double n, double p, uint pi)
+{
+	return (_binomial_coefficient_(n, pi) * _c_power_(p, pi) * (_c_power_((1-p), (n-pi))));
 }
 
 static long _poisson_coefficient_(double lam)
@@ -419,6 +436,17 @@ static inline unsigned int _n_digits_in_int_(int value)
 	return floor(log10(abs(value))) + 1;
 }
 
+static unsigned int _str_length_int_gen_(double *arr, unsigned int n)
+{
+	unsigned int i;
+	unsigned int total = 0;
+	for (i = 0; i < n; i++)
+	{
+		total += _integer_char_length_(arr[i]);
+	}
+	return total + 2 + ((n - 1) * 2);
+} 
+
 static int _bool_representation_(char *out, bool *in, unsigned int n_in)
 {
 	if (out == NULL)
@@ -448,6 +476,61 @@ static int _bool_representation_(char *out, bool *in, unsigned int n_in)
 	return 1;
 }
 
+static int _int_representation_(char *out, double *arr, unsigned int n_arr,
+								int if_end_of_string, bool row_based = false)
+{
+	if (out == NULL)
+	{
+		printf("Out must be filled with empty slots");
+		return 0;
+	}
+	out[0] = '[';
+	int offset = 1;
+	unsigned int i;
+	for (i = 0; i < n_arr; i++)
+	{
+		unsigned int c_length = _integer_char_length_(arr[i]);
+		if (arr[i] < 0)
+		{
+			c_length++;
+		}
+		// if the length of number is 1, then convert directly to char.
+		if (c_length == 1)
+		{
+			// convert int to char
+			out[offset] = ((int) arr[i]) + '0';
+		}
+		else
+		{
+			char output[c_length];
+			sprintf(output, "%d", (int) arr[i]);
+			unsigned int j;
+			for (j = 0; j < c_length; j++)
+			{
+				out[(offset)+j] = output[j];
+			}
+			offset += (c_length-1);
+		}
+		if (i < (n_arr - 1))
+		{
+			out[++offset] = ',';
+			out[++offset] = ' ';
+			offset++;
+		}
+	}
+	out[++offset] = ']';
+	if (row_based)
+	{
+		out[++offset] = '.';
+		out[++offset] = 'T';
+	}
+	// if end of string char, add it
+	if (if_end_of_string) {
+		out[++offset] = '\0';
+	}
+	return 1;
+}
+
 static int _str_representation_(char *out, double *arr, unsigned int n_arr,
 								unsigned int dpoints, int if_end_of_string, 
 								bool row_based = false)
@@ -467,7 +550,7 @@ static int _str_representation_(char *out, double *arr, unsigned int n_arr,
 	out[0] = '[';
 	int offset = 1;
 	unsigned int i;
-	for (i = 0; i < n_arr-1; i++)
+	for (i = 0; i < n_arr; i++)
 	{
 		double arr_f = _truncate_doub_(arr[i], dpoints);
 		char output[dpoints+2];
@@ -478,25 +561,23 @@ static int _str_representation_(char *out, double *arr, unsigned int n_arr,
 			out[(offset)+j] = output[j];
 		}
 		offset += dpoints;
-		out[++offset] = ',';
-		out[++offset] = ' ';
-		offset++;
+		// unless we are at the end, add on our comma and whitespace padding
+		if (i < n_arr-1)
+		{
+			out[++offset] = ',';
+			out[++offset] = ' ';
+			offset++;
+		}
 	}
-	double arr_f = _truncate_doub_(arr[i], dpoints);
-	char output[dpoints+2];
-	snprintf(output, dpoints+2, "%f", arr_f);
-	unsigned int j;
-	for (j = 0; j < dpoints+2; j++)
-	{
-		out[(offset)+j] = output[j];
-	}
-	offset += dpoints;
+	// add on final bracket
 	out[++offset] = ']';
+	// add on .T if transposed
 	if (row_based)
 	{
 		out[++offset] = '.';
 		out[++offset] = 'T';
 	}
+	// if end of string char, add it
 	if (if_end_of_string) {
 		out[++offset] = '\0';
 	}
@@ -724,19 +805,29 @@ static int _randint_array_(double *arr, unsigned int n, unsigned int max)
 	return 1;
 }
 
-static int _binomial_array_(double *out, double *arr1, double *arr2, unsigned int n)
+static int _binomial_array_(double *out, uint n, uint n_trials, double p)
 {
-	if (out == 0 || arr1 == 0 || arr2 == 0 || n == 0)
+	if (out == 0 || n == 0 || n_trials == 0)
 	{
 		return 0;
 	}
-	unsigned int i;
+	srand48(time(NULL));
+	unsigned int i, j;
 #ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) shared(n,p)
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
 #endif
 	for (i = 0; i < n; i++)
 	{
-		out[i] = _binomial_coefficient_(arr1[i], arr2[i]);
+		uint n_successes = 0;
+		// for each trial, simulate the success
+		for (j = 0; j < n_trials; j++)
+		{
+			if (drand48() < p)
+			{
+				n_successes++;
+			}
+		}
+		out[i] = n_successes;
 	}
 	return 1;
 }

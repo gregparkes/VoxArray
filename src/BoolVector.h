@@ -46,9 +46,29 @@ namespace numpy {
 
 *///////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ Calculate the number of true values (count)
+
+ @param rhs : the mask
+ @return Count of true values
+*/
 uint sum(const Mask& rhs);
 
+/**
+ Calculate the mean of true values as a proportion of the array
+
+ @param rhs : the mask
+ @return Mean
+*/
 double mean(const Mask& rhs);
+
+ /**
+ Convert the mask to a vector (as 0.0s and 1.0s)
+
+ @param rhs : the mask to convert
+ @return Vector object <created on the stack>
+*/
+Vector to_vector(const Mask& rhs);
 
 
 /********************************************************************************************
@@ -161,6 +181,13 @@ class Mask
          @return Vector(2) with [0] as false, [1] as true.
         */
         Vector bincount();
+
+        /**
+         Convert the mask to a vector (as 0.0s and 1.0s)
+
+         @return Vector object <created on the stack>
+        */
+        Vector to_vector();
 
         /* --------- OPERATOR OVERLOADS ---------------- */
 

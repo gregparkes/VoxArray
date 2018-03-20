@@ -89,23 +89,45 @@ namespace numpy {
 		return rhs.n;
 	}
 
-	char* str(const Vector& rhs, uint dpoints)
+	char* str(const Vector& rhs, uint dpoints, bool represent_float)
 	{
-		// if our data is pointing to nothing - throw an error
 		if (rhs.data == NULL)
 		{
 			INVALID("in str(), data is pointing to no values (NULL)");
 		}
-		unsigned int str_len = _str_length_gen_(rhs.data, rhs.n, dpoints);
+
+		unsigned int str_len;
+		// if we are dealing in floats, calculate the length accordingly, else integerize
+		if (represent_float)
+		{
+			str_len = _str_length_gen_(rhs.data, rhs.n, dpoints);
+		}
+		else
+		{
+			str_len = _str_length_int_gen_(rhs.data, rhs.n);
+		}
+
+		// if we are row-based, add a ".T" at the end to indicate transpose row.
 		if (!rhs.column)
 		{
 			str_len += 2;
 		}
 		char *strg = new char[str_len];
-		if (!_str_representation_(strg, rhs.data, rhs.n, dpoints, 1, !rhs.column))
+		if (represent_float)
 		{
-			INVALID("Problem with creating string representation");
+			if (!_str_representation_(strg, rhs.data, rhs.n, dpoints, 1, !rhs.column))
+			{
+				INVALID("Problem with creating float string representation");
+			}
 		}
+		else
+		{
+			if (!_int_representation_(strg, rhs.data, rhs.n, 1, !rhs.column))
+			{
+				INVALID("Problem with creating int string representation");
+			}
+		}
+		// now create string according to rules of length.
 		return strg;
 	}
 
@@ -153,6 +175,11 @@ namespace numpy {
 			INVALID("copy failed!");
 		}
 		return m;
+	}
+
+	Mask to_mask(const Vector& rhs)
+	{
+		return Mask(rhs);
 	}
 
 	Vector take(const Vector& a, const Vector& indices)
@@ -282,14 +309,59 @@ namespace numpy {
 		return np;
 	}
 
-	Vector binomial(const Vector& n, const Vector& p)
+	Vector randchoice(uint n, const double* array, uint arr_size)
 	{
-		if (n.n != p.n)
+		if (n == 0 || arr_size == 0)
 		{
-			RANGE("n and p vectors must be same length");
+			RANGE("n cannot = 0 in ranchoice()");
 		}
-		Vector np = empty_like(n);
-		_binomial_array_(np.data, n.data, p.data, np.n);
+		if (array == NULL)
+		{
+			INVALID("array cannot be null in randchoice()");
+		}
+		Vector np(n);
+		srand48(time(NULL));
+		for (uint i = 0; i < n; i++)
+		{
+			double idx_f = drand48() * arr_size;
+			int idx = (int) _truncate_doub_(idx_f, 0);
+			np.data[i] = array[idx];
+		}
+		return np;
+	}
+
+	Vector randchoice(uint n, const Vector& r)
+	{
+		if (n == 0)
+		{
+			RANGE("n cannot = 0 in ranchoice()");
+		}
+		Vector np = empty_like(r);
+		srand48(time(NULL));
+		for (uint i = 0; i < n; i++)
+		{
+			double idx_f = drand48() * r.n;
+			int idx = (int) _truncate_doub_(idx_f, 0);
+			np.data[i] = r.data[idx];
+		}
+		return np;
+	}
+
+	Vector binomial(uint n, double p, uint size)
+	{
+		if (p < 0.0 || p > 1.0)
+		{
+			INVALID("p in binomial() must be between 0 and 1");
+		}
+		if (size == 0 || n == 0)
+		{
+			INVALID("size/n in binomial() must not = 0");
+		}
+		Vector np(size);
+		if (!_binomial_array_(np.data, size, n, p))
+		{
+			INVALID("unable to generate binomial distribution");
+		}
 		return np;
 	}
 
@@ -1086,7 +1158,7 @@ namespace numpy {
 	Vector::Vector(double v1, double v2, double v3)
 	{
 #ifdef _CUMPY_DEBUG_
-		printf("constructing vector set2 %x\n", this);
+		printf("constructing vector set3 %x\n", this);
 #endif	
 		if (isinf(v1) || isinf(v2) || isinf(v3))
 		{
@@ -1108,7 +1180,7 @@ namespace numpy {
 	Vector::Vector(double v1, double v2, double v3, double v4)
 	{
 #ifdef _CUMPY_DEBUG_
-		printf("constructing vector set2 %x\n", this);
+		printf("constructing vector set4 %x\n", this);
 #endif	
 		if (isinf(v1) || isinf(v2) || isinf(v3) || isinf(v4))
 		{
@@ -1128,6 +1200,33 @@ namespace numpy {
 		this->flag_delete = true;
 	}
 
+	Vector::Vector(double *array, uint size)
+	{
+#ifdef _CUMPY_DEBUG_
+		printf("constructing vector array set %x\n", this);
+#endif
+		if (array == NULL)
+		{
+			INVALID("array in Vector() is empty");
+		}
+		if (size <= 0)
+		{
+			INVALID("size in Vector() = 0");
+		}
+		this->n = size;
+		this->column = true;
+		data = _create_empty_(n);
+		if (data == NULL)
+		{
+			throw std::runtime_error("Unable to allocate memory");
+		}
+		if (!_copy_array_(data, array, size))
+		{
+			INVALID("Unable to copy array in Vector()");
+		}
+		this->flag_delete = true;
+	}
+
 	Vector::~Vector()
 	{
 		if (flag_delete && data != NULL)
@@ -1140,26 +1239,78 @@ namespace numpy {
 				INVALID("Unable to destroy array");
 			}
 		}
-
 	}
 
-	char* Vector::str(uint dpoints)
+	
+	bool Vector::isFloat()
+	{
+		if (data == NULL)
+		{
+			INVALID("in isFloat() data = null pointer");
+		}
+		for (uint i = 0; i < n; i++)
+		{
+			if (_is_integer_(data[i]))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool Vector::isInteger()
+	{
+		if (data == NULL)
+		{
+			INVALID("in isFloat() data = null pointer");
+		}
+		for (uint i = 0; i < n; i++)
+		{
+			if (!_is_integer_(data[i]))
+			{
+				return false;
+			}
+		}
+	}
+
+	char* Vector::str(uint dpoints, bool represent_float)
 	{
 		if (data == NULL)
 		{
 			INVALID("in str(), data is pointing to no values (NULL)");
 		}
-		unsigned int str_len = _str_length_gen_(data, n, dpoints);
+		unsigned int str_len;
+		// if we are dealing in floats, calculate the length accordingly, else integerize
+		if (represent_float)
+		{
+			str_len = _str_length_gen_(data, n, dpoints);
+		}
+		else
+		{
+			str_len = _str_length_int_gen_(data, n);
+		}
+
 		// if we are row-based, add a ".T" at the end to indicate transpose row.
 		if (!column)
 		{
 			str_len += 2;
 		}
 		char *strg = new char[str_len];
-		if (!_str_representation_(strg, data, n, dpoints, 1, !column))
+		if (represent_float)
 		{
-			INVALID("Problem with creating string representation");
+			if (!_str_representation_(strg, data, n, dpoints, 1, !column))
+			{
+				INVALID("Problem with creating float string representation");
+			}
 		}
+		else
+		{
+			if (!_int_representation_(strg, data, n, 1, !column))
+			{
+				INVALID("Problem with creating int string representation");
+			}
+		}
+		// now create string according to rules of length.
 		return strg;
 	}
 
@@ -1183,6 +1334,11 @@ namespace numpy {
 			INVALID("copy failed!");
 		}
 		return m;
+	}
+
+	Mask Vector::to_mask()
+	{
+		return Mask(*this);
 	}
 
 	Vector& Vector::flip()

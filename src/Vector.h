@@ -126,9 +126,10 @@ namespace numpy {
 
 	@param rhs : the array to represent.
 	@param dpoints (optional) : number of decimal places to keep in each value
+	@param represent_float (optional) : if false will truncate and represent integers
 	@return The corresponding string. <created on heap, must be deleted>
 	 */
-	char* str(const Vector& rhs, uint dpoints = 5);
+	char* str(const Vector& rhs, uint dpoints = 5, bool represent_float = true);
 
 	/**
 	 Returns an array object with set elements in.
@@ -154,6 +155,14 @@ namespace numpy {
 	 @return The new matrix object. <created on the stack>
 		*/
 	Matrix to_matrix(const Vector& rhs);
+
+	/**
+	 Copies and converts the vector into a vector-mask.
+
+	 @param rhs : the vector to convert.
+	 @return The new mask object <created on the stack>
+	*/
+	Mask to_mask(const Vector& rhs);
 
 	/**
 	 Selects values from array a using selected indices (converted to integer)
@@ -233,13 +242,38 @@ namespace numpy {
 	Vector randchoice(uint n, const char* values);
 
 	/**
+	 Creates a vector with random elements from the
+	 'array' array, in uniform distribution [0, 1].
+
+	 e.g -> double xs[4] = {1.0, 3.0, 2.0, 0.75};
+	 	 -> Numpy y = randchoice(10, xs, 4);
+
+	 @param n : the size of the desired (new) array.
+	 @param array : pool of values to choose from.
+	 @param arr_size : size of array
+	 @return The new array object <created on the stack>
+	 */
+	Vector randchoice(uint n, const double* array, uint arr_size);
+
+	/**
+	 Creates a vector using random values from r selecting
+	 from a uniform distribution. Assumes r is unique.
+	
+	 @param n : the size of the new array
+	 @param r : the vector to select from
+	 @return The new array object <created on the stack>
+	*/
+	Vector randchoice(uint n, const Vector& r);
+
+	/**
 	 Creates a vector binomial response (as int) from the Binomial Distribution.
 
-	 @param n : array parameter of the distribution
-	 @param p : the array probability of getting 1 (success), in N[0, 1]
+	 @param n : number of trials
+	 @param p : probability of each trial 1 (success)/0 (fail), in N[0, 1]
+	 @param size : the number of tests in array
 	 @return The binomial vector response (integers) <created on the stack>
 	 */
-	Vector binomial(const Vector& n, const Vector& p);
+	Vector binomial(uint n, double p, uint size);
 
 	/**
 	 Draws samples from a Poisson Distribution.
@@ -247,7 +281,8 @@ namespace numpy {
 	 @param lam : vector of expectation intervals
 	 @return Poisson Vector <created on the stack>
 	 */
-	Vector poisson(const Vector& lam);
+	 
+	//Vector poisson(const Vector& lam);
 
 	/**
 	 Returns a random sample of items from the vector.
@@ -1004,6 +1039,11 @@ class Vector
 		Vector(double v1, double v2, double v3, double v4);
 
 		/**
+		 A constructor using a pointer array. We copy the values over into our array and store.
+		*/
+		Vector(double *array, uint size);
+
+		/**
 		 Deletes memory.
 		 */
 		~Vector();
@@ -1046,6 +1086,16 @@ class Vector
 
 		inline double& ix(int idx) { return data[idx]; }
 
+		/**
+		 Calculate whether this is a float array.
+		*/
+		bool isFloat();
+
+		/**
+		 Check whether all values are rounded with 0 sigfig.
+		*/
+		bool isInteger();
+
 	/********************************************************************************************
 
 		OTHER FUNCTIONS 
@@ -1057,9 +1107,10 @@ class Vector
 
 		 e.g "[0.00, 1.00, 2.00, 3.00, 4.00]"
 		 @param dpoints (optional) : sets the number of values after decimal point to keep
+		 @param represent_float (optional) : if false will truncate and represent integers
 		 @return The corresponding string. <created on heap, must be deleted>
 		 */
-		char* str(uint dpoints = 5);
+		char* str(uint dpoints = 5, bool represent_float = true);
 
 		/**
 		 Copies an array object.
@@ -1074,6 +1125,13 @@ class Vector
 		 @return The new matrix object. <created on the stack>
 		*/
 		Matrix to_matrix();
+
+		/**
+		 Copies and converts the vector into a vector mask.
+
+		 @return The new mask object. <created on the stack>
+		*/
+		Mask to_mask();
 
 		/**
 		 Flips the elements in the array into a new copied array.

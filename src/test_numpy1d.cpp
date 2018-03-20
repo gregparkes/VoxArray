@@ -90,8 +90,13 @@ namespace tests {
 		{
 			PRINT_FAIL("Unknown catch for test_constructors() for test case");
 		}
-		
-		
+		// constructors using a automatic stack array
+		double vals[8] = {1.0, 4.0, 5.0, 2.0, 3.0, 7.0, 3.0, -5.0};
+		Numpy d = numpy::Vector(vals, 8);
+		for (uint i = 0; i < 8; i++)
+		{
+			assert(CMP(d.data[i], vals[i]));
+		}
 		PRINT_STR("test_constructors :: Passed");
 	}
 
@@ -206,7 +211,10 @@ namespace tests {
 		PRINT_STR(numpy::str(x));
 		Numpy y = numpy::rand(6);
 		PRINT_STR(numpy::str(y));
-		PRINT_STR(y.str());
+		Numpy z = Numpy(0.0, 6.0, 70.0, 100.0);
+		PRINT_STR(numpy::str(z, 10, false));
+		Numpy a = Numpy(1.0, -2.0, -15.0003, 2006.45);
+		PRINT_STR(a.str(10, false));
 
 		PRINT_STR("Test_Str :: Passed");
 	}
@@ -308,6 +316,35 @@ namespace tests {
 		PRINT_STR("test_take :: Passed");
 	}
 
+	static void test_where()
+	{
+		PRINT_STR("Start Where");
+		double vals[8] = {0.0, 0.0, 3.0, -2.0, -3.0, 0.0, 5.0, 90.0};
+		double corr[5] = {3.0, -2.0, -3.0, 5.0, 90.0};
+		double corr2[5] = {0.0, 0.0, -2.0, -3.0, 0.0};
+		Numpy x = Numpy(vals, 8);
+		// create mask and assume it works.
+		numpy::Mask m = numpy::to_mask(x);
+		// select elements non-zero using where.
+		Numpy y = numpy::where(x, m);
+		assert(y.len() == 5);
+		// check whether we have the correct values where
+		for (uint i = 0; i < y.len(); i++)
+		{
+			assert(CMP(y.data[i], corr[i]));
+		}
+		// case 2. select values <= 0.
+		numpy::Mask m2 = (x <= 0);
+		Numpy z = numpy::where(x, m2);
+		assert(z.len() == 5);
+		for (uint i = 0; i < z.len(); i++)
+		{
+			assert(CMP(z.data[i], corr2[i]));
+		}
+
+		PRINT_STR("test_where :: Passed");
+	}
+
 	static void test_rand()
 	{
 		PRINT_STR("Start Rand");
@@ -337,7 +374,72 @@ namespace tests {
 		PRINT_STR("Test_Randn :: Passed");
 	}
 
-	
+	static void test_normal()
+	{
+		PRINT_STR("Start Normal");
+		// test using different mean
+		double mean = 5.0;
+		Numpy x = numpy::normal(500, mean, 1.0);
+		assert(x.n == 500);
+		//calculate mean and hope it's close to +- 0.2 around 0.
+		double count = 0.0;
+		for (int i = 0; i < 500; i++)
+		{
+			count += x.data[i];
+		}
+		assert(((count / 500) > (-0.5 + mean)) && ((count / 500) < (0.5 + mean)));
+
+		PRINT_STR("test_normal :: Passed");
+	}
+
+	static void test_randint()
+	{
+		PRINT_STR("Start Randint");
+		Numpy x = numpy::randint(15, 10);
+		//PRINT_STR(x.str());
+		for (int i = 0; i < 15; i++)
+		{
+			assert(x[i] <= 10.0);
+		}
+
+		PRINT_STR("Test_Randint :: Passed");
+	}
+
+	static void test_randchoice()
+	{
+		PRINT_STR("Start Randchoice");
+		Numpy x = numpy::randchoice(15, "-1.0, 0.0, 1.0");
+		assert(x.n == 15);
+		//PRINT_STR(x.str());
+		for (int i = 0; i < 15; i++)
+		{
+			assert(CMP(x[i], -1.0) || CMP(x[i], 0.0) || CMP(x[i], 1.0));
+		}
+
+		PRINT_STR("Test_Randchoice :: Passed");
+	}
+
+	static void test_binomial()
+	{
+		PRINT_STR("Start Binomial");
+		Numpy x = numpy::binomial(10, 0.5, 10);
+		// test that all values are between 0 and 10.
+		for (uint i = 0; i < 10; i++)
+		{
+			assert(x.data[i] >= 0.0 && x.data[i] <= 10.0);
+		}
+		// test that the mean is reasonable
+		assert(x.mean() >= 2.0 && x.mean() <= 8);
+		// test that they are all ints
+		assert(x.isInteger());
+
+		PRINT_STR("test_binomial :: Passed");
+	}
+
+	static void test_sample()
+	{
+
+	}
 
 	static void test_linspace()
 	{
@@ -672,32 +774,7 @@ namespace tests {
 		PRINT_STR("Test_Ceil :: Passed");
 	}
 
-	static void test_randint()
-	{
-		PRINT_STR("Start Randint");
-		Numpy x = numpy::randint(15, 10);
-		//PRINT_STR(x.str());
-		for (int i = 0; i < 15; i++)
-		{
-			assert(x[i] <= 10.0);
-		}
 
-		PRINT_STR("Test_Randint :: Passed");
-	}
-
-	static void test_randchoice()
-	{
-		PRINT_STR("Start Randchoice");
-		Numpy x = numpy::randchoice(15, "-1.0, 0.0, 1.0");
-		assert(x.n == 15);
-		//PRINT_STR(x.str());
-		for (int i = 0; i < 15; i++)
-		{
-			assert(CMP(x[i], -1.0) || CMP(x[i], 0.0) || CMP(x[i], 1.0));
-		}
-
-		PRINT_STR("Test_Randchoice :: Passed");
-	}
 
 	static void test_count()
 	{
@@ -981,6 +1058,9 @@ static void call_all_tests()
 	test_empty();
 	test_zeros();
 	test_ones();
+	test_empty_like();
+	test_zeros_like();
+	test_ones_like();
 	test_fill();
 	test_len();
 	test_str();
@@ -988,11 +1068,15 @@ static void call_all_tests()
 	test_copy();
 	test_to_matrix();
 	test_take();
-	test_empty_like();
-	test_zeros_like();
-	test_ones_like();
+	test_where();
 	test_rand();
 	test_randn();
+	test_normal();
+	test_randint();
+	test_randchoice();
+	test_binomial();
+	test_poisson();
+	test_sample();
 	test_arange();
 	test_linspace();
 	test_abs();
@@ -1011,8 +1095,6 @@ static void call_all_tests()
 	test_operators();
 	test_floor();
 	test_ceil();
-	test_randint();
-	test_randchoice();
 	test_count();
 	test_count_nonzero();
 	test_cumsum();
