@@ -60,6 +60,16 @@ static inline double _cosine_(double v)
 	return cos(v);
 }
 
+static inline double _uniform_rand_()
+{
+	return (rand() / (RAND_MAX + 1.0));
+}
+
+static inline double _uniform_M_to_N_(double M, double N)
+{
+	return (M + (rand() / (RAND_MAX / (N-M))));
+}
+
 /** Given an integer, determine how many characters long it is (using logarithms of exponents)*/
 static unsigned int _integer_char_length_(double a)
 {
@@ -163,17 +173,18 @@ static double _distribution_binomial_(double n, double p, uint pi)
 	return (_binomial_coefficient_(n, pi) * _c_power_(p, pi) * (_c_power_((1-p), (n-pi))));
 }
 
-static long _poisson_coefficient_(double lam)
+static long _poisson_generator_knuth_(double lam)
 {
-	srand48(time(NULL));
-	double limit = exp(-lam);
-	double prod = drand48();
-	long n;
-	for (n = 0; prod >= limit; n++)
+
+	double L = exp(-lam);
+	long k = 0;
+	double p = 1.0;
+	do
 	{
-		prod *= drand48();
-	}
-	return n;
+		k++;
+		p *= _uniform_rand_();
+	} while (p > L);
+	return k - 1;
 }
 
 /**
@@ -739,13 +750,12 @@ static int _rand_array_(double *arr, unsigned int n)
 		return 0;
 	}
 	unsigned int i;
-	srand48(time(NULL));
 #ifdef _OPENMP
 	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
 #endif
 	for (i = 0; i < n; i++)
 	{
-		arr[i] = drand48();
+		arr[i] = _uniform_rand_();
 	}
 	return 1;
 }
@@ -757,8 +767,6 @@ static int _normal_distrib_(double *arr, unsigned int n, double mean,
 	{
 		return 0;
 	}
-	srand48(time(NULL));
-
 #ifdef _OPENMP
 	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
 #endif
@@ -767,8 +775,8 @@ static int _normal_distrib_(double *arr, unsigned int n, double mean,
 		double x, y, r;
 		do
 		{
-			x = 2.0 * drand48() - 1;
-			y = 2.0 * drand48() - 1;
+			x = 2.0 * _uniform_rand_() - 1;
+			y = 2.0 * _uniform_rand_() - 1;
 			r = x*x + y*y;
 		}
 		while (r == 0.0 || r > 1.0);
@@ -786,14 +794,13 @@ static int _randint_array_(double *arr, unsigned int n, unsigned int max)
 	{
 		return 0;
 	}
-	srand48(time(NULL));
 	unsigned int i;
 #ifdef _OPENMP
 	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
 #endif
 	for (i = 0; i < n; i++)
 	{
-		arr[i] = drand48() * max;
+		arr[i] = _uniform_rand_() * max;
 		if (arr[i] < 0)
 		{
 			arr[i] = _truncate_doub_(arr[i], 0) - 1;
@@ -811,7 +818,6 @@ static int _binomial_array_(double *out, uint n, uint n_trials, double p)
 	{
 		return 0;
 	}
-	srand48(time(NULL));
 	unsigned int i, j;
 #ifdef _OPENMP
 	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
@@ -822,12 +828,29 @@ static int _binomial_array_(double *out, uint n, uint n_trials, double p)
 		// for each trial, simulate the success
 		for (j = 0; j < n_trials; j++)
 		{
-			if (drand48() < p)
+			if (_uniform_rand_() < p)
 			{
 				n_successes++;
 			}
 		}
 		out[i] = n_successes;
+	}
+	return 1;
+}
+
+static int _poisson_array_(double * out, uint n, double lam)
+{
+	if (out == 0 || n == 0 || lam < 0)
+	{
+		return 0;
+	}
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
+#endif
+	for (i = 0; i < n; i++)
+	{
+		out[i] = _poisson_generator_knuth_(lam);
 	}
 	return 1;
 }

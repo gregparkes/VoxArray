@@ -436,6 +436,17 @@ namespace tests {
 		PRINT_STR("test_binomial :: Passed");
 	}
 
+	static void test_poisson()
+	{
+		PRINT_STR("Start Poisson");
+		Numpy x = numpy::poisson(5.0, 50);
+		assert(x.len() == 50);
+		PRINT_STR(x.mean());
+		assert(x.mean() >= 3.5 && x.mean() <= 6.5);
+		
+		PRINT_STR("test_poisson :: Passed");
+	}
+
 	static void test_sample()
 	{
 

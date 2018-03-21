@@ -2,5 +2,6 @@ sudo: false
 language: cpp
 
 script:
+- make
 - cd src/
-- make && ./test_numpy
+- ./test_numpy

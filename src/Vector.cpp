@@ -365,13 +365,18 @@ namespace numpy {
 		return np;
 	}
 
-	Vector poisson(const Vector& lam)
+	Vector poisson(double lam, uint size)
 	{
-		Vector res = empty_like(lam);
-		for (uint i = 0; i < lam.n; i++)
+		if (lam < 0)
 		{
-			res.data[i] = _poisson_coefficient_(lam.data[i]);
+			INVALID("lam in poisson() must be >= 0");
 		}
+		if (size == 0)
+		{
+			INVALID("size of array in poisson() cannot = 0");
+		}
+		Vector res = empty(size);
+		_poisson_array_(res.data, size, lam);
 		return res;
 	}
 

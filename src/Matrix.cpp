@@ -313,7 +313,7 @@ namespace numpy {
 
 	long poisson(double lam)
 	{
-		return _poisson_coefficient_(lam);
+		return _poisson_generator_knuth_(lam);
 	}
 
 	Matrix clip(const Matrix& rhs, double a_min, double a_max)

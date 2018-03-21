@@ -1,0 +1,5 @@
+make clean
+make
+cd src/
+./test_numpy
+cd ..

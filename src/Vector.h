@@ -278,11 +278,12 @@ namespace numpy {
 	/**
 	 Draws samples from a Poisson Distribution.
 
-	 @param lam : vector of expectation intervals
+	 @param lam : expectation of intervial >= 0.
+	 @param size : output shape size
 	 @return Poisson Vector <created on the stack>
 	 */
 	 
-	//Vector poisson(const Vector& lam);
+	Vector poisson(double lam, uint size);
 
 	/**
 	 Returns a random sample of items from the vector.
