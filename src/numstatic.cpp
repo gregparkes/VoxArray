@@ -65,7 +65,26 @@ static inline double _cosine_(double v)
 
 static inline double _uniform_rand_()
 {
-	return (rand() / (RAND_MAX + 1.0));
+	return (rand() / ((double) RAND_MAX + 1.0));
+}
+
+/* Returns int in the range [0, n] */
+static int _uniform_randint_(int n)
+{
+	if ((n - 1) == RAND_MAX)
+	{
+		return rand();
+	} else {
+		long end = RAND_MAX / n; //  truncate skew
+		end *= n;
+
+		// ignore results from rand() that fall above that limit.
+		int r;
+		while ((r = rand()) >= end);
+
+		// finally return.
+		return r % n;
+	}
 }
 
 static inline double _uniform_M_to_N_(double M, double N)
@@ -261,6 +280,27 @@ template <typename T> static int _flip_array_(T *arr, unsigned int n)
 		for( /* void */; p1 < p2; p1++, p2--)
 		{
 			swap<T>(p1, p2);
+		}
+		return 1;
+	}
+	else return 0;
+}
+
+/*
+Acts as a pretty good shuffling algorithm - assuming uniform_randint lacks bias.
+
+Taken from https://stackoverflow.com/questions/196017/unique-non-repeating-random-numbers-in-o1#196065
+*/
+template <typename T> static int _durstenfeld_fisher_yates_(T *arr, unsigned int n)
+{
+	if (n != 0 && arr != NULL)
+	{
+		srand(time(NULL));
+		unsigned int i;
+		for (i = n - 1; i > 0; i--)
+		{
+			unsigned int r = _uniform_randint_(i);
+			swap<T>(&arr[i], &arr[r]);
 		}
 		return 1;
 	}
@@ -708,6 +748,7 @@ static int _rand_array_(double *arr, unsigned int n)
 {
 	if (n != 0 && arr != NULL)
 	{
+		srand(time(NULL));
 		double *p1 = &arr[0];
 		double *end = p1 + n;
 		unsigned int i;
@@ -727,6 +768,7 @@ static int _normal_distrib_(double *arr, unsigned int n, double mean,
 	{
 		return 0;
 	}
+	srand(time(NULL));
 #ifdef _OPENMP
 	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
 #endif
@@ -754,20 +796,14 @@ static int _randint_array_(double *arr, unsigned int n, unsigned int max)
 	{
 		return 0;
 	}
+	srand(time(NULL));
 	unsigned int i;
 #ifdef _OPENMP
 	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
 #endif
 	for (i = 0; i < n; i++)
 	{
-		arr[i] = _uniform_rand_() * max;
-		if (arr[i] < 0)
-		{
-			arr[i] = _truncate_doub_(arr[i], 0) - 1;
-		} else
-		{
-			arr[i] = _truncate_doub_(arr[i], 0) + 1;
-		}
+		arr[i] = _uniform_randint_(max);
 	}
 	return 1;
 }
@@ -778,6 +814,7 @@ static int _binomial_array_(double *out, uint n, uint n_trials, double p)
 	{
 		return 0;
 	}
+	srand(time(NULL));
 	unsigned int i, j;
 #ifdef _OPENMP
 	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
@@ -804,6 +841,7 @@ static int _poisson_array_(double * out, uint n, double lam)
 	{
 		return 0;
 	}
+	srand(time(NULL));
 	unsigned int i;
 #ifdef _OPENMP
 	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)

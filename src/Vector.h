@@ -220,7 +220,7 @@ namespace numpy {
 	Vector normal(uint n, double mean, double sd);
 
 	/**
-	 Creates a vector with random integers in N[0, max]
+	 Creates a vector with random integers in N[1, max]
 
 	 @param n : the size of the desired array
 	 @param max : the max number to generate
@@ -309,7 +309,7 @@ namespace numpy {
 	 Extracts all the non-zero values from an array and copies them.
 
 	 @param rhs : the array to extract from.
-	 @return The new non-zero array object. <created on the heap, must be deleted>
+	 @return The new non-zero array object. <created on the stack>
 	 */
 	Vector nonzero(const Vector& rhs);
 

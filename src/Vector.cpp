@@ -382,20 +382,18 @@ namespace numpy {
 
 	Vector sample(const Vector& rhs, uint n)
 	{
-		// calculate the probability as a proportion of the size of the dataset
-		double probability = ((double) n / (double) rhs.n);
-		// generate uniform random vector
-		Vector urv = rand(rhs.n);
-		// select samples with value < probability; this conditional will generate a *MASK* object
-		// which immediately goes into the const Mask& property.
-		Vector res = where(urv, urv < probability);
-		return res;
+		// create arange vector of same size, add 1 so we don't handle zero.
+		Vector indices = arange(rhs.n) + 1;
+		// shuffle indices randomly using the Durstenfled-Fisher-Yates algorithm.
+		_durstenfeld_fisher_yates_<double>(indices.data, indices.n);
+		// use mask on rhs to sample values where mask (indices < n) does not contain 0.
+		return where(rhs, indices <= (double) n);
 	}
 
 	Vector nonzero(const Vector& rhs)
 	{
 		int cnz = _count_nonzero_array_(rhs.data, rhs.n);
-		Vector np(cnz);
+		Vector np = empty(cnz);
 		_nonzero_array_(np.data, rhs.data, rhs.n);
 		return np;
 	}
@@ -605,7 +603,7 @@ namespace numpy {
 			RANGE("in bincount() the max value is above 100k - too large!");
 		}
 		// cast to uint and create array
-		Vector res = zeros(max_v);
+		Vector res = zeros(max_v+1);
 		if (!_bincount_array_(res.data, rhs.data, res.n, rhs.n))
 		{
 			INVALID("Unable to perform bincount on array");

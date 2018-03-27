@@ -348,9 +348,11 @@ namespace tests {
 	static void test_rand()
 	{
 		PRINT_STR("Start Rand");
-		Numpy x = numpy::rand(16);
-		assert(x.n == 16);
-		for (int i = 0; i < 16; i++)
+		int n = 10;
+		Numpy x = numpy::rand(n);
+		assert(x.n == n);
+		PRINT_OBJ(x);
+		for (int i = 0; i < n; i++)
 		{
 			assert(x.data[i] > 0.0 && x.data[i] < 1.0);
 		}
@@ -396,6 +398,7 @@ namespace tests {
 	{
 		PRINT_STR("Start Randint");
 		Numpy x = numpy::randint(15, 10);
+		PRINT_STR(x.str(10, false));
 		//PRINT_STR(x.str());
 		for (int i = 0; i < 15; i++)
 		{
@@ -449,7 +452,71 @@ namespace tests {
 
 	static void test_sample()
 	{
+		PRINT_STR("Start Sample");
+		Numpy x = numpy::arange(10);
+		//PRINT_OBJ(x);
+		Numpy y = numpy::sample(x, 5);
+		//PRINT_OBJ(y);
+		assert(y.n == 5);
 
+		PRINT_STR("test_sample :: Passed");
+	}
+
+	static void test_vectorize()
+	{
+		PRINT_STR("Start Vectorize");
+		
+		numpy::Matrix m = numpy::ones(3,2);
+		numpy::Vector v = numpy::vectorize(m);
+		assert(v.n == 6);
+		for (int i = 0; i < 6; i++)
+		{
+			assert(CMP(v.data[i], 1.0));
+		}
+
+		PRINT_STR("test_vectorize :: Passed");
+	}
+
+	static void test_nonzero()
+	{
+		PRINT_STR("Start Nonzero");
+		
+		Numpy x = numpy::array("1.0, 0.0, 1.0, 0.0, 0.0, 3.0, -10.0, 7.0");
+		Numpy y = numpy::nonzero(x);
+		Numpy z = numpy::array("1.0, 1.0, 3.0, -10.0, 7.0");
+
+		assert(y.n == z.n);
+		for (int i = 0; i < 5; i++)
+		{
+			assert(CMP(y.data[i], z.data[i]));
+		}
+		PRINT_STR("test_nonzero :: Passed");
+	}
+
+	static void test_flip()
+	{
+		PRINT_STR("Start Flip");
+		Numpy x = numpy::linspace(0.0, 4.0, 5);
+		Numpy y = numpy::flip(x);
+		Numpy z = numpy::array("4.0, 3.0, 2.0, 1.0, 0.0");
+		for (int i = 0; i < 5; i++)
+		{
+			assert(CMP(y.data[i], z.data[i]));
+		}
+
+		PRINT_STR("Test_Flip :: Passed");
+	}
+
+	static void test_vstack()
+	{
+		PRINT_STR("Start Vstack");
+		Numpy x = numpy::arange(0.0, 1.0, 0.1);
+		Numpy y = numpy::randn(5);
+		Numpy z = numpy::vstack(x, y);
+		//PRINT_STR(z.str());
+		assert(z.n == x.n + y.n);
+
+		PRINT_STR("test_vstack :: Passed");
 	}
 
 	static void test_linspace()
@@ -478,6 +545,104 @@ namespace tests {
 		PRINT_STR("Test_Linspace :: Passed");
 	}
 
+	static void test_lstrip()
+	{
+		PRINT_STR("Start Lstrip");
+		Numpy x = numpy::linspace(0.0, 10.0, 11);
+		Numpy y = numpy::lstrip(x, 4);
+		assert(y.n == 7);
+		//PRINT_STR(y.str());
+		for (int i = 4; i < 11; i++)
+		{
+			assert(y.data[i-4] == i);
+		}
+
+		PRINT_STR("Test_Lstrip :: Passed");
+	}
+
+	static void test_rstrip()
+	{
+		PRINT_STR("Start Rstrip");
+		Numpy x = numpy::linspace(0.0, 10.0, 11);
+		Numpy y = numpy::rstrip(x, 5);
+		assert(y.n == 6);
+		//PRINT_STR(y.str());
+		for (int i = 0; i < 6; i++)
+		{
+			assert(y.data[i] == i);
+		}
+
+		PRINT_STR("Test_Rstrip :: Passed");
+	}
+
+	static void test_clip()
+	{
+		PRINT_STR("Start Clip");
+		
+		Numpy x = numpy::arange(10);
+		Numpy y = numpy::clip(x, 2.0, 7.0);
+		Numpy z = numpy::array("2.0, 2.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 7.0, 7.0");
+		for (int i = 0; i < 10; i++)
+		{
+			assert(CMP(y.data[i], z.data[i]));
+		}
+
+		PRINT_STR("test_clip :: Passed");
+	}
+
+	static void test_floor()
+	{
+		PRINT_STR("Start Floor");
+		Numpy x = numpy::array("3.14, 4.54, -3.2, 7.4987");
+		Numpy y = numpy::floor(x);
+		Numpy answers = numpy::array("3.0, 4.0, -3.0, 7.0");
+		for (int i = 0; i < 4; i++)
+		{
+			assert(CMP(y[i], answers[i]));
+		}
+
+		PRINT_STR("Test_Floor :: Passed");
+	}
+
+	static void test_ceil()
+	{
+		PRINT_STR("Start Ceil");
+		Numpy x = numpy::array("3.14, 4.54, -3.2, 7.4987");
+		Numpy y = numpy::ceil(x);
+		Numpy answers = numpy::array("4.0, 5.0, -4.0, 8.0");
+		// PRINT_STR(y.str());
+		for (int i = 0; i < 4; i++)
+		{
+			assert(CMP(y[i], answers[i]));
+		}
+
+		PRINT_STR("Test_Ceil :: Passed");
+	}
+
+	static void test_count()
+	{
+		PRINT_STR("Start Count");
+		Numpy x = numpy::ones(10);
+		assert(numpy::count(x, 1.0) == 10);
+
+		PRINT_STR("Test_Count :: Passed");
+	}
+
+	static void test_bincount()
+	{
+		PRINT_STR("Start Bincount");
+		Numpy x = numpy::array("0.0, 0.0, 1.0, 1.0, 3.0, 2.0, 5.0");
+		Numpy z = numpy::bincount(x);
+		assert(z.n == 6);
+		assert(CMP(z.data[0], 2));
+		assert(CMP(z.data[1], 2));
+		assert(CMP(z.data[2], 1));
+		assert(CMP(z.data[3], 1));
+		assert(CMP(z.data[4], 0));
+		assert(CMP(z.data[5], 1));
+		PRINT_STR("test_bincount :: Passed");
+	}
+
 	static void test_abs()
 	{
 		PRINT_STR("Start Abs");
@@ -497,6 +662,26 @@ namespace tests {
 		}
 
 		PRINT_STR("Test_Abs :: Passed");
+	}
+
+	static void test_verbal_maths()
+	{
+		PRINT_STR("Start Verbal_Maths");
+		
+		Numpy x = numpy::arange(5);
+		Numpy y = numpy::ones(5);
+		// +
+		Numpy z = add(x, y);
+		PRINT_OBJ(x);
+		PRINT_OBJ(z);
+		for (int i = 0; i < 5; i++)
+		{
+			std::cout << z.data[i] << ", " << x.data[i]+1.0 << std::endl;
+			assert(CMP(z.data[i], x.data[i] + 1.0));
+		}
+
+
+		PRINT_STR("test_verbal_maths :: Passed");
 	}
 
 	static void test_sum()
@@ -756,46 +941,6 @@ namespace tests {
 		PRINT_STR("Test_Operators :: Passed");
 	}
 
-	static void test_floor()
-	{
-		PRINT_STR("Start Floor");
-		Numpy x = numpy::array("3.14, 4.54, -3.2, 7.4987");
-		Numpy y = numpy::floor(x);
-		Numpy answers = numpy::array("3.0, 4.0, -3.0, 7.0");
-		for (int i = 0; i < 4; i++)
-		{
-			assert(CMP(y[i], answers[i]));
-		}
-
-		PRINT_STR("Test_Floor :: Passed");
-	}
-
-	static void test_ceil()
-	{
-		PRINT_STR("Start Ceil");
-		Numpy x = numpy::array("3.14, 4.54, -3.2, 7.4987");
-		Numpy y = numpy::ceil(x);
-		Numpy answers = numpy::array("4.0, 5.0, -4.0, 8.0");
-		// PRINT_STR(y.str());
-		for (int i = 0; i < 4; i++)
-		{
-			assert(CMP(y[i], answers[i]));
-		}
-
-		PRINT_STR("Test_Ceil :: Passed");
-	}
-
-
-
-	static void test_count()
-	{
-		PRINT_STR("Start Count");
-		Numpy x = numpy::ones(10);
-		assert(numpy::count(x, 1.0) == 10);
-
-		PRINT_STR("Test_Count :: Passed");
-	}
-
 	static void test_count_nonzero()
 	{
 		PRINT_STR("Start Count_Nonzero");
@@ -822,19 +967,7 @@ namespace tests {
 		PRINT_STR("Test_Cumsum :: Passed");
 	}
 
-	static void test_flip()
-	{
-		PRINT_STR("Start Flip");
-		Numpy x = numpy::linspace(0.0, 4.0, 5);
-		Numpy y = numpy::flip(x);
-		Numpy z = numpy::array("4.0, 3.0, 2.0, 1.0, 0.0");
-		for (int i = 0; i < 5; i++)
-		{
-			assert(CMP(y.data[i], z.data[i]));
-		}
 
-		PRINT_STR("Test_Flip :: Passed");
-	}
 
 	static void test_logr()
 	{
@@ -876,48 +1009,6 @@ namespace tests {
 		assert(y.data[3] == 24.0);
 		assert(y.data[4] == 120.0);
 		PRINT_STR("Test_Cumprod :: Passed");
-	}
-
-	static void test_lstrip()
-	{
-		PRINT_STR("Start Lstrip");
-		Numpy x = numpy::linspace(0.0, 10.0, 11);
-		Numpy y = numpy::lstrip(x, 4);
-		assert(y.n == 7);
-		//PRINT_STR(y.str());
-		for (int i = 4; i < 11; i++)
-		{
-			assert(y.data[i-4] == i);
-		}
-
-		PRINT_STR("Test_Lstrip :: Passed");
-	}
-
-	static void test_rstrip()
-	{
-		PRINT_STR("Start Rstrip");
-		Numpy x = numpy::linspace(0.0, 10.0, 11);
-		Numpy y = numpy::rstrip(x, 5);
-		assert(y.n == 6);
-		//PRINT_STR(y.str());
-		for (int i = 0; i < 6; i++)
-		{
-			assert(y.data[i] == i);
-		}
-
-		PRINT_STR("Test_Rstrip :: Passed");
-	}
-
-	static void test_hstack()
-	{
-		PRINT_STR("Start Vstack");
-		Numpy x = numpy::arange(0.0, 1.0, 0.1);
-		Numpy y = numpy::randn(5);
-		Numpy z = numpy::vstack(x, y);
-		//PRINT_STR(z.str());
-		assert(z.n == x.n + y.n);
-
-		PRINT_STR("Test_Vstack :: Passed");
 	}
 
 	static void test_norm()
@@ -1088,9 +1179,14 @@ static void call_all_tests()
 	test_binomial();
 	test_poisson();
 	test_sample();
+	test_vectorize();
+	test_nonzero();
+	test_flip();
+	test_vstack();
 	test_arange();
 	test_linspace();
 	test_abs();
+	test_verbal_maths();
 	test_sum();
 	test_all();
 	test_any();
@@ -1107,14 +1203,15 @@ static void call_all_tests()
 	test_floor();
 	test_ceil();
 	test_count();
+	test_bincount();
 	test_count_nonzero();
 	test_cumsum();
-	test_flip();
 	test_logr();
 	test_logspace();
 	test_cumprod();
 	test_lstrip();
 	test_rstrip();
+	test_clip();
 	test_norm();
 	test_radians();
 	test_degrees();
@@ -1123,7 +1220,7 @@ static void call_all_tests()
 	test_min();
 	test_max();
 	test_dot();
-	test_hstack();
+
 	test_sort();
 }
 
