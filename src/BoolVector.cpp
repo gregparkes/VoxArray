@@ -88,7 +88,7 @@ double mean(const Mask& rhs)
 			RANGE("n cannot = 0");
 		}
 		this->n = n;
-		data = _create_empty_bool_(n);
+		data = _create_empty_<bool>(n);
 		if (data == NULL)
 		{
 			throw std::runtime_error("Unable to allocate memory");
@@ -106,7 +106,7 @@ double mean(const Mask& rhs)
 			RANGE("n cannot = 0");
 		}
 		this->n = r.n;
-		data = _create_empty_bool_(this->n);
+		data = _create_empty_<bool>(this->n);
 
 		if (data == NULL)
 		{
@@ -166,7 +166,7 @@ double mean(const Mask& rhs)
     Mask Mask::copy()
     {
     	Mask m(n);
-		if (!_copy_bool_(m.data, data, n))
+		if (!_copy_array_<bool>(m.data, data, n))
 		{
 			INVALID("copy failed!");
 		}

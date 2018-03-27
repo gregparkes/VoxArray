@@ -18,6 +18,7 @@
 
 
 // Here we define class-specific instance methods
+
 namespace numpy {
 
 /********************************************************************************************
@@ -27,7 +28,6 @@ namespace numpy {
 
 
 *///////////////////////////////////////////////////////////////////////////////////////////
-
 
 	Vector empty(uint n)
 	{
@@ -43,7 +43,7 @@ namespace numpy {
 	Vector zeros(uint n)
 	{
 		Vector np(n);
-		if (!_fill_array_(np.data, n, 0.0))
+		if (!_fill_array_<double>(np.data, n, 0.0))
 		{
 			INVALID("Fill Error");
 		}
@@ -53,14 +53,14 @@ namespace numpy {
 	Vector zeros_like(const Vector& rhs)
 	{
 		Vector np(rhs.n);
-		_fill_array_(np.data, np.n, 0.0);
+		_fill_array_<double>(np.data, np.n, 0.0);
 		return np;
 	}
 
 	Vector ones(uint n)
 	{
 		Vector np(n);
-		if (!_fill_array_(np.data, n, 1.0))
+		if (!_fill_array_<double>(np.data, n, 1.0))
 		{
 			INVALID("Fill Error");
 		}
@@ -70,14 +70,14 @@ namespace numpy {
 	Vector ones_like(const Vector& rhs)
 	{
 		Vector np(rhs.n);
-		_fill_array_(np.data, np.n, 1.0);
+		_fill_array_<double>(np.data, np.n, 1.0);
 		return np;
 	}
 
 	Vector fill(uint n, double val)
 	{
 		Vector np(n);
-		if (!_fill_array_(np.data, n, val))
+		if (!_fill_array_<double>(np.data, n, val))
 		{
 			INVALID("Fill Error");
 		}
@@ -158,7 +158,7 @@ namespace numpy {
 	Vector copy(const Vector& rhs)
 	{
 		Vector np(rhs.n);
-		if (!_copy_array_(np.data, rhs.data, rhs.n))
+		if (!_copy_array_<double>(np.data, rhs.data, rhs.n))
 		{
 			INVALID("copy failed!");
 		}
@@ -170,7 +170,7 @@ namespace numpy {
 	Matrix to_matrix(const Vector& rhs)
 	{
 		Matrix m = empty(1, rhs.n);
-		if (!_copy_array_(m.data, rhs.data, rhs.n))
+		if (!_copy_array_<double>(m.data, rhs.data, rhs.n))
 		{
 			INVALID("copy failed!");
 		}
@@ -190,7 +190,7 @@ namespace numpy {
 			INVALID("Max IDX cannot be >= the size of our array");
 		}
 		Vector res = empty_like(indices);
-		if (!_copy_from_index_array_(res.data, a.data, indices.data, res.n))
+		if (!_copy_from_index_array_<double>(res.data, a.data, indices.data, res.n))
 		{
 			INVALID("Unable to copy from index vector in 'take()'.");
 		}
@@ -216,7 +216,7 @@ namespace numpy {
 		// create new results vector
 		Vector res = empty(newn);
 		// if we keep the shape, simply copy across and set to 0. - else keep_shape returns resdata
-		if (!_copy_from_mask_array_(res.data, a.data, m.data, m.n, keep_shape))
+		if (!_copy_from_mask_array_<double>(res.data, a.data, m.data, m.n, keep_shape))
 		{
 			INVALID("Unable to copy from mask vector in 'where()'.");
 		}
@@ -403,7 +403,7 @@ namespace numpy {
 	Vector flip(const Vector& rhs)
 	{
 		Vector np = copy(rhs);
-		_flip_array_(np.data, np.n);
+		_flip_array_<double>(np.data, np.n);
 		return np;
 	}
 
@@ -541,7 +541,7 @@ namespace numpy {
 			RANGE("idx cannot be > rhs size");
 		}
 		Vector np(rhs.n - idx);
-		_copy_array_(np.data, rhs.data+idx, rhs.n-idx);
+		_copy_array_<double>(np.data, rhs.data+idx, rhs.n-idx);
 		return np;
 	}
 
@@ -556,7 +556,7 @@ namespace numpy {
 			throw std::range_error("idx cannot be > rhs size");
 		}
 		Vector np(idx+1);
-		_copy_array_(np.data, rhs.data, idx+1);
+		_copy_array_<double>(np.data, rhs.data, idx+1);
 		return np;
 	}
 
@@ -1131,7 +1131,7 @@ namespace numpy {
 		this->n = n;
 		// false/0 = column, true/1 = row
 		this->column = !column;
-		data = _create_empty_(n);
+		data = _create_empty_<double>(n);
 		if (data == NULL)
 		{
 			throw std::runtime_error("Unable to allocate memory");
@@ -1150,7 +1150,7 @@ namespace numpy {
 		}
 		this->n = 2;
 		this->column = true;
-		data = _create_empty_(n);
+		data = _create_empty_<double>(n);
 		if (data == NULL)
 		{
 			throw std::runtime_error("Unable to allocate memory");
@@ -1171,7 +1171,7 @@ namespace numpy {
 		}
 		this->n = 3;
 		this->column = true;
-		data = _create_empty_(n);
+		data = _create_empty_<double>(n);
 		if (data == NULL)
 		{
 			throw std::runtime_error("Unable to allocate memory");
@@ -1193,7 +1193,7 @@ namespace numpy {
 		}
 		this->n = 4;
 		this->column = true;
-		data = _create_empty_(n);
+		data = _create_empty_<double>(n);
 		if (data == NULL)
 		{
 			throw std::runtime_error("Unable to allocate memory");
@@ -1220,12 +1220,12 @@ namespace numpy {
 		}
 		this->n = size;
 		this->column = true;
-		data = _create_empty_(n);
+		data = _create_empty_<double>(n);
 		if (data == NULL)
 		{
 			throw std::runtime_error("Unable to allocate memory");
 		}
-		if (!_copy_array_(data, array, size))
+		if (!_copy_array_<double>(data, array, size))
 		{
 			INVALID("Unable to copy array in Vector()");
 		}
@@ -1322,7 +1322,7 @@ namespace numpy {
 	Vector Vector::copy()
 	{
 		Vector np(n);
-		if (!_copy_array_(np.data, data, n))
+		if (!_copy_array_<double>(np.data, data, n))
 		{
 			INVALID("copy failed!");
 		}
@@ -1334,7 +1334,7 @@ namespace numpy {
 	Matrix Vector::to_matrix()
 	{
 		Matrix m = empty(1, n);
-		if (!_copy_array_(m.data, data, n))
+		if (!_copy_array_<double>(m.data, data, n))
 		{
 			INVALID("copy failed!");
 		}
@@ -1348,7 +1348,7 @@ namespace numpy {
 
 	Vector& Vector::flip()
 	{
-		_flip_array_(data,n);
+		_flip_array_<double>(data,n);
 		return *this;
 	}
 
@@ -1545,7 +1545,7 @@ namespace numpy {
 
 	Vector& Vector::fill(double value)
 	{
-		_fill_array_(data, n, value);
+		_fill_array_<double>(data, n, value);
 		return *this;
 	}
 
@@ -1788,7 +1788,7 @@ namespace numpy {
 		uint res_n = _boolean_summation_array_(rhs.data, rhs.n);
 		// new array size is the sum of trues.
 		Vector res = empty(res_n);
-		if (!_copy_from_mask_array_(res.data, data, rhs.data, rhs.n, false))
+		if (!_copy_from_mask_array_<double>(res.data, data, rhs.data, rhs.n, false))
 		{
 			INVALID("Unable to copy from mask vector in 'operator[]'.");
 		}
@@ -2199,7 +2199,7 @@ namespace numpy {
 	Vector _copy_vector_(const Vector& v)
 	{
 		Vector np(v.n);
-		_copy_array_(np.data, v.data, v.n);
+		_copy_array_<double>(np.data, v.data, v.n);
 		np.column = v.column;
 		np.flag_delete = v.flag_delete;
 		return np;

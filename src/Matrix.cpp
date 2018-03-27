@@ -153,7 +153,7 @@ namespace numpy {
 	{
 		Matrix m(rhs.nvec, N_ROWS(rhs));
 		uint nbyn = _fullsize_(rhs);
-		if (!_copy_array_(m.data, rhs.data, nbyn))
+		if (!_copy_array_<double>(m.data, rhs.data, nbyn))
 		{
 			INVALID("copy failed!");
 		}
@@ -1183,8 +1183,6 @@ namespace numpy {
 		return result;
 	}
 
-
-
 /********************************************************************************************
 
 
@@ -1207,7 +1205,7 @@ namespace numpy {
 		}
 		this->nvec = ncol;
 		// now allocate the full-block memory.
-		data = _create_empty_(nrow*ncol);
+		data = _create_empty_<double>(nrow*ncol);
 		if (data == NULL)
 		{
 			throw std::runtime_error("Unable to allocate memory");
@@ -1292,7 +1290,7 @@ namespace numpy {
 	{
 		Matrix m(nvec, N_COLS);
 		uint nbyn = BUFFSIZE(this);
-		if (!_copy_array_(m.data, data, nbyn))
+		if (!_copy_array_<double>(m.data, data, nbyn))
 		{
 			throw std::invalid_argument("copy failed!");
 		}
@@ -2066,7 +2064,7 @@ namespace numpy {
 	Matrix _copy_matrix_(const Matrix& m)
 	{
 		Matrix cp(m.nvec, m.vectors[0]->n);
-		_copy_array_(cp.data, m.data, _fullsize_(m));
+		_copy_array_<double>(cp.data, m.data, _fullsize_(m));
 		for (uint i = 0; i < m.nvec; i++)
 		{
 			cp.vectors[i]->column = m.vectors[i]->column;

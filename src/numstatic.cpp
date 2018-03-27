@@ -70,6 +70,13 @@ static inline double _uniform_M_to_N_(double M, double N)
 	return (M + (rand() / (RAND_MAX / (N-M))));
 }
 
+template <typename T> static inline void swap(T *a, T *b)
+{
+	T temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
 /** Given an integer, determine how many characters long it is (using logarithms of exponents)*/
 static unsigned int _integer_char_length_(double a)
 {
@@ -85,11 +92,9 @@ static inline bool AlmostEqualRelativeAndAbs(double a, double b, double maxdiff,
 	{
 		return true;
 	}
-
 	a = fabs(a);
 	b = fabs(b);
 	double largest = (b > a) ? b : a;
-
 	if (diff <= largest * maxreldiff)
 	{
 		return true;
@@ -201,34 +206,22 @@ static double _truncate_doub_(double value, int sigfig)
 	return result;
 }
 
-static double* _create_empty_(unsigned int n)
+template <typename T> static T* _create_empty_(unsigned int n)
 {
-	if (n == 0)
+	if (n != 0)
 	{
-		return 0;
+		T* my_empty = (T*) malloc(n * sizeof(T));
+		if (my_empty != NULL)
+		{
+			return my_empty;
+		}
+		else
+		{
+			printf("Error! Unable to allocate memory in _create_empty_(unsigned int)");
+			return 0;
+		}
 	}
-	double* my_empty = (double*) malloc(n * sizeof(double));
-	if (my_empty == NULL)
-	{
-		printf("Error! Unable to allocate memory in _create_empty_(unsigned int)");
-		return 0;
-	}
-	return my_empty;
-}
-
-static bool* _create_empty_bool_(unsigned int n)
-{
-	if (n == 0)
-	{
-		return 0;
-	}
-	bool* my_empty = (bool*) malloc(n * sizeof(bool));
-	if (my_empty == NULL)
-	{
-		printf("Error! Unable to allocate memory in _create_empty_bool_(unsigned int)");
-		return 0;
-	}
-	return my_empty;
+	else return 0;
 }
 
 static int _destroy_array_(void *arr)
@@ -241,115 +234,115 @@ static int _destroy_array_(void *arr)
 	return 0;
 }
 
-static int _fill_array_(double *arr, unsigned int n, double val)
+template <typename T> static int _fill_array_(T *arr, unsigned int n, T val)
 {
-	if (n == 0 || arr == 0)
+	if (n != 0 && arr != NULL)
 	{
-		return 0;
+		T *idx = &arr[0];
+		T *end = idx + n;
+		while (idx < end)
+		{
+			*idx++ = val;
+		}
+		return 1;
 	}
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (unsigned int i = 0; i < n; i++)
-	{
-		arr[i] = val;
-	}
-	return 1;
+	else return 0;
 }
 
-static int _flip_array_(double *arr, unsigned int n)
+template <typename T> static int _flip_array_(T *arr, unsigned int n)
 {
-	if (n == 0 || arr == 0)
+	if (n != 0 && arr != NULL)
 	{
-		return 0;
+		T *p1 = &arr[0];
+		T *p2 = p1 + n - 1;
+		for( /* void */; p1 < p2; p1++, p2--)
+		{
+			swap<T>(p1, p2);
+		}
+		return 1;
 	}
-	for (unsigned int i = 0; i < (int) (n / 2); i++)
-	{
-		//swap
-		double temp = arr[i];
-		arr[i] = arr[n-1-i];
-		arr[n-1-i] = temp;
-	}
-	return 1;
+	else return 0;
 }
 
 static int _clip_array_(double *arr, unsigned int n, double a_min, double a_max)
 {
-	if (n == 0 || arr == 0)
+	if (n != 0 && arr != NULL)
 	{
-		return 0;
-	}
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (unsigned int i = 0; i < n; i++)
-	{
-		if (arr[i] < a_min)
+		double *p1 = &arr[0];
+		double *end = p1 + n;
+		for (/* void */; p1 < end; p1++)
 		{
-			arr[i] = a_min;
+			if (*p1 < a_min)
+			{
+				*p1 = a_min;
+			}
+			else if (*p1 > a_max)
+			{
+				*p1 = a_max;
+			}
 		}
-		else if (arr[i] > a_max)
-		{
-			arr[i] = a_max;
-		}
+		return 1;
 	}
-	return 1;
+	else return 0;
 }
 
 static int _absolute_array_(double *arr, unsigned int n)
 {
-	if (n == 0 || arr == 0)
+	if (n != 0 && arr != NULL)
 	{
-		return 0;
+		double *p1 = &arr[0];
+		double *end = p1 + n;
+		for (/* void */; p1 < end; p1++)
+		{
+			*p1 = _absolute_(*p1);
+		}
+		return 1;
 	}
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (unsigned int i = 0; i < n; i++)
-	{
-		arr[i] = _absolute_(arr[i]);
-	}
-	return 1;
+	else return 0;
 }
 
 static int _count_array_(double *arr, unsigned int n, double value)
 {
-	if (n == 0 || arr == 0)
+	if (n != 0 && arr != NULL)
 	{
-		return 0;
-	}
-	int count = 0;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:count)
-#endif
-	for (unsigned int i = 0; i < n; i++)
-	{
-		if (arr[i] == value)
+		int count = 0;
+		double *p1 = &arr[0];
+		double *end = p1 + n;
+	/*
+	#ifdef _OPENMP
+		#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:count)
+	#endif
+	*/
+		for (/* void */; p1 < end; p1++)
 		{
-			count++;
+			if (CMP(*p1, value))
+			{
+				count++;
+			}
 		}
+		return count;
 	}
-	return count;
+	else return -1;
 }
 
 static int _bincount_array_(double *bins, double *arr, unsigned int nbins, unsigned int narr)
 {
-	if (nbins == 0 || narr == 0 || bins == 0 || arr == 0)
-	{
-		return 0;
-	}
 	/* Here we assume bins is all zeros, arr is the numbers to count, 
 	and n refers to each array size */
-	unsigned int i;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (i = 0; i < narr; i++)
+	if (nbins != 0 && narr != 0 && bins != NULL && arr != NULL)
 	{
-		// add one to bins where it's cast index == arr[i]
-		bins[(int) arr[i]]++;
+		unsigned int i;
+		double *p1 = &arr[0];
+		double *p1end = p1 + narr;
+		for (/* void */; p1 < p1end; p1++)
+		{
+			// add one to bins where it's cast index == arr[i]
+			(*(bins + ((int) *p1)))++;
+		}
+		return 1;
 	}
-	return 1;
+
+	else return 0;
 }
 
 static int _matrix_rowwise_count_(double *arr, unsigned int nvec, unsigned int ncol, unsigned int rowidx,
@@ -375,38 +368,45 @@ static int _matrix_rowwise_count_(double *arr, unsigned int nvec, unsigned int n
 
 static int _count_nonzero_array_(double *arr, unsigned int n)
 {
-	int count = 0;
+	if (arr != NULL && n != 0)
+	{
+		int count = 0;
+		double *p1 = &arr[0];
+		double *end = p1 + n;
+			/*
 #ifdef _OPENMP
 	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:count)
 #endif
-	for (unsigned int i = 0; i < n; i++)
-	{
-		if (arr[i] != 0.0)
+*/
+		for (/* void */; p1 < end; p1++)
 		{
-			count++;
+			if (!CMP(*p1, 0.0))
+			{
+				count++;
+			}
 		}
+		return count;
 	}
-	return count;
+	else return -1;
 }
 
 static int _nonzero_array_(double *copy, double *orig, unsigned int orig_size)
 {
-	if (copy == 0 || orig == 0)
+	if (copy != NULL && orig != NULL && orig_size != 0)
 	{
-		return 0;
-	}
-	unsigned int idx = 0;
-#ifdef _OPENMP
-	#pragma omp parallel for if(orig_size > __OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (unsigned int i = 0; i < orig_size; i++)
-	{
-		if (orig[i] != 0.0)
+		double *p1 = &copy[0];
+		double *p2 = &orig[0];
+		double *pend = p2 + orig_size;
+		for (/* void */; p2 < pend; p2++)
 		{
-			copy[idx++] = orig[i];
+			if (!CMP(*p2, 0.0))
+			{
+				*p1++ = *p2;
+			}
 		}
+		return 1;
 	}
-	return 1;
+	else return 0;
 }
 
 static int _matrix_rowwise_count_nonzero_(double *arr, unsigned int nvec, unsigned int ncol,
@@ -465,25 +465,26 @@ static int _bool_representation_(char *out, bool *in, unsigned int n_in)
 		printf("Out must be filled with empty slots");
 		return 0;
 	}
-	out[0] = '[';
-	int offset = 1;
-	unsigned int i;
-	for (i = 0; i < n_in-1; i++)
+	char *p1 = &out[0];
+	bool *p2 = &in[0];
+	bool *in_end = p2 + n_in;
+	*p1++ = '[';
+	while ( p2 < in_end )
 	{
-		if (in[i])
+		if (*p2++)
 		{
-			out[offset++] = '1';
+			*p1++ = '1';
 		}
 		else
 		{
-			out[offset++] = '0';
+			*p1++ = '0';
 		}
-		out[offset++] = ',';
-		out[offset++] = ' ';
+		*p1++ = ',';
+		*p1++ = ' ';
 	}
-	out[offset++] = (char)((int) in[n_in-1]);
-	out[offset++] = ']';
-	out[offset] = '\0';
+	*p1++ = (char) ((int) (*(in_end-1)));
+	*p1++ = ']';
+	*p1 = '\0';
 	return 1;
 }
 
@@ -618,146 +619,102 @@ static int _str_shape_func_(char* out, unsigned int val1, unsigned int val2,
 	return 1;
 }
 
-static int _copy_array_(double *copy, double *orig, unsigned int n)
+
+template <typename T> static int _copy_array_(T *copy, T *orig, unsigned int n)
 {
 	// orig initialized, copy is empty array.
-	if (n == 0 || copy == 0 || orig == 0)
+	if (n != 0 && copy != NULL && orig != NULL)
 	{
-		return 0;
-	}
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-		for (unsigned int i = 0; i < n; i++)
+		T *p1 = &copy[0];
+		T *p2 = &orig[0];
+		T *end = (p1+n);
+		while (p1 < end)
 		{
-			copy[i] = orig[i];
+			*p1++ = *p2++;
 		}
-	return 1;
-}
-
-static int _copy_bool_(bool *copy, bool *orig, unsigned int n)
-{
-	// orig initialized, copy is empty array.
-	if (n == 0 || copy == 0 || orig == 0)
-	{
-		return 0;
+		return 1;
 	}
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-		for (unsigned int i = 0; i < n; i++)
-		{
-			copy[i] = orig[i];
-		}
-	return 1;
-}
-
-static int _matrix_copy_row_(double *copy, double *orig, unsigned int nvec, unsigned int ncol, unsigned int rowidx)
-{
-	if (ncol == 0 || copy == 0 || orig == 0 || nvec == 0)
-	{
-		return 0;
-	}
-#ifdef _OPENMP
-	#pragma omp parallel for if(nvec>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (unsigned int colidx = 0; colidx < nvec; colidx++)
-	{
-		copy[rowidx+colidx*ncol] = orig[rowidx+colidx*ncol];
-	}
-	return 1;
+	else return 0;
 }
 
 /* Where copy must be the same size as indices, not orig */
-static int _copy_from_index_array_(double *copy, double *orig, double *indices, 
+template <typename T> static int _copy_from_index_array_(T *copy, T *orig, double *indices, 
 	unsigned int size)
 {
-	if (copy == 0 || orig == 0 || indices == 0 || size == 0)
+	if (copy != NULL && orig != NULL && indices != NULL && size != 0)
 	{
-		return 0;
-	}
-	unsigned int i;
-#ifdef _OPENMP
-	#pragma omp parallel for if(nvec>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (i = 0; i < size; i++)
-	{
-		int idx = (int) indices[i];
-		if (idx > -1)
+		T *p1 = &copy[0];
+		double *p3 = &indices[0];
+		T *end = p1 + size;
+		for (/* void */; p1 < end; p1++, p3++)
 		{
-			copy[i] = orig[idx];
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	return 1;
-}
-
-static int _copy_from_mask_array_(double *copy, double *orig, bool *mask, unsigned int size,
-	bool keep_shape)
-{
-	if (copy == 0 || orig == 0 || mask == 0 || size == 0)
-	{
-		return 0;
-	}
-	unsigned int i;
-
-	if (keep_shape)
-	{
-#ifdef _OPENMP
-		#pragma omp parallel for if(nvec>__OMP_OPT_VALUE__) schedule(static)
-#endif
-		// size applies to copy, orig and mask
-		for (i = 0; i < size; i++)
-		{
-			if (mask[i])
+			int idx = (int) (*p3);
+			if (idx > -1)
 			{
-				// copy across if true
-				copy[i] = orig[i];
+				*p1 = *(orig + idx);
 			}
 			else
 			{
-				// default, set to 0
-				copy[i] = 0.0;
+				return 0;
 			}
 		}
+		return 1;
 	}
-	else
+	else return 0;
+}
+
+template <typename T> static int _copy_from_mask_array_(T *copy, T *orig, bool *mask, unsigned int size,
+	bool keep_shape)
+{
+	if (copy != NULL && orig != NULL && mask != NULL && size != 0)
 	{
-		// now we know that SIZE applies to orig and mask, NOT to copy
-		unsigned int copy_idx = 0;
-#ifdef _OPENMP
-		#pragma omp parallel for if(nvec>__OMP_OPT_VALUE__) schedule(static)
-#endif
-		for (i = 0; i < size; i++)
+		T *p1 = &copy[0];
+		T *p2 = &orig[0];
+		bool *p3 = &mask[0];
+		T *end = orig + size;
+		if (keep_shape)
 		{
-			if (mask[i])
+			for (/* void */; p2 < end; p1++, p2++, p3++)
 			{
-				// set to copy and increment copy_index
-				copy[copy_idx++] = orig[i];
+				if (*p3)
+				{
+					*p1 = *p2;
+				}
+				else
+				{
+					*p1 = 0;
+				}
 			}
 		}
+		else
+		{
+			for (/* void */; p2 < end; p2++, p3++)
+			{
+				if (*p3)
+				{
+					*p1++ = *p2;
+				}
+			}
+		}
+		return 1;
 	}
-	return 1;
+	else return 0;
 }
 
 static int _rand_array_(double *arr, unsigned int n)
 {
-	if (n == 0 || arr == 0)
+	if (n != 0 && arr != NULL)
 	{
-		return 0;
+		double *p1 = &arr[0];
+		double *end = p1 + n;
+		unsigned int i;
+		for (/* void */; p1 < end; p1++)
+		{
+			*p1 = _uniform_rand_();
+		}
+		return 1;
 	}
-	unsigned int i;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (i = 0; i < n; i++)
-	{
-		arr[i] = _uniform_rand_();
-	}
-	return 1;
+	else return 0;
 }
 
 static int _normal_distrib_(double *arr, unsigned int n, double mean,
@@ -1421,18 +1378,13 @@ static double _vector2_norm_(double *arr, unsigned int n, unsigned int p = 2)
 	return _c_power_(summer, 1.0 / p);
 }
 
-static void swap(double *a, double *b)
-{
-	double temp = *a;
-	*a = *b;
-	*b = temp;
-}
+
 
 static int _partition_(double *arr, const int left, const int right) {
     int mid = left + (right - left) / 2;
     double pivot = arr[mid];
     // move the mid point value to the front.
-    swap(&arr[mid], &arr[left]);
+    swap<double>(&arr[mid], &arr[left]);
     int i = left + 1;
     int j = right;
     while (i <= j) {
@@ -1445,10 +1397,10 @@ static int _partition_(double *arr, const int left, const int right) {
         }
 
         if (i < j) {
-            swap(&arr[i], &arr[j]);
+            swap<double>(&arr[i], &arr[j]);
         }
     }
-    swap(&arr[i-1],&arr[left]);
+    swap<double>(&arr[i-1],&arr[left]);
     return i - 1;
 }
 
@@ -1490,7 +1442,7 @@ static double* _parse_string_to_array_(const char *in, int *size)
 	// guess is commas + 1
 	int guessn = countcom + 1;
 	// allocate memory for double array
-	double *arr = _create_empty_(guessn);
+	double *arr = _create_empty_<double>(guessn);
 	if (arr == NULL)
 	{
 		return NULL;
@@ -1556,7 +1508,7 @@ static int _transpose_square_matrix_(double *arr, unsigned int nvec, unsigned in
 	{
 		for (unsigned int x = y+1; x < ncol; x++)
 		{
-			swap(&arr[x+y*ncol], &arr[x*ncol+y]);
+			swap<double>(&arr[x+y*ncol], &arr[x*ncol+y]);
 		}
 	}
 	return 1;
@@ -1602,7 +1554,7 @@ static int _swap_row_(double *matrix, unsigned int nvec, unsigned int ncol, unsi
 {
 	for (unsigned int y = 0; y < nvec; y++)
 	{
-		swap(&matrix[row1+y*ncol], &matrix[row2+y*ncol]);
+		swap<double>(&matrix[row1+y*ncol], &matrix[row2+y*ncol]);
 	}
 	return 1;
 }
