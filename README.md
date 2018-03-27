@@ -13,6 +13,10 @@ A simple (n,) float vector containing many numerical functions.
 A more complex (n,p) float vector comprised of a single memory-block with vector objects
 pointing to each column.
 
+### Mask
+
+A simple (n,) boolean vector to handle masking for *Vector*.
+
 ## License 
 
 (OSI Approved BSD 2-clause)

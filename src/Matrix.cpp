@@ -286,18 +286,17 @@ namespace numpy {
 		Matrix res(ncol,nrow);
 		// now we somehow parse the string
 		double *vals = _parse_string_to_array_(values, &strn);
-		if (vals == null)
+		if (vals == NULL)
 		{
 			throw std::runtime_error("Unable to parse string into array");
 		}
-		srand48(time(NULL));
 	#ifdef _OPENMP
 		#pragma omp parallel for if(ncol*nrow>__OMP_OPT_VALUE__) schedule(static)
 	#endif
 		for (uint i = 0; i < ncol*nrow; i++)
 		{
 			// create random float
-			double idx_f = drand48() * strn;
+			double idx_f = _uniform_rand_() * strn;
 			// pass to an array and floor it (i.e 2.90 becomes 2, an index for values*)
 			int idx = (int) _truncate_doub_(idx_f, 0);
 			// set data using index and values

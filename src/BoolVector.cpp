@@ -232,7 +232,7 @@ double mean(const Mask& rhs)
 
 	/*  --------------- Instance Operator overloads ------------------------ */
 
-	Mask& Mask::operator!()
+	Mask& Mask::operator~()
 	{
 		_element_not_(data, n);
 		return *this;

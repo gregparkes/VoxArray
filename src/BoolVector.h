@@ -191,7 +191,7 @@ class Mask
 
         /* --------- OPERATOR OVERLOADS ---------------- */
 
-        Mask& operator!();
+        Mask& operator~();
 
         Mask& operator&(const Mask& rhs);
 

@@ -24,6 +24,9 @@
 #define RANGE(x) (throw std::range_error(x))
 #define INVALID_AXIS() (throw std::invalid_argument("axis must be 0 or 1"))
 
+#define ELEMENT_OPERATION(left, op, right) (  \
+ left = left op right )
+
 
 static inline double _absolute_(double value)
 {
@@ -358,7 +361,7 @@ static int _matrix_rowwise_count_(double *arr, unsigned int nvec, unsigned int n
 #endif
 	for (unsigned int colidx = 0; colidx < nvec; colidx++)
 	{
-		if (arr[rowidx+colidx*ncol] == value)
+		if (CMP(arr[rowidx+colidx*ncol], value))
 		{
 			count++;
 		}
