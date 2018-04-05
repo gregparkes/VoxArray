@@ -22,19 +22,12 @@ GNU General Public License:
 
 -----------------------------------------------------
 
-	This implementation is an attempt to replicate the Python module 'numpy' which implements
-	a float Numpy which can perform matrix and vector-based operations which modify every
-	element in the Numpy.
-
-    This is the C++ file, and is ANSI 90 compatible. This can be run using
-    C. We also have Numpy.cpp. which are C++ wrapper classes
-    around this foundational file.
-
-    Vector.h
 */
 
 /*
  * Vector.h
+ *
+ * Implements a (n,) double array with hundreds of numerical functions associated with it.
  *
  *  Created on: 18 Feb 2017
  *      Author: Greg
@@ -324,6 +317,14 @@ namespace numpy {
 	Vector flip(const Vector& rhs);
 
 	/**
+	 Creates a copy and randomly shuffles the elements.
+
+	 @param rhs : array to shuffle
+	 @return The shuffled array object. <created on the stack>
+	*/
+	Vector shuffle(const Vector& rhs);
+
+	/**
 	Concatenates two arrays together, with the right vector joining
 	to the right of the left vector.
 
@@ -578,11 +579,19 @@ namespace numpy {
 	 unordered, so this is a linear O(n) operation. Make sure the flag is set to true
 	 if it is sorted, to maximise efficiency.
 
+	 If the vector is an uneven length, chooses the middle value. If even
+	 it will calculate the mean between the two values in the middle.
+
+	 *Note*: If the order of elements is not important, set partial_sort to
+	 true to speed up computation as a copy is not needed.
+
 	 @param rhs : the vector
 	 @param isSorted (optional) : default to false
+	 @param partial_sort (optional) : default to false
 	 @return Median value
 	 */
-	double median(const Vector& rhs, bool isSorted = false);
+	double median(const Vector& rhs, bool isSorted = false, 
+		bool partial_sort = false);
 
 	/**
 	 Calculates the standard deviation (sd) of the vector.
@@ -1142,6 +1151,13 @@ class Vector
 		 @return The reference to this object. <object not created>
 		 */
 		Vector& flip();
+
+		/**
+		 Shuffles the elements in the array randomly.
+
+		 @return The reference to this object. <object not created>
+		*/
+		Vector& shuffle();
 
 		/**
 		 Clips (limits) the vector. Given an interval, values that fall outside of the

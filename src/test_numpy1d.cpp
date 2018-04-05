@@ -44,7 +44,7 @@ GNU General Public License:
 #define PRINT_FAIL(x) (std::cout << "??? " << x << " ???" << std::endl)
 #define PRINT_OBJ(x) (std::cout << x.str() << std::endl)
 #define CMP(x,y) (fabs(x - y) < 1E-13)
-#define WEAK_CMP(x,y) (fabs(x -y) < 1E-5)
+#define WEAK_CMP(x,y) (fabs(x - y) < 1E-5)
 
 namespace tests {
 
@@ -670,16 +670,31 @@ namespace tests {
 		
 		Numpy x = numpy::arange(5);
 		Numpy y = numpy::ones(5);
+		Numpy v = numpy::fill(5, 2.0);
 		// +
 		Numpy z = add(x, y);
-		PRINT_OBJ(x);
-		PRINT_OBJ(z);
 		for (int i = 0; i < 5; i++)
 		{
-			std::cout << z.data[i] << ", " << x.data[i]+1.0 << std::endl;
-			assert(CMP(z.data[i], x.data[i] + 1.0));
+			assert(z.data[i] == x.data[i] + 1.0);
 		}
-
+		// -
+		Numpy a = sub(x, y);
+		for (int i = 0; i < 5; i++)
+		{
+			assert(a.data[i] == x.data[i] - 1.0);
+		}
+		// *
+		Numpy b = mult(x, v);
+		for (int i = 0; i < 5; i++)
+		{
+			assert(b.data[i] == x.data[i] * 2.0);
+		}
+		// div
+		Numpy c = div(x, v);
+		for (int i = 0; i < 5; i++)
+		{
+			assert(CMP(c.data[i], x.data[i] / 2.0));
+		}
 
 		PRINT_STR("test_verbal_maths :: Passed");
 	}
@@ -736,6 +751,21 @@ namespace tests {
 		assert(CMP(y.mean(), 0.5));
 
 		PRINT_STR("Test_Mean :: Passed");
+	}
+
+	static void test_median()
+	{
+		PRINT_STR("Start Median");
+		
+		Numpy sorted_x = numpy::arange(9) + 1;
+		Numpy unsorted_x = numpy::array("3.0, 2.0, 5.0, 1.0, 4.0");
+		PRINT_OBJ(sorted_x);
+		PRINT_OBJ(unsorted_x);
+		std::cout << numpy::median(sorted_x) << ", " << numpy::median(unsorted_x) << std::endl;
+		assert(CMP(numpy::median(sorted_x), 5.0));
+		assert(CMP(numpy::median(unsorted_x), 3.0));
+
+		PRINT_STR("test_median :: Passed");
 	}
 
 	static void test_std()
@@ -1135,17 +1165,17 @@ namespace tests {
 
 		Numpy x = numpy::array("3.0, 2.0, 7.0, 5.0, 15.0, 9.0, 11.0");
 		Numpy y = numpy::sort(x);
+		Numpy z = numpy::array("2.0, 3.0, 5.0, 7.0, 9.0, 11.0, 15.0");
 		//PRINT_STR(x.str());
-		//PRINT_STR(y.str());
+		PRINT_STR(y.str());
 		for (int i = 0; i < 6; i++)
 		{
 			assert(y.data[i] <= y.data[i+1]);
+			assert(CMP(y.data[i], z.data[i]));
 		}
 
 		PRINT_STR("Test_Sort :: Passed");
 	}
-
-
 
 
 	// end of tests here
@@ -1188,6 +1218,7 @@ static void call_all_tests()
 	test_abs();
 	test_verbal_maths();
 	test_sum();
+	test_median();
 	test_all();
 	test_any();
 	test_mean();

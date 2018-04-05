@@ -1,5 +1,5 @@
 /*
- * Vec1f.cpp
+ * Vector.cpp
  *
  *  Created on: 18 Feb 2017
  *      Author: Greg
@@ -405,6 +405,13 @@ namespace numpy {
 		return np;
 	}
 
+	Vector shuffle(const Vector& rhs)
+	{
+		Vector np = copy(rhs);
+		_durstenfeld_fisher_yates_<double>(np.data, np.n);
+		return np;
+	}
+
 	Vector vstack(const Vector& lhs, const Vector& rhs)
 	{
 		Vector np(lhs.n + rhs.n);
@@ -705,16 +712,17 @@ namespace numpy {
 		return sum(rhs) / rhs.n;
 	}
 
-	double median(const Vector& rhs, bool isSorted)
+	double median(const Vector& rhs, bool isSorted, bool partial_sort)
 	{
-		if (isSorted)
+		// if we don't want the partial_sort by default.
+		if (!partial_sort)
 		{
-			return rhs.data[(int) (rhs.n / 2)];
+			Vector cp = copy(rhs);
+			return _median_array_(cp.data, cp.n, isSorted);
 		}
 		else
 		{
-			Vector s = sort(rhs);
-			return s.data[(int) (s.n / 2)];
+			return _median_array_(rhs.data, rhs.n, isSorted);
 		}
 	}
 
@@ -826,7 +834,14 @@ namespace numpy {
 
 	double cov(const Vector& v, const Vector& w)
 	{
-		return dot(v, w) / (v.n - 1);
+		if (v.n == w.n)
+		{
+			return _cov_array_(v.data, w.data, v.n);
+		}
+		else
+		{
+			INVALID("v and w must be the same size in cov(v, w)");
+		}
 	}
 
 	double corr(const Vector& v, const Vector& w)
@@ -1347,6 +1362,12 @@ namespace numpy {
 	Vector& Vector::flip()
 	{
 		_flip_array_<double>(data,n);
+		return *this;
+	}
+
+	Vector& Vector::shuffle()
+	{
+		_durstenfeld_fisher_yates_<double>(data, n);
 		return *this;
 	}
 

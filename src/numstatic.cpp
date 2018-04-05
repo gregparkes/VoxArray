@@ -1,5 +1,8 @@
 /*
  * numstatic.c
+
+	Here we use C-style algorithms to implement the core-base to Vector and 
+	Matrix-like operations.
  *
  *  Created on: 15 Feb 2017
  *      Author: Greg
@@ -20,6 +23,7 @@
 
 #define __OMP_OPT_VALUE__ 50000
 #define FLT_EPSILON 1.1920929E-07F
+
 #define INVALID(x) (throw std::invalid_argument(x))
 #define RANGE(x) (throw std::range_error(x))
 #define INVALID_AXIS() (throw std::invalid_argument("axis must be 0 or 1"))
@@ -27,6 +31,10 @@
 #define ELEMENT_OPERATION(left, op, right) (  \
  left = left op right )
 
+
+
+
+#define _LARGEST2_(a,b) (a > b ? a : b)
 
 static inline double _absolute_(double value)
 {
@@ -228,7 +236,8 @@ static double _truncate_doub_(double value, int sigfig)
 	return result;
 }
 
-template <typename T> static T* _create_empty_(unsigned int n)
+template <typename T> 
+static T* _create_empty_(unsigned int n)
 {
 	if (n != 0)
 	{
@@ -256,7 +265,8 @@ static int _destroy_array_(void *arr)
 	return 0;
 }
 
-template <typename T> static int _fill_array_(T *arr, unsigned int n, T val)
+template <typename T> static 
+int _fill_array_(T *arr, unsigned int n, T val)
 {
 	if (n != 0 && arr != NULL)
 	{
@@ -271,7 +281,8 @@ template <typename T> static int _fill_array_(T *arr, unsigned int n, T val)
 	else return 0;
 }
 
-template <typename T> static int _flip_array_(T *arr, unsigned int n)
+template <typename T> 
+static int _flip_array_(T *arr, unsigned int n)
 {
 	if (n != 0 && arr != NULL)
 	{
@@ -291,7 +302,9 @@ Acts as a pretty good shuffling algorithm - assuming uniform_randint lacks bias.
 
 Taken from https://stackoverflow.com/questions/196017/unique-non-repeating-random-numbers-in-o1#196065
 */
-template <typename T> static int _durstenfeld_fisher_yates_(T *arr, unsigned int n)
+template <typename T> 
+static int _durstenfeld_fisher_yates_(T *arr, 
+	unsigned int n)
 {
 	if (n != 0 && arr != NULL)
 	{
@@ -663,7 +676,8 @@ static int _str_shape_func_(char* out, unsigned int val1, unsigned int val2,
 }
 
 
-template <typename T> static int _copy_array_(T *copy, T *orig, unsigned int n)
+template <typename T> 
+static int _copy_array_(T *copy, T *orig, unsigned int n)
 {
 	// orig initialized, copy is empty array.
 	if (n != 0 && copy != NULL && orig != NULL)
@@ -681,7 +695,8 @@ template <typename T> static int _copy_array_(T *copy, T *orig, unsigned int n)
 }
 
 /* Where copy must be the same size as indices, not orig */
-template <typename T> static int _copy_from_index_array_(T *copy, T *orig, double *indices, 
+template <typename T> 
+static int _copy_from_index_array_(T *copy, T *orig, double *indices, 
 	unsigned int size)
 {
 	if (copy != NULL && orig != NULL && indices != NULL && size != 0)
@@ -706,8 +721,9 @@ template <typename T> static int _copy_from_index_array_(T *copy, T *orig, doubl
 	else return 0;
 }
 
-template <typename T> static int _copy_from_mask_array_(T *copy, T *orig, bool *mask, unsigned int size,
-	bool keep_shape)
+template <typename T> 
+static int _copy_from_mask_array_(T *copy, T *orig, bool *mask, 
+	unsigned int size, bool keep_shape)
 {
 	if (copy != NULL && orig != NULL && mask != NULL && size != 0)
 	{
@@ -751,10 +767,10 @@ static int _rand_array_(double *arr, unsigned int n)
 		srand(time(NULL));
 		double *p1 = &arr[0];
 		double *end = p1 + n;
-		unsigned int i;
-		for (/* void */; p1 < end; p1++)
+
+		while (p1 < end)
 		{
-			*p1 = _uniform_rand_();
+			*p1++ = _uniform_rand_();
 		}
 		return 1;
 	}
@@ -769,10 +785,12 @@ static int _normal_distrib_(double *arr, unsigned int n, double mean,
 		return 0;
 	}
 	srand(time(NULL));
+	double *p1 = &arr[0];
+	double *end = p1 + n;
 #ifdef _OPENMP
 	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
 #endif
-	for (unsigned int i = 0; i < n; i++)
+	while (p1 < end)
 	{
 		double x, y, r;
 		do
@@ -782,10 +800,9 @@ static int _normal_distrib_(double *arr, unsigned int n, double mean,
 			r = x*x + y*y;
 		}
 		while (r == 0.0 || r > 1.0);
-		{
-			double j = x * sqrt(-2.0*log(r)/r);
-			arr[i] = j*sd + mean;
-		}
+		
+		double j = x * sqrt(-2.0*log(r)/r);
+		*p1++ = j*sd + mean;
 	}
 	return 1;
 }
@@ -943,16 +960,26 @@ static double _matrix_rowwise_summation_(double *arr, unsigned int nvec, unsigne
 
 static double _std_array_(double *arr, unsigned int n)
 {
-	double m = _summation_array_(arr, n) / n;
-	double s = 0.0;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:s)
-#endif
-	for (unsigned int i = 0; i < n; i++)
+	// we use a single iteration approach.
+	if (n < 2 || arr == NULL)
 	{
-		s += (arr[i] - m) * (arr[i] - m);
+		return -1;
 	}
-	return _square_root_(s / (n-1));
+	// we assign K as a property to avoid cancellation.
+	// ex is the sum(), ex2 is the sum of squares
+	double K, ex, ex2;
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:ex,ex2)
+#endif
+	for (K = arr[0], ex = 0.0, ex2 = 0.0, i = 0; i < n; i++)
+	{
+		// subtracting by K has no effect on variance.
+		double diff = arr[i] - K;
+		ex += diff;
+		ex2 += (diff * diff);
+	}
+	return _square_root_((ex2 - (ex * ex) / n) / (n - 1));
 }
 
 static double _matrix_rowwise_std_(double *arr, unsigned int nvec, unsigned int ncol, unsigned int rowidx)
@@ -971,20 +998,31 @@ static double _matrix_rowwise_std_(double *arr, unsigned int nvec, unsigned int 
 
 static double _var_array_(double *arr, unsigned int n)
 {
-	double m = _summation_array_(arr, n) / n;
-	double s = 0.0;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:s)
-#endif
-	for (unsigned int i = 0; i < n; i++)
+	// we use a single iteration approach.
+	if (n < 2 || arr == NULL)
 	{
-		s += (arr[i] - m) * (arr[i] - m);
+		return -1;
 	}
-	return (s / (n - 1));
+	// we assign K as a property to avoid cancellation.
+	// ex is the sum(), ex2 is the sum of squares
+	double K, ex, ex2;
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:ex,ex2)
+#endif
+	for (K = arr[0], ex = 0.0, ex2 = 0.0, i = 0; i < n; i++)
+	{
+		// subtracting by K has no effect on variance.
+		double diff = arr[i] - K;
+		ex += diff;
+		ex2 += (diff * diff);
+	}
+	return (ex2 - (ex * ex) / n) / (n - 1);
 }
 
 static double _matrix_rowwise_var_(double *arr, unsigned int nvec, unsigned int ncol, unsigned int rowidx)
 {
+
 	double m = _matrix_rowwise_summation_(arr, nvec, ncol, rowidx) / nvec;
 	double s = 0.0;
 #ifdef _OPENMP
@@ -992,9 +1030,31 @@ static double _matrix_rowwise_var_(double *arr, unsigned int nvec, unsigned int 
 #endif
 	for (unsigned int colidx = 0; colidx < nvec; colidx++)
 	{
-		s += (arr[rowidx+colidx*ncol] - m) * (arr[rowidx+colidx*ncol] - m);
+		double diff = arr[rowidx + colidx * ncol] - m;
+		s += (diff * diff);
 	}
 	return s / (nvec - 1);
+}
+
+static double _cov_array_(double *arr1, double *arr2, unsigned int n)
+{
+	if (n < 2 || arr1 == NULL || arr2 == NULL)
+	{
+		return -1;
+	}
+	double K1, K2, ex, ey, exy;
+	unsigned int i;
+#ifdef _OPENMP
+	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:ex,ey,exy)
+#endif
+	for (K1 = arr1[0], K2 = arr2[0], ex = 0.0, ey = 0.0, exy = 0.0, 
+			i = 0; i < n; i++)
+	{
+		ex += arr1[i] - K1;
+		ey += arr2[i] - K2;
+		exy += ((arr1[i] - K1) * (arr2[i] - K2));
+	}
+	return (exy - (ex * ey) / n) / n;
 }
 
 static double _absolute_summation_array_(double *arr, unsigned int n)
@@ -1419,32 +1479,24 @@ static double _vector2_norm_(double *arr, unsigned int n, unsigned int p = 2)
 	return _c_power_(summer, 1.0 / p);
 }
 
-
-
-static int _partition_(double *arr, const int left, const int right) {
-    int mid = left + (right - left) / 2;
-    double pivot = arr[mid];
-    // move the mid point value to the front.
-    swap<double>(&arr[mid], &arr[left]);
-    int i = left + 1;
-    int j = right;
-    while (i <= j) {
-        while(i <= j && arr[i] <= pivot) {
-            i++;
-        }
-
-        while(i <= j && arr[j] > pivot) {
-            j--;
-        }
-
-        if (i < j) {
-            swap<double>(&arr[i], &arr[j]);
-        }
-    }
-    swap<double>(&arr[i-1],&arr[left]);
-    return i - 1;
+static int _partition_(double *arr, int left, int right)
+{
+	double piv;
+	int i, x;
+	for (piv = arr[right], i = left, x = left; x < right; x++)
+	{
+		if (arr[x] <= piv)
+		{
+			swap<double>(&arr[i++], &arr[x]);
+		}
+	}
+	swap<double>(&arr[i], &arr[right]);
+	return i;
 }
 
+/**
+	A recursive sorting implementation. Not great.
+*/
 static void _quicksort_(double* arr, int left, int right)
 {
 	if (left >= right) {
@@ -1454,6 +1506,33 @@ static void _quicksort_(double* arr, int left, int right)
 	int part = _partition_(arr, left, right);
 	_quicksort_(arr, left, part - 1);
 	_quicksort_(arr, part + 1, right);
+}
+
+/**
+	QuickSelect finds the k-th smallest element in an unordered list.
+
+	WARNING: Partially sorts array, so copy beforehand if this is undesired.
+
+	K must be 1>.
+*/
+static double _quickselect_(double *arr, int left, int right, int K)
+{
+	// generate pivot indeex
+	int p = _partition_(arr, left, right);
+
+	// k == pivot, got lucky!
+	if (p == K-1)
+	{
+		return arr[p];
+	}
+	else if (K-1 < p) // K < p
+	{
+		return _partition_(arr, left, p - 1);
+	}
+	else // K > p
+	{
+		return _partition_(arr, p + 1, right);
+	}
 }
 
 // where out == null, in is a string, size is length of in
@@ -2033,6 +2112,37 @@ static int _element_or_(bool *left, bool *right, unsigned int n)
 	return 1;
 }
 
+static double _median_array_(double *arr, unsigned int n, bool sorted)
+{
+	if (!sorted)
+	{
+		if (n % 2 == 0)
+		{
+			// even length
+			double v = _quickselect_(arr, 0, n-1, ((int) n / 2));
+			double w = _quickselect_(arr, 0, n-1, ((int) n / 2) - 1);
+			// return arithmetic mean of two middle values.
+			return (v + w) / 2;
+		}
+		else
+		{
+			// odd length - find the middle value only
+			return _quickselect_(arr, 0, n-1, ((int) (n / 2)) + 1);
+		}
+	}
+	else
+	{
+		if (n % 2 == 0)
+		{
+			// arithmetic mean of the two middle vals
+			return (arr[(int) (n / 2)] + arr[((int) (n / 2)) - 1]) / 2;
+		}
+		else
+		{
+			return arr[((int) (n / 2)) + 1];
+		}
+	}
+}
 
 
 #endif
