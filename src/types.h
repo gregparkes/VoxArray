@@ -30,6 +30,11 @@ typedef unsigned int uint;
 #define $ 0x00
 #define SELECT_ALL 0x00
 #define _INFINITY_ (1.0/0.0)
+#define _INTERPOLATION_LINEAR 1
+#define _INTERPOLATION_LOWER 2
+#define _INTERPOLATION_HIGHER 3
+#define _INTERPOLATION_NEAREST 4
+#define _INTERPOLATION_MIDPOINT 5
 
 //#define _CUMPY_DEBUG_ 0
 

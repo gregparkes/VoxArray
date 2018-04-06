@@ -758,12 +758,22 @@ namespace tests {
 		PRINT_STR("Start Median");
 		
 		Numpy sorted_x = numpy::arange(9) + 1;
+		Numpy sorted_y = numpy::arange(14) + 1;
+		Numpy sorted_z = numpy::linspace(-5.0, 5.0, 11);
 		Numpy unsorted_x = numpy::array("3.0, 2.0, 5.0, 1.0, 4.0");
-		PRINT_OBJ(sorted_x);
-		PRINT_OBJ(unsorted_x);
-		std::cout << numpy::median(sorted_x) << ", " << numpy::median(unsorted_x) << std::endl;
-		assert(CMP(numpy::median(sorted_x), 5.0));
-		assert(CMP(numpy::median(unsorted_x), 3.0));
+		Numpy unsorted_y = numpy::shuffle(numpy::arange(10) + 1);
+		//PRINT_OBJ(unsorted_y);
+		double m1 = numpy::median(sorted_x, true, false);
+		double m2 = numpy::median(unsorted_x);
+		double m3 = numpy::median(sorted_y, true);
+		double m4 = numpy::median(sorted_z, true);
+		double m5 = numpy::median(unsorted_y);
+		// std::cout << m1 << ", " << m2 << ", " << m3 << ", " << m4 << ", " << m5 << std::endl;
+		assert(CMP(m1, 5.0));
+		assert(CMP(m3, 7.5));
+		assert(CMP(m4, 0.0));
+		assert(CMP(m2, 3.0));
+		assert(CMP(m5, 5.5));
 
 		PRINT_STR("test_median :: Passed");
 	}
@@ -792,6 +802,28 @@ namespace tests {
 		PRINT_STR("Test_Var :: Passed");
 	}
 
+	static void test_percentile()
+	{
+		PRINT_STR("Start Var");
+		
+/* ----------------------------------------------------------------------------------*/
+
+		PRINT_STR("Test_Var :: Passed");
+	}
+
+	static void test_prod()
+	{
+		PRINT_STR("Start Prod");
+		
+		Numpy x = numpy::arange(6) + 1;
+		double p = numpy::prod(x);
+		assert(CMP(p, 720.0));
+		Numpy y = numpy::arange(5);
+		assert(CMP(numpy::prod(y), 0.0));
+
+		PRINT_STR("test_prod :: Passed");
+	}
+
 	static void test_argmin()
 	{
 		PRINT_STR("Start Argmin");
@@ -812,6 +844,48 @@ namespace tests {
 		assert(x.argmax() == 1);
 
 		PRINT_STR("Test_Argmax :: Passed");
+	}
+
+	static void test_ksmallest()
+	{
+		PRINT_STR("Start Ksmallest");
+		
+		Numpy x = numpy::shuffle(numpy::arange(10));
+		assert(CMP(numpy::ksmallest(x, 2), 1.0));
+		assert(CMP(numpy::ksmallest(x, 4), 3.0));
+		assert(CMP(numpy::ksmallest(x, 5, false, true), 4.0));
+
+		try {
+			numpy::ksmallest(x, 0);
+			numpy::ksmallest(x, -3);
+		} catch (...)
+		{
+			PRINT_SUCCESS("Caught error in ksmallest()");
+		}
+
+		PRINT_STR("test_ksmallest :: Passed");
+	}
+
+	static void test_klargest()
+	{
+		PRINT_STR("Start Klargest");
+		
+		Numpy x = numpy::shuffle(numpy::arange(10));
+		double n1 = numpy::klargest(x, 2);
+		// std::cout << n1 << std::endl;
+		assert(CMP(numpy::klargest(x, 2), 8.0));
+		assert(CMP(numpy::klargest(x, 4), 6.0));
+		assert(CMP(numpy::klargest(x, 5, false, true), 5.0));
+
+		try {
+			numpy::ksmallest(x, 0);
+			numpy::ksmallest(x, -3);
+		} catch (...)
+		{
+			PRINT_SUCCESS("Caught error in ksmallest()");
+		}
+
+		PRINT_STR("test_klargest :: Passed");
 	}
 
 	static void test_sine()
@@ -996,8 +1070,6 @@ namespace tests {
 
 		PRINT_STR("Test_Cumsum :: Passed");
 	}
-
-
 
 	static void test_logr()
 	{
@@ -1224,8 +1296,11 @@ static void call_all_tests()
 	test_mean();
 	test_std();
 	test_var();
+	test_prod();
 	test_argmin();
 	test_argmax();
+	test_ksmallest();
+	test_klargest();
 	test_sine();
 	test_cosi();
 	test_tang();

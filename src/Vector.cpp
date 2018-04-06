@@ -736,6 +736,41 @@ namespace numpy {
 		return _var_array_(rhs.data, rhs.n);
 	}
 
+	double percentile(const Vector& rhs, double q)
+	{
+		// convert q into K to therefore use ksmallest
+		uint K = (uint) ((q / 100) * rhs.n);
+		// check to ensure K is not greater than n
+		if (K < rhs.n)
+		{
+			return ksmallest(rhs, K);
+		}
+		else
+		{
+			INVALID("K generated cannot be >= n in percentile()");
+		}
+		
+	}
+
+	Vector percentiles(const Vector& rhs, const Vector& q)
+	{
+		// compute K for all q.
+		Vector res = empty_like(q);
+		for (uint i = 0; i < res.n; i++)
+		{
+			uint K = (uint) ((q.data[i]/100.0) * rhs.n);
+			if (K < rhs.n)
+			{
+				res[i] = ksmallest(rhs, K);
+			}
+			else
+			{
+				INVALID("K generated cannot be >= n in percentiles()");
+			}
+		}
+		return res;
+	}
+
 	double prod(const Vector& rhs)
 	{
 		return _prod_array_(rhs.data, rhs.n);
@@ -751,20 +786,6 @@ namespace numpy {
 		return np;
 	}
 
-	Vector adjacsum(const Vector& rhs)
-	{
-		// Default - Does not wrap adjacency.
-
-		Vector np(rhs.n);
-		np.data[0] = rhs.data[0] + rhs.data[1];
-		np.data[rhs.n-1] = rhs.data[rhs.n-1] + rhs.data[rhs.n-2];
-		for (uint i = 1; i < rhs.n-1; i++)
-		{
-			np.data[i] = rhs.data[i] + rhs.data[i-1] + rhs.data[i+1];
-		}
-		return np;
-	}
-
 	Vector cumprod(const Vector& rhs)
 	{
 		Vector np = ones(rhs.n);
@@ -773,21 +794,6 @@ namespace numpy {
 			INVALID("cumprod failed!");
 		}
 		return np;
-	}
-
-	double trapz(const Vector& y, double dx)
-	{
-		/* array must be at least 3 long for this method to work */
-		if (y.n < 3)
-		{
-			RANGE("Trapz requires an array y length to be at least 3");
-		} 
-		double total = 0.0;
-		for (uint i = 1; i < y.n-1; i++)
-		{
-			total += 2*y.data[i];
-		}
-		return ((dx/2) * (y.data[0] + total + y.data[y.n-1]));
 	}
 
 	bool all(const Vector& rhs)
@@ -820,16 +826,97 @@ namespace numpy {
 		return _max_index_(rhs.data, rhs.n);
 	}
 
-	Vector nsmallest(const Vector& rhs, uint idx)
+	double ksmallest(const Vector& rhs, uint K, bool is_sorted, bool partial_sort)
 	{
-		Vector r_sorted = sort(rhs);
-		return rstrip(r_sorted, idx-1);
+		if (K == 1)
+		{
+			return min(rhs);
+		}
+		else if (!is_sorted)
+		{
+			if (!partial_sort)
+			{
+				Vector cp = copy(rhs);
+				return _quickselect_(cp.data, 0, cp.n-1, K);
+			}
+			else
+			{
+				return _quickselect_(rhs.data, 0, rhs.n-1, K);
+			}
+		}
+		else
+		{
+			return rhs.data[K];
+		}
 	}
 
-	Vector nlargest(const Vector& rhs, uint idx)
+	double klargest(const Vector& rhs, uint K, bool is_sorted, bool partial_sort)
 	{
-		Vector r_sorted = sort(rhs);
-		return lstrip(r_sorted, rhs.n - idx);
+		if (K == 1)
+		{
+			return max(rhs);
+		}
+		else if (!is_sorted)
+		{
+			if (!partial_sort)
+			{
+				Vector cp = copy(rhs);
+				return _quickselect_(cp.data, 0, cp.n-1, cp.n - K + 1);
+			}
+			else
+			{
+				return _quickselect_(rhs.data, 0, rhs.n-1, rhs.n - K + 1);
+			}
+		}
+		else
+		{
+			return rhs.data[rhs.n - K];
+		}
+	}
+
+	Vector nsmallest(const Vector& rhs, uint N)
+	{
+		// based on log(n) if this is bigger than idx (in most cases) we 
+		// sort the whole array then pick.
+		// else use k-smallest
+		if ((int) (log10(rhs.n)) > N)
+		{
+			Vector r_sorted = sort(rhs);
+			return rstrip(r_sorted, N-1);
+		}
+		else
+		{
+			//k-smallest
+			Vector res = empty(N);
+			res[0] = min(rhs);
+			for (int k = 1; k < N; k++)
+			{
+				res[k] = ksmallest(rhs, k);
+			}
+			return res;
+		}
+
+		
+	}
+
+	Vector nlargest(const Vector& rhs, uint N)
+	{
+		if ((int) (log10(rhs.n)) > N)
+		{
+			Vector r_sorted = sort(rhs);
+			return lstrip(r_sorted, rhs.n - N);
+		}
+		else
+		{
+			//k-smallest
+			Vector res = empty(N);
+			res[0] = max(rhs);
+			for (int k = 1; k < N; k++)
+			{
+				res[k] = klargest(rhs, k);
+			}
+			return res;
+		}
 	}
 
 	double cov(const Vector& v, const Vector& w)
@@ -1062,27 +1149,7 @@ namespace numpy {
 	Vector sort(const Vector& rhs, uint sorter)
 	{
 		Vector np = copy(rhs);
-		_quicksort_(np.data, 0, np.n-1);
-		if (sorter == SORT_DESCEND)
-		{
-			np.flip();
-		}
-		return np;
-	}
-
-	Vector rotate_vector2d(const Vector& v, double degrees)
-	{
-		if (v.n != 2)
-		{
-			throw std::invalid_argument("v must be of length 2!");
-		}
-		degrees = DEG2RAD(degrees);
-		double s = _sine_(degrees);
-		double c = _cosine_(degrees);
-
-		Vector np = empty(2);
-		np.data[0] = (v.data[0] * c) - (v.data[1] * s);
-		np.data[1] = (v.data[0] * s) + (v.data[1] * c);
+		_quicksort_(np.data, 0, np.n-1, !((bool) sorter));
 		return np;
 	}
 
@@ -1627,11 +1694,7 @@ namespace numpy {
 
 	Vector& Vector::sort(uint sorter)
 	{
-		_quicksort_(data, 0, n-1);
-		if (sorter == SORT_DESCEND)
-		{
-			flip();
-		}
+		_quicksort_(data, 0, n-1, !((bool) sorter));
 		return *this;
 	}
 

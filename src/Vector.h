@@ -614,9 +614,34 @@ namespace numpy {
 	double var(const Vector& rhs);
 
 	/**
+	 Computes the qth-percentile of the data. q must be between [0., 100.].
+
+	 *Note* for percentiles that do not divide exactly into n, K is selected
+	 by integer truncation.
+
+	 @param rhs : the vector
+	 @param q : value between 0th-100th percentile
+	 @return percentile at q
+	*/
+	double percentile(const Vector& rhs, double q);
+
+	/**
+	 Computes the qth-percentiles of the data. vector q must be between [0., 100.].
+
+	 @param rhs : the vector
+	 @param q : vector of percentiles in the range [0, 100]
+	 @return Array of percentile values <created on the stack>
+	*/
+	Vector percentiles(const Vector& rhs, const Vector& q);
+
+	/**
 	 Calculates the product of the elements in the array.
 
 	 e.g [1.0, 2.0, 3.0, 4.0] -> 1*2*3*4 = 24.0
+
+	 *Warning*: Overflow can occur if too many numbers in the range
+	 [0, 1] are multiplied or >1. In this case convert to logscale
+	 and sum before converting back to the original scale.
 
 	 @param rhs : the array to product
 	 @return The product of the array
@@ -635,19 +660,6 @@ namespace numpy {
 	Vector cumsum(const Vector& rhs);
 
 	/**
-	 Calculates the adjacent sum of the array into a new array.
-	 Does not wrap around, i.e idx [0] does not factor in [n-1] or
-	 vice versa.
-
-	 e.g [1.0, 2.0, 3.0] -> [3.0, 6.0, 5.0]
-	 -> a+b, a+b+c, b+c+d, c+d
-
-	 @param rhs : the array to sum
-	 @return The new array adjacently summed <created on the stack>
-	 */
-	Vector adjacsum(const Vector& rhs);
-
-	/**
 	 Calculates the cumulative product and copies into new array.
 
 	 e.g [1.0, 2.0, 3.0] -> [1.0, 2.0, 6.0]
@@ -656,16 +668,6 @@ namespace numpy {
 	 @return The new array product. <created on the stack>
 	 */
 	Vector cumprod(const Vector& rhs);
-
-	/**
-	 Integrate along the vector using the composite trapezoidal rule. Integral y(x).
-
-	 @param y : y vector
-	 @param x : x input vector (if left null, assumes x is evenly spaced)
-	 @param dx : spacing between sample points (default 1)
-	 @return Integral
-	 */
-	double trapz(const Vector& y, double dx = 1.0);
 
 	/**
 	 Tests whether all elements in the vector evaluate to True.
@@ -716,7 +718,49 @@ namespace numpy {
 	uint argmax(const Vector& rhs);
 
 	/**
+	 Finds the kth-smallest [1,n] element in vector, and returns it.
+
+	 **Assumes all elements are distinct.**
+
+	 *Note* Set partial_sort to true if vector is unordered as it
+	 speeds up computation by not copying.
+
+	 Set is_sorted to true if the array is ordered to speed up computation.
+
+	 @param rhs : the vector
+	 @param K : the number from the smallest element to select
+ 	 @param isSorted (optional) : default to false
+	 @param partial_sort (optional) : default to false
+	 @return The value at K.
+	*/
+	double ksmallest(const Vector& rhs, uint K, bool is_sorted = false,
+		bool partial_sort = false);
+
+	/**
+	 Finds the kth-largest [1,n] element in vector, and returns it.
+
+	 **Assumes all elements are distinct.**
+
+	 *Note* Set partial_sort to true if vector is unordered as it
+	 speeds up computation by not copying.
+
+	 Set is_sorted to true if the array is ordered to speed up computation.
+
+	 @param rhs : the vector
+	 @param K : the number from the largest element to select
+	 @param isSorted (optional) : default to false
+	 @param partial_sort (optional) : default to false
+	 @return The value at K.
+	*/
+	double klargest(const Vector& rhs, uint K, bool is_sorted = false,
+		bool partial_sort = false);
+
+	/**
 	 Returns the n-smallest values from vector rhs.
+
+	 If vector is sufficiently small, we use k-smallest n times 
+	 to collect values. If large, we sort the whole array using 
+	 quicksort.
 
 	 @param rhs : the vector
 	 @param n (optional) : the number of smallest values to get, default 5
@@ -726,6 +770,10 @@ namespace numpy {
 
 	/**
 	 Returns the n-largest values from vector rhs.
+
+	 If vector is sufficiently small, we use k-largest n times 
+	 to collect values. If large, we sort the whole array using 
+	 quicksort.
 
 	 @param rhs : the vector
 	 @param n (optional) : the number of largest values to get, default 5
@@ -962,15 +1010,6 @@ namespace numpy {
 	 @return The new transposed vector. <created on the stack>
 	 */
 	Vector transpose(const Vector& rhs);
-
-	/**
-	Rotates a 2-D vector by a certain number of degrees.
-
-	@param v : the vector to rotate
-	@param degrees : the number of degrees to rotate by.
-	@return The rotated vector.
-	*/
-	Vector rotate_vector2d(const Vector& v, double degrees);
 
 	/**
 	Calculates the angle between a set of vectors, up to n-dimensions.

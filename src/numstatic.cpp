@@ -1487,7 +1487,24 @@ static int _partition_(double *arr, int left, int right)
 	{
 		if (arr[x] <= piv)
 		{
-			swap<double>(&arr[i++], &arr[x]);
+			swap<double>(&arr[i], &arr[x]);
+			i++;
+		}
+	}
+	swap<double>(&arr[i], &arr[right]);
+	return i;
+}
+
+static int _partition_reverse_(double *arr, int left, int right)
+{
+	double piv;
+	int i, x;
+	for (piv = arr[right], i = left, x = left; x < right; x++)
+	{
+		if (arr[x] >= piv)
+		{
+			swap<double>(&arr[i], &arr[x]);
+			i++;
 		}
 	}
 	swap<double>(&arr[i], &arr[right]);
@@ -1497,15 +1514,22 @@ static int _partition_(double *arr, int left, int right)
 /**
 	A recursive sorting implementation. Not great.
 */
-static void _quicksort_(double* arr, int left, int right)
+static void _quicksort_(double* arr, int left, int right, bool ascending)
 {
-	if (left >= right) {
-		return;
+	if (left < right) 
+	{
+		int part;
+		if (ascending)
+		{
+			part = _partition_(arr, left, right);
+		}
+		else
+		{
+			part = _partition_reverse_(arr, left, right);
+		}
+		_quicksort_(arr, left, part - 1, ascending);
+		_quicksort_(arr, part + 1, right, ascending);
 	}
-
-	int part = _partition_(arr, left, right);
-	_quicksort_(arr, left, part - 1);
-	_quicksort_(arr, part + 1, right);
 }
 
 /**
@@ -1517,22 +1541,27 @@ static void _quicksort_(double* arr, int left, int right)
 */
 static double _quickselect_(double *arr, int left, int right, int K)
 {
-	// generate pivot indeex
-	int p = _partition_(arr, left, right);
+	// check to ensure K is smaller than number of elements in the array
+	if (K > 0 && K <= right - left + 1)
+	{
+		// generate pivot indeex
+		int p = _partition_(arr, left, right);
 
-	// k == pivot, got lucky!
-	if (p == K-1)
-	{
-		return arr[p];
+		// k == pivot, got lucky!
+		if ((p - left) == (K - 1))
+		{
+			return arr[p];
+		}
+		else if (p - left > K - 1) // K < p
+		{
+			return _quickselect_(arr, left, p - 1, K);
+		}
+		else // K > p
+		{
+			return _quickselect_(arr, p + 1, right, K - p + left - 1);
+		}
 	}
-	else if (K-1 < p) // K < p
-	{
-		return _partition_(arr, left, p - 1);
-	}
-	else // K > p
-	{
-		return _partition_(arr, p + 1, right);
-	}
+	return FLT_EPSILON;
 }
 
 // where out == null, in is a string, size is length of in
@@ -1729,16 +1758,6 @@ static int _gaussian_elimination_(double *matrix, unsigned int n)
 		}
 	}
 	return row_switch_count;
-}
-
-// given two values, this method will return the multiplicative number associated with the number
-// of eigenvalues, e.g
-// 5, -4 is phrased as (5-lambda)(-4-lambda) -> -20 + 5lambda - 4lambda + lambda^2.
-// this method will return 1lambda - 1. i.e telling you that from these two numbers, expanding the brackets
-// gives +1 lambda.
-static double _eigenvalue_det_(double a, double b)
-{
-	return -a - b;
 }
 
 /**
@@ -2119,9 +2138,10 @@ static double _median_array_(double *arr, unsigned int n, bool sorted)
 		if (n % 2 == 0)
 		{
 			// even length
-			double v = _quickselect_(arr, 0, n-1, ((int) n / 2));
-			double w = _quickselect_(arr, 0, n-1, ((int) n / 2) - 1);
+			double v = _quickselect_(arr, 0, n-1, ((int) n / 2) + 1);
+			double w = _quickselect_(arr, 0, n-1, ((int) n / 2));
 			// return arithmetic mean of two middle values.
+			printf("v: %f, w: %f\n", v, w);
 			return (v + w) / 2;
 		}
 		else
@@ -2139,9 +2159,52 @@ static double _median_array_(double *arr, unsigned int n, bool sorted)
 		}
 		else
 		{
-			return arr[((int) (n / 2)) + 1];
+			return arr[((int) (n / 2))];
 		}
 	}
+}
+
+/**
+	Given data points over an evenly-spread axis, we use a simplified trapezoidal 
+	rule to guess the integral over the vector.
+*/ 
+static double _integral_trapz_(double *arr, unsigned int n, double dx)
+{
+	if (n < 3)
+	{
+		return FLT_EPSILON;
+	} 
+	double total;
+	for (uint i = 1, total = 0.0; i < n-1; i++)
+	{
+		total += arr[i];
+	}
+	return dx * (((arr[0] +arr[n-1]) / 2) + total);
+}
+
+/**
+	Given data points over an evenly-spread axis, integrate to fourth-order
+	using simpson's method.
+*/
+static double _integral_simpsons_(double *arr, unsigned int n, double dx)
+{
+	double total_1, total_2;
+	for (uint i = 1, total_1 = 0.0; i < n-1; i+=2)
+	{
+		total_1 += arr[i];
+	}
+	for (uint i = 2, total_2 = 0.0; i < n-1; i+=2)
+	{
+		total_2 += arr[i];
+	}
+	return (dx / 3) * ((arr[0] + arr[n-1]) + 2*total_2 + 4*total_1);
+}
+
+static double _richardson_extrapolation_(double *arr, unsigned int n, double dx)
+{
+	double Ih = _integral_simpsons_(arr, n, dx);
+	double I2h = _integral_simpsons_(arr, (int) (n / 2), dx);
+	return (16 * Ih - I2h) / 15;
 }
 
 
