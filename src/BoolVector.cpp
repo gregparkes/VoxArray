@@ -58,7 +58,27 @@ uint sum(const Mask& rhs)
 
 double mean(const Mask& rhs)
 {
-	return (double) (sum(rhs) / rhs.n);
+	return (double) (_boolean_summation_array_(rhs.data, rhs.n) / rhs.n);
+}
+
+Mask isin(const Vector& a, const Vector& b)
+{
+	// create copy mask from size of a, filled with falses.
+	Mask result = Mask(a.n, 0);
+	// assign true to result where b is found in a.
+	_isin_array_(result.data, a.data, b.data, a.n, b.n);
+	// return result
+	return result;
+}
+
+bool any(const Mask& m)
+{
+	return _any_true_<bool>(m.data, m.n);
+}
+
+bool all(const Mask& m)
+{
+	return _all_true_<bool>(m.data, m.n);
 }
 
 
@@ -93,6 +113,27 @@ double mean(const Mask& rhs)
 		{
 			throw std::runtime_error("Unable to allocate memory");
 		}
+		this->flag_delete = true;
+    }
+
+    Mask::Mask(uint n, uint f)
+    {
+#ifdef _CUMPY_DEBUG_
+		printf("constructing mask normal %x\n", this);
+#endif
+		if (n == 0)
+		{
+			RANGE("n cannot = 0");
+		}
+		this->n = n;
+		data = _create_empty_<bool>(n);
+		if (data == NULL)
+		{
+			throw std::runtime_error("Unable to allocate memory");
+		}
+		// fill data
+		_fill_array_<bool>(data, n, (bool) f);
+		// set flag
 		this->flag_delete = true;
     }
 

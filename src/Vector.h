@@ -855,7 +855,7 @@ namespace numpy {
 	@param v : the vector to normalize
 	@return The normalized array
 	*/
-	Vector normalized(const Vector& v);
+	Vector normalize(const Vector& v);
 
 	/**
 	 Standardize the vector by removing the mean and standard deviation scaling.
@@ -1010,43 +1010,6 @@ namespace numpy {
 	 @return The new transposed vector. <created on the stack>
 	 */
 	Vector transpose(const Vector& rhs);
-
-	/**
-	Calculates the angle between a set of vectors, up to n-dimensions.
-
-	@param l : the left vector
-	@param r : the right vector
-	@return TThe angle between them
-	*/
-	double angle(const Vector& l, const Vector& r);
-
-	/**
-	 Calculates the projection using some lengths and directions. Practically applicable
-	 in 2,3-D but can extend to n-dimension if needed.
-
-	@param length : length vector
-	@param dir : direction vector
-	@return Projection vector
-	*/
-	Vector project(const Vector& length, const Vector& dir);
-
-	/**
-	 Calculates the perpendicular vector associated with length and direction vectors.
-
-	@param length : length vector
-	@param dir : direction vector
-	@return Perpendicular vector
-	*/
-	Vector perpendicular(const Vector& length, const Vector& dir);
-
-	/**
-	 Calculates the Reflection vector associated with source and normal vectors.
-
-	@param source : source vector
-	@param normal : normal vector
-	@return Reflection vector
-	*/
-	Vector reflection(const Vector& source, const Vector& normal);
 
 
 /********************************************************************************************
@@ -1465,9 +1428,18 @@ class Vector
 		/**
 		 Normalizes the array by it's magnitude.
 
-		@return Null
+		@return this object <object not created>
 		*/
-		void normalize();
+		Vector& normalize();
+
+		/**
+		 Standardize the array.
+
+		 e.g (x - x.mean()) / x.std()
+
+		 @return this object <object not created> 
+		*/
+		Vector& standardize();
 
 		/**
 		 Transpose the vector from column->row or vice versa.
@@ -1481,7 +1453,12 @@ class Vector
 		// direct indexing
 		inline double& operator[](int idx) { return data[idx]; }
 
-		// indirect indexing using masks - use a copy
+		/*
+		 Select values from the array using a boolean mask.
+
+		 @param m : the mask array
+		 @return A copy of the selected elements in vector <created on the stack>
+		*/
 		Vector operator[](const Mask& m);
 
 		// indexing using the select struct

@@ -168,6 +168,51 @@ namespace numpy {
 		return m;
 	}
 
+	Matrix reshape(const Vector& rhs, uint nrows, uint ncols)
+	{
+		if (rhs.n % nrows != 0 || rhs.n % ncols != 0 || nrows*ncols != rhs.n)
+		{
+			INVALID("in reshape(), vector must divide into nrows/ncols");
+		}
+		// create empty uninitialised
+		Matrix m = empty(ncols, nrows);
+		// copy over rhs pointer to m.
+		if (!_copy_array_<double>(m.data, rhs.data, rhs.n))
+		{
+			INVALID("copy failed in reshape()");
+		}
+		// the other pointers should be automatically primed in the correct location
+		// as set by ncols and nrows.
+		return m;
+	}
+
+	Matrix reshape(const Matrix& rhs, uint nrows, uint ncols)
+	{
+		if (rhs.nvec*rhs.vectors[0]->n != nrows*ncols)
+		{
+			INVALID("in reshape(), matrix col*row must == nrows*ncols");
+		}
+		if (rhs.nvec != ncols && rhs.vectors[0]->n != nrows)
+		{
+			Matrix m = empty(ncols, nrows);
+			// copy array over from rhs into m.data
+			if (!_copy_array_<double>(m.data, rhs.data, nrows*ncols))
+			{
+				INVALID("copy failed in reshape()");
+			}
+			// the vectors should automatically point in the correct
+			// location as set by the constructor.
+
+			// now return matrix.
+			return m;
+		}
+		else
+		{
+			// copy rhs as is without using new nrows, ncols
+			return copy(rhs);
+		}
+	}
+
 	Vector nonzero(const Matrix& rhs)
 	{
 		int cnz = _count_nonzero_array_(rhs.data, _fullsize_(rhs));
@@ -1190,6 +1235,16 @@ namespace numpy {
 
 *///////////////////////////////////////////////////////////////////////////////////////////
 
+	Matrix::Matrix()
+	{
+#ifdef _CUMPY_DEBUG_
+		printf("constructing empty matrix %x\n", this);
+#endif
+		this->nvec = 4;
+		this->vectors = NULL;
+		this->data = NULL;
+	}
+
 
 	Matrix::Matrix(uint ncol, uint nrow)
 	{
@@ -1225,8 +1280,12 @@ namespace numpy {
 		//printf("deleting MATRIX %x\n", this);
 		for (uint i = 0; i < nvec; i++)
 		{
+			// deleting each vector class within the vectors pointer
 			delete vectors[i];
 		}
+		// delete the vectors pointer allocation.
+		delete[] vectors;
+		// destroys *data pointer efficiently.
 		if (!_destroy_array_(data))
 		{
 			throw std::invalid_argument("Unable to destroy array");
@@ -1301,6 +1360,37 @@ namespace numpy {
 			m.vectors[i]->n = vectors[i]->n;
 		}
 		return m;
+	}
+
+	Matrix& Matrix::reshape(uint ncols, uint nrows)
+	{
+		// there are no changes to this->data.
+		// check to ensure ncols*nrows == this.ncols*this.nvecs
+		if (ncols*nrows != nvec*vectors[0]->n)
+		{
+			INVALID("in numpy.reshape() ncols and nrows do not match up!");
+		}
+		if (ncols == 0 || nrows == 0)
+		{
+			INVALID("ncols/nrows cannot == 0");
+		}
+		// delete vectors object 
+		for (uint i = 0; i < nvec; i++)
+		{
+			delete vectors[i];
+		}
+		delete[] vectors;
+		// re-create with ncols
+		this->nvec = ncols;
+		vectors = new Vector*[ncols];
+		for (uint i = 0; i < ncols; i++)
+		{
+			vectors[i] = new Vector();
+			vectors[i]->n = nrows;
+			// offset vector pointer in main memory
+			vectors[i]->data = (data + i*nrows);
+		}
+		return *this;
 	}
 
 	double& Matrix::ix(uint i, uint j)

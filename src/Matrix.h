@@ -123,7 +123,7 @@ namespace numpy {
 	 @param rhs : the matrix
 	 @param nrows : the number of new rows in the new matrix
 	 @param ncols : the number of new columns in the new matrix
-	 @return The new matrix < created on the stack>
+	 @return The new matrix <created on the stack>
 	*/
 	Matrix reshape(const Vector& rhs, uint nrows, uint ncols);
 
@@ -135,7 +135,7 @@ namespace numpy {
 	 @param ncols : the number of new columns in the new matrix
 	 @return The new matrix < created on the stack>
 	*/
-	Matrix reshape(const Matrix& rhs, uint nrows, uint cols);
+	Matrix reshape(const Matrix& rhs, uint nrows, uint ncols);
 
 	/**
 	 Extracts all the non-zero values from a matrix and copies them.
@@ -886,6 +886,13 @@ class Matrix
 	public:
 
 		/**
+			 Constructs an uninitialised matrix. 
+
+			 WARNING: calling functions with this will likely lead to an error!
+			 Use at your own peril!
+		*/
+		Matrix();
+		/**
 		 	 Contructs an empty matrix with uninitialized values.
 		 */
 		Matrix(uint ncol, uint nrow);
@@ -926,6 +933,15 @@ class Matrix
 		 @return The new matrix object. <created on the stack>
 		 */
 		Matrix copy();
+
+		/**
+		 Reshape the matrix locally.
+
+		 @param nrows : the number of new rows in the matrix
+		 @param ncols : the number of new columns in the matrix
+		 @return The reshaped matrix <object not created>
+		*/
+		Matrix& reshape(uint ncols, uint nrows);
 
 		/**
 		 Copy a column vector from this matrix object for further use.

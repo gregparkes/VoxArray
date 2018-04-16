@@ -32,8 +32,6 @@
  left = left op right )
 
 
-
-
 #define _LARGEST2_(a,b) (a > b ? a : b)
 
 static inline double _absolute_(double value)
@@ -887,7 +885,8 @@ static int _floor_array_(double *arr, unsigned int n)
 	return 1;
 }
 
-static bool _all_true_(double *arr, unsigned int n)
+template <typename T> static 
+bool _all_true_(T *arr, unsigned int n)
 {
 	for (unsigned int i = 0; i < n; i++)
 	{
@@ -899,7 +898,8 @@ static bool _all_true_(double *arr, unsigned int n)
 	return true;
 }
 
-static bool _any_true_(double *arr, unsigned int n)
+template <typename T> static 
+bool _any_true_(T *arr, unsigned int n)
 {
 	for (unsigned int i = 0; i < n; i++)
 	{
@@ -932,30 +932,52 @@ static int _boolean_summation_array_(bool *arr, unsigned int n)
 	return total;
 }
 
+/**
+	To reduce the numerical error in the total obtained by a naive summation,
+	we use Kahan summation to retain numerical precision.
+
+	This helps to account for an accumulation in small errors.
+
+	https://en.wikipedia.org/wiki/Kahan_summation_algorithm
+
+	When sum is big and y is small, low-order digits are lost.
+
+	t - sum cancels the higher order part of y; subtracting y recovers negative.
+
+	c should always be 0! beware of greedy compilers.
+
+	next time, the lost low part c will be added to y in a fresh attempt.
+*/
 static double _summation_array_(double *arr, unsigned int n)
 {
-	double total = arr[0];
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:total)
-#endif
-	for (unsigned int i = 1; i < n; i++)
+	double sum = arr[0];
+	// c is our small accumulator
+	double c = 0.0;
+	unsigned int i;
+	for (i = 1; i < n; i++)
 	{
-		total += arr[i];
+		double y = arr[i] - c;
+		double t = sum + y;
+		c = (t - sum) - y;
+		sum = t;
 	}
-	return total;
+	return sum;
 }
 
 static double _matrix_rowwise_summation_(double *arr, unsigned int nvec, unsigned int ncol, unsigned int rowidx)
 {
-	double total = arr[rowidx];
-#ifdef _OPENMP
-	#pragma omp parallel for if(nvec>__OMP_OPT_VALUE__) schedule(static) reduction(+:total)
-#endif
-	for (unsigned int colidx = 1; colidx < nvec; colidx++)
+	double sum = arr[rowidx];
+	double c = 0.0;
+	unsigned int i;
+
+	for (i = 1; i < nvec; i++)
 	{
-		total += arr[rowidx+colidx*ncol];
+		double y = arr[rowidx+i*ncol] - c;
+		double t = sum + y;
+		c = (t - sum) - y;
+		sum = t;
 	}
-	return total;
+	return sum;
 }
 
 static double _std_array_(double *arr, unsigned int n)
@@ -1054,7 +1076,7 @@ static double _cov_array_(double *arr1, double *arr2, unsigned int n)
 		ey += arr2[i] - K2;
 		exy += ((arr1[i] - K1) * (arr2[i] - K2));
 	}
-	return (exy - (ex * ey) / n) / n;
+	return (exy - (ex * ey) / n) / (n - 1);
 }
 
 static double _absolute_summation_array_(double *arr, unsigned int n)
@@ -1920,6 +1942,41 @@ static int _div_array_(double *arr, unsigned int n, double value)
 ---------------------- ELEMENT-WISE MATHEMATICS -------------------------------
 
 */
+
+
+/*
+	out is same shape as (a), (b) must be <= size of (a).
+
+	inserts boolean true (found) or false (not present) in out mapped to (a)
+
+	(out) default set to false.
+
+	Checks whether all or some elements of a are found in b.
+*/
+static int _isin_array_(bool *out, double *a, double *b, unsigned int n_a, unsigned int n_b)
+{
+	if (out != NULL && a != NULL && b != NULL && n_a > 0 && n_b > 0 && n_a >= n_b)
+	{
+		unsigned int i,j;
+#ifdef _OPENMP
+	#pragma omp parallel for schedule(static) if(n_a>__OMP_OPT_VALUE__)
+#endif
+		for (j = 0; j < n_a; j++)
+		{
+			for (i = 0; i < n_b; i++)
+			{
+				if (CMP(a[j], b[i]))
+				{
+					out[j] = true;
+					break;
+				}
+			}
+		}
+		return 1;
+	}
+	else return 0;
+}
+
 
 // adds right to left, then returns
 static int _element_add_(double *left, double *right, unsigned int n)

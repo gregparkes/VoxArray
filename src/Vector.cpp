@@ -798,12 +798,12 @@ namespace numpy {
 
 	bool all(const Vector& rhs)
 	{
-		return _all_true_(rhs.data, rhs.n);
+		return _all_true_<double>(rhs.data, rhs.n);
 	}
 
 	bool any(const Vector& rhs)
 	{
-		return _any_true_(rhs.data, rhs.n);
+		return _any_true_<double>(rhs.data, rhs.n);
 	}
 
 	double min(const Vector& rhs)
@@ -895,8 +895,6 @@ namespace numpy {
 			}
 			return res;
 		}
-
-		
 	}
 
 	Vector nlargest(const Vector& rhs, uint N)
@@ -988,7 +986,7 @@ namespace numpy {
 		return _square_root_(dot(v, v));
 	}
 
-	Vector normalized(const Vector& v)
+	Vector normalize(const Vector& v)
 	{
 		Vector np = copy(v);
 		np *= (1.0 / magnitude(v));
@@ -1151,32 +1149,6 @@ namespace numpy {
 		Vector np = copy(rhs);
 		_quicksort_(np.data, 0, np.n-1, !((bool) sorter));
 		return np;
-	}
-
-	double angle(const Vector& l, const Vector& r)
-	{
-		return acosf(dot(l, r) / sqrtf(dot(l,l) * dot(r,r)));
-	}
-
-	Vector project(const Vector& length, const Vector& direction)
-	{
-		if (length.n != direction.n)
-		{
-			INVALID("length and direction size must be the same!");
-		}
-		double d = dot(length, direction);
-		double mag_sq = dot(direction, direction);
-		return (direction * (d / mag_sq));
-	}
-
-	Vector perpendicular(const Vector& length, const Vector& dir)
-	{
-		return length - project(length, dir);
-	}
-
-	Vector reflection(const Vector& source, const Vector& normal)
-	{
-		return source - (normal * (dot(source, normal) * 2.0));
 	}
 
 
@@ -1462,12 +1434,12 @@ namespace numpy {
 
 	bool Vector::all()
 	{
-		return _all_true_(data,n);
+		return _all_true_<double>(data,n);
 	}
 
 	bool Vector::any()
 	{
-		return _any_true_(data,n);
+		return _any_true_<double>(data,n);
 	}
 
 	uint Vector::count(double value)
@@ -1681,9 +1653,16 @@ namespace numpy {
 		return _square_root_(dot(*this - rhs));
 	}
 
-	void Vector::normalize()
+	Vector& Vector::normalize()
 	{
 		*this *= (1.0 / magnitude());
+		return *this;
+	}
+
+	Vector& Vector::standardize()
+	{
+		((*this - (_summation_array_(data, n) / n)) / _std_array_(data, n));
+		return *this;
 	}
 
 	Vector& Vector::T()

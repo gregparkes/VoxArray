@@ -46,29 +46,54 @@ namespace numpy {
 
 *///////////////////////////////////////////////////////////////////////////////////////////
 
-/**
- Calculate the number of true values (count)
+    /**
+     Calculate the number of true values (count)
 
- @param rhs : the mask
- @return Count of true values
-*/
-uint sum(const Mask& rhs);
+     @param rhs : the mask
+     @return Count of true values
+    */
+    uint sum(const Mask& rhs);
 
-/**
- Calculate the mean of true values as a proportion of the array
+    /**
+     Calculate the mean of true values as a proportion of the array
 
- @param rhs : the mask
- @return Mean
-*/
-double mean(const Mask& rhs);
+     @param rhs : the mask
+     @return Mean
+    */
+    double mean(const Mask& rhs);
 
- /**
- Convert the mask to a vector (as 0.0s and 1.0s)
+     /**
+     Convert the mask to a vector (as 0.0s and 1.0s)
 
- @param rhs : the mask to convert
- @return Vector object <created on the stack>
-*/
-Vector to_vector(const Mask& rhs);
+     @param rhs : the mask to convert
+     @return Vector object <created on the stack>
+    */
+    Vector to_vector(const Mask& rhs);
+
+    /**
+     Compares elements in a and b checks that all of elements in a are found in b.
+
+     @param a : the base vector with values
+     @param b : the vector to compare to (must be same size or smaller than a)
+     @return Mask array of size (a) <created on the stack>
+    */
+    Mask isin(const Vector& a, const Vector& b);
+
+    /**
+     Tests whether any elements in the mask evaluate to True.
+
+     @param m : the mask to evaluate
+     @return True or False
+    */
+    bool any(const Mask& m);
+
+    /**
+     Tests whether all elements in the mask evaluate to True.
+
+     @param m : the mask to evaluate
+     @return True or False
+    */
+    bool all(const Mask& m);
 
 
 /********************************************************************************************
@@ -96,6 +121,14 @@ class Mask
          Contructs an empty mask with uninitialized values.
          */
         Mask(uint n);
+
+        /**
+         Constructs an array filled with falses (0) or true (1+)
+
+         @param n : size of mask
+         @param f : [0 or 1..MAX]
+        */
+        Mask(uint n, uint f);
 
         /**
          Construct with vector input; computes true/false values from it, creating mask of same size

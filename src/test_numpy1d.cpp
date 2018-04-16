@@ -888,6 +888,67 @@ namespace tests {
 		PRINT_STR("test_klargest :: Passed");
 	}
 
+	static void test_nsmallest()
+	{
+		PRINT_STR("Start Nsmallest");
+		
+		double x[11] = {
+			3.14, 2.54, 1.045, 10.66, -4.302, 60.0, 43.76, 0.3452, 
+			-10.0546, -4.786, 1.08087
+		};
+		Numpy z = numpy::Vector(x, 11);
+		// select the n smallest / largest
+		Numpy a = numpy::nsmallest(z);
+		Numpy b = numpy::nsmallest(z, 3);
+
+		Numpy nsmallest_5 = numpy::array("-10.0546, -4.786, -4.302, 0.3452, 1.045");
+		Numpy nsmallest_3 = numpy::array("-10.0546, -4.786, -4.302");
+
+		assert(all(isin(a, nsmallest_5)));
+		assert(all(isin(b, nsmallest_3)));
+
+		PRINT_STR("test_nsmallest :: Passed");
+	}
+
+	static void test_nlargest()
+	{
+		PRINT_STR("Start Nlargest");
+		
+		double x[11] = {
+			3.14, 2.54, 1.045, 10.66, -4.302, 60.0, 43.76, 0.3452, 
+			-10.0546, -4.786, 1.08087
+		};
+		Numpy z = numpy::Vector(x, 11);
+		// select the n smallest / largest
+		Numpy a = numpy::nlargest(z);
+		Numpy b = numpy::nlargest(z, 3);
+
+		Numpy nlargest_5 = numpy::array("10.66, 43.76, 60.0, 3.14, 2.54");
+		Numpy nlargest_3 = numpy::array("10.66, 43.76, 60.0");
+
+		assert(all(isin(a, nlargest_5)));
+		assert(all(isin(b, nlargest_3)));
+
+		PRINT_STR("test_nlargest :: Passed");
+	}
+
+	static void test_cov()
+	{
+		PRINT_STR("Start Cov");
+		
+		// should give perfect inverse covariance
+		Numpy a = Numpy(0.0, 1.0, 2.0);
+		Numpy b = Numpy(2.0, 1.0, 0.0);
+		assert(CMP(cov(a,b), -1.0));
+
+		// second test
+		Numpy c = Numpy(-2.1, -1.0, 4.3);
+		Numpy d = Numpy(3.0, 1.1, 0.12);
+		assert(CMP(cov(c,d), -4.286));
+
+		PRINT_STR("test_cov :: Passed");
+	}
+
 	static void test_sine()
 	{
 		PRINT_STR("Start Sine");
@@ -933,7 +994,7 @@ namespace tests {
 		PRINT_STR("Start Tan");
 		Numpy x = numpy::array("0.0, 45.0, 89.0, 135.0");
 		Numpy y = numpy::to_radians(x).tan();
-		std::cout << y.str(8) << std::endl;
+		std::cout << y.str(6) << std::endl;
 		assert(WEAK_CMP(y.data[0], 0.0));
 		assert(WEAK_CMP(y.data[1], 1.0));
 		assert(WEAK_CMP(y.data[2], 57.29214));
@@ -1231,6 +1292,60 @@ namespace tests {
 		PRINT_STR("Test_Dot :: Passed");
 	}
 
+	static void test_inner()
+	{
+		PRINT_STR("Start Inner");
+		
+		Numpy a = Numpy(1.0, 2.0, 3.0);
+		Numpy b = Numpy(0.0, 1.0, 0.0);
+		assert(CMP(inner(a,b), 2.0));
+
+		PRINT_STR("test_inner :: Passed");
+	}
+
+	static void test_diag()
+	{
+		PRINT_STR("Start Diag");
+		
+		Numpy z = numpy::arange(9);
+		numpy::Matrix x = numpy::reshape(z, 3, 3);
+
+
+
+		PRINT_STR("test_diag :: Passed");
+		// -----------------------------------------------------------------------
+	}
+
+	static void test_magnitude()
+	{
+		// -----------------------------------------------------------------------
+	}
+
+	static void test_normalize()
+	{
+		// -----------------------------------------------------------------------
+	}
+
+	static void test_standardize()
+	{
+		// -----------------------------------------------------------------------
+	}
+
+	static void test_minmax()
+	{
+		// -----------------------------------------------------------------------
+	}
+
+	static void test_cross()
+	{
+		// -----------------------------------------------------------------------
+	}
+
+	static void test_diff()
+	{
+		// -----------------------------------------------------------------------
+	}
+
 	static void test_sort()
 	{
 		PRINT_STR("Start Sort");
@@ -1301,6 +1416,9 @@ static void call_all_tests()
 	test_argmax();
 	test_ksmallest();
 	test_klargest();
+	test_nsmallest();
+	test_nlargest();
+	test_cov();
 	test_sine();
 	test_cosi();
 	test_tang();
@@ -1326,6 +1444,15 @@ static void call_all_tests()
 	test_min();
 	test_max();
 	test_dot();
+	test_inner();
+	test_diag();
+	test_magnitude();
+	test_normalize();
+	test_standardize();
+	test_minmax();
+	test_cross();
+	test_diff();
+
 
 	test_sort();
 }
