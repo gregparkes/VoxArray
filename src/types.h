@@ -35,6 +35,8 @@ typedef unsigned int uint;
 #define _INTERPOLATION_HIGHER 3
 #define _INTERPOLATION_NEAREST 4
 #define _INTERPOLATION_MIDPOINT 5
+#define _ONE_DEGREE 0.01745329252
+#define _ONE_RADIAN 57.295779513
 
 //#define _CUMPY_DEBUG_ 0
 

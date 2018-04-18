@@ -978,7 +978,7 @@ namespace numpy {
 
 	double inner(const Vector& v, const Vector& w)
 	{
-		return dot(v, w);
+		return _vector_dot_array_(v.data, w.data, v.n);
 	}
 
 	double magnitude(const Vector& v)
@@ -989,7 +989,7 @@ namespace numpy {
 	Vector normalize(const Vector& v)
 	{
 		Vector np = copy(v);
-		np *= (1.0 / magnitude(v));
+		_mult_array_(np.data, np.n, 1.0 / magnitude(v));
 		return np;
 	}
 
@@ -997,17 +997,22 @@ namespace numpy {
 	{
 		Vector np = copy(v);
 		// remove mean
-		np -= mean(np);
+		_sub_array_(np.data, np.n, _summation_array_(np.data, np.n) / np.n);
 		// scale std
-		np /= std(np);
+		_div_array_(np.data, np.n, _std_array_(np.data, np.n));
 		return np;
 	}
 
 	Vector minmax(const Vector& v)
 	{
-		double curr_max = max(v);
-		double curr_min = min(v);
-		return ((v - curr_min) / (curr_max - curr_min));
+		double curr_max = _max_value_(v.data, v.n);
+		double curr_min = _min_value_(v.data, v.n);
+		Vector cp = copy(v);
+		// subtract min from copy
+		_sub_array_(cp.data, cp.n, curr_min);
+		// divide by difference in max/min
+		_div_array_(cp.data, cp.n, (curr_max - curr_min));
+		return cp;
 	}
 
 	Vector cross(const Vector& v, const Vector& w)
@@ -1655,13 +1660,19 @@ namespace numpy {
 
 	Vector& Vector::normalize()
 	{
-		*this *= (1.0 / magnitude());
+		// calculate magnitude as sqrt of dot
+		double mag = magnitude();
+		// multiply array by 1.0 / mag
+		_mult_array_(data, n, 1.0 / mag);
 		return *this;
 	}
 
 	Vector& Vector::standardize()
 	{
-		((*this - (_summation_array_(data, n) / n)) / _std_array_(data, n));
+		// substract the mean from array
+		_sub_array_(data, n, _summation_array_(data, n) / n);
+		// divide by standard deviation
+		_div_array_(data, n, _std_array_(data, n));
 		return *this;
 	}
 

@@ -5,7 +5,7 @@
 GNU General Public License:
 
 	Gregory Parkes, Postgraduate Student at the University of Southampton, UK.
-    Copyright (C) 2017 Gregory Parkes
+    Copyright (C) 2017-18 Gregory Parkes
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

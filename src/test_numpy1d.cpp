@@ -994,10 +994,10 @@ namespace tests {
 		PRINT_STR("Start Tan");
 		Numpy x = numpy::array("0.0, 45.0, 89.0, 135.0");
 		Numpy y = numpy::to_radians(x).tan();
-		std::cout << y.str(6) << std::endl;
+		PRINT_STR(y.str(7));
 		assert(WEAK_CMP(y.data[0], 0.0));
 		assert(WEAK_CMP(y.data[1], 1.0));
-		assert(WEAK_CMP(y.data[2], 57.29214));
+		assert(WEAK_CMP(y.data[2], 57.28996));
 		assert(WEAK_CMP(y.data[3], -1.0));
 
 		PRINT_STR("Test_Tan :: Passed");
@@ -1005,12 +1005,39 @@ namespace tests {
 
 	static void test_to_radians()
 	{
-		// ----------------------------------------------------------------------------------------
+		PRINT_STR("Start To_radians");
+		
+		Numpy x = numpy::linspace(0.0, 10.0, 10);
+		Numpy y = numpy::to_radians(x);
+		Numpy z = numpy::copy(x);
+		for (uint i = 0; i < z.n; i++)
+		{
+			z.data[i] *= (M_PI / 180.0);
+			assert(WEAK_CMP(y.data[i],z.data[i]));
+		}
+
+		PRINT_STR("test_to_radians :: Passed");
 	}
 
 	static void test_to_degrees()
 	{
-		// ---------------------------------------------------------------------------------------
+		PRINT_STR("Start To_degress");
+		
+		Numpy x = numpy::linspace(0.0, 10.0, 10);
+		Numpy y = numpy::to_degrees(x);
+		Numpy z = numpy::copy(x);
+		for (uint i = 0; i < z.n; i++)
+		{
+			z.data[i] *= (180.0f / M_PI);
+			if (z.data[i] > 360.0)
+			{
+				z.data[i] -= 360.0;
+			}
+			std::cout << y.data[i] << ", " << z.data[i] << std::endl;
+			assert(WEAK_CMP(y.data[i],z.data[i]));
+		}
+
+		PRINT_STR("test_to_degrees :: Passed");
 	}
 
 	static void test_expn()
@@ -1099,9 +1126,6 @@ namespace tests {
 		assert(CMP(k.data[0], 1.5));
 		assert(CMP(l.data[0], 1.0));
 		assert(CMP(m.data[0], 1.0));
-
-		// checking ^ - STILL TO DO -------------------------------------------------------------------
-
 
 		PRINT_STR("Test_Operators :: Passed");
 	}
@@ -1309,20 +1333,30 @@ namespace tests {
 		
 		Numpy z = numpy::arange(9);
 		numpy::Matrix x = numpy::reshape(z, 3, 3);
-
-
+		std::cout << x.str() << std::endl;
+		Numpy a = numpy::diag(x);
+		assert(CMP(a.data[0], 0.0));
+		assert(CMP(a.data[1], 4.0));
+		assert(CMP(a.data[2], 8.0));
 
 		PRINT_STR("test_diag :: Passed");
-		// -----------------------------------------------------------------------
 	}
 
 	static void test_magnitude()
 	{
-		// -----------------------------------------------------------------------
+		PRINT_STR("Start Magnitude");
+		
+		Numpy x = numpy::linspace(0.0, 10.0, 10);
+		double y = numpy::magnitude(x);
+		double z = sqrt(numpy::dot(x,x));
+		assert(CMP(y,z));
+
+		PRINT_STR("test_magnitude :: Passed");
 	}
 
 	static void test_normalize()
 	{
+
 		// -----------------------------------------------------------------------
 	}
 
@@ -1411,6 +1445,7 @@ static void call_all_tests()
 	test_mean();
 	test_std();
 	test_var();
+	test_percentiles();
 	test_prod();
 	test_argmin();
 	test_argmax();
@@ -1422,6 +1457,8 @@ static void call_all_tests()
 	test_sine();
 	test_cosi();
 	test_tang();
+	test_to_radians();
+	test_to_degrees();
 	test_expn();
 	test_operators();
 	test_floor();

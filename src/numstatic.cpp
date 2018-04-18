@@ -19,6 +19,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "types.h"
+
 /* DEFINITIONS */
 
 #define __OMP_OPT_VALUE__ 50000
@@ -154,12 +156,12 @@ static double correct_degrees(double degrees)
 
 static inline double RAD2DEG(double radians)
 {
-	return (correct_degrees(radians * 57.295754));
+	return (correct_degrees(radians * _ONE_RADIAN));
 }
 
 static inline double DEG2RAD(double degrees)
 {
-	return (correct_degrees(degrees) * 0.0174533);
+	return (correct_degrees(degrees) * _ONE_DEGREE);
 }
 
 /*
