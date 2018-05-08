@@ -36,7 +36,7 @@ GNU General Public License:
 #ifndef __cplusplus_BOOLVECTOR__
 #define __cplusplus_BOOLVECTOR__
 
-#include "types.h"
+#include "VoxTypes.h"
 
 namespace numpy {
 

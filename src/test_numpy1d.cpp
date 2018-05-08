@@ -38,13 +38,13 @@ GNU General Public License:
 #include <math.h>
 
 #include "numpy.h"
+#include "func_utils.cpp"
 
 #define PRINT_STR(x) (std::cout << x << std::endl)
 #define PRINT_SUCCESS(x) (std::cout << ">>> " << x << " >>>" << std::endl)
 #define PRINT_FAIL(x) (std::cout << "??? " << x << " ???" << std::endl)
 #define PRINT_OBJ(x) (std::cout << x.str() << std::endl)
-#define CMP(x,y) (fabs(x - y) < 1E-13)
-#define WEAK_CMP(x,y) (fabs(x - y) < 1E-5)
+
 
 namespace tests {
 
@@ -802,13 +802,13 @@ namespace tests {
 		PRINT_STR("Test_Var :: Passed");
 	}
 
-	static void test_percentile()
+	static void test_percentiles()
 	{
-		PRINT_STR("Start Var");
+	
 		
 /* ----------------------------------------------------------------------------------*/
 
-		PRINT_STR("Test_Var :: Passed");
+		
 	}
 
 	static void test_prod()
@@ -1159,10 +1159,13 @@ namespace tests {
 	static void test_logr()
 	{
 		PRINT_STR("Start Log");
-		Numpy x = numpy::array("0.0, 1.0");
+		Numpy x = Numpy(1.0, M_E);
 		Numpy y = numpy::log(x);
-		assert(CMP(y.data[0], 1.0) < 1e-14);
-		assert(WEAK_CMP(y.data[1], 2.71828) < 1e-5);
+		PRINT_OBJ(x);
+		PRINT_OBJ(y);
+		assert(CMP(y.data[0], 0.0));
+		PRINT_STR(y.str());
+		assert(WEAK_CMP(y.data[1], 1.0));
 //		x.logr();
 //		assert(x.data[0] - 1.0 < 1e-14);
 //		assert(x.data[1] - 2.71828 < 1e-5);

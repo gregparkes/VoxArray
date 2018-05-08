@@ -11,10 +11,10 @@
 #include <math.h>
 
 #include "numpy.h"
+#include "func_utils.cpp"
 
 #define PRINT_STR(x) (std::cout << x << std::endl)
 #define PRINT_OBJ(x) (std::cout << x.str() << std::endl)
-#define CMP(x,y) (fabs(x - y) < 1E-13)
 
 namespace tests_matrix {
 

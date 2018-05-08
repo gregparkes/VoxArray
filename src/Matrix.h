@@ -43,7 +43,7 @@ GNU General Public License:
 #ifndef __MATRIX_H_
 #define __MATRIX_H_
 
-#include "types.h"
+#include "VoxTypes.h"
 
 namespace numpy {
 

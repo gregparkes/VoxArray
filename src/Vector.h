@@ -37,7 +37,7 @@ GNU General Public License:
 #define __VEC1F_H__
 
 // Vector, Matrix, Mask object declared in 'types'
-#include "types.h"
+#include "VoxTypes.h"
 
 namespace numpy {
 
@@ -1525,7 +1525,7 @@ class Vector
 
 	double *data;
 	uint n;
-	bool column, flag_delete;
+	bool column, _init_flag;
 
 };
 

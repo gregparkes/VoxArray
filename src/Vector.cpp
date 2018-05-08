@@ -163,7 +163,7 @@ namespace numpy {
 			INVALID("copy failed!");
 		}
 		np.column = rhs.column;
-		np.flag_delete = rhs.flag_delete;
+		np._init_flag = rhs._init_flag;
 		return np;
 	}
 
@@ -594,7 +594,7 @@ namespace numpy {
 
 	int count(const Vector& rhs, double value)
 	{
-		return _count_array_(rhs.data, rhs.n, value);
+		return _count_array_<double>(rhs.data, rhs.n, value);
 	}
 
 	Vector bincount(const Vector& rhs)
@@ -879,7 +879,7 @@ namespace numpy {
 		// based on log(n) if this is bigger than idx (in most cases) we 
 		// sort the whole array then pick.
 		// else use k-smallest
-		if ((int) (log10(rhs.n)) > N)
+		if ((int) (_logarithm_10_(rhs.n)) > N)
 		{
 			Vector r_sorted = sort(rhs);
 			return rstrip(r_sorted, N-1);
@@ -899,7 +899,7 @@ namespace numpy {
 
 	Vector nlargest(const Vector& rhs, uint N)
 	{
-		if ((int) (log10(rhs.n)) > N)
+		if ((int) (_logarithm_10_(rhs.n)) > N)
 		{
 			Vector r_sorted = sort(rhs);
 			return lstrip(r_sorted, rhs.n - N);
@@ -1092,7 +1092,7 @@ namespace numpy {
 	Vector log(const Vector& rhs)
 	{
 		Vector np = copy(rhs);
-		if (!_log10_array_(np.data, np.n))
+		if (!_log_array_(np.data, np.n))
 		{
 			INVALID("Unable to log-ify array.");
 		}
@@ -1173,7 +1173,7 @@ namespace numpy {
 		this->n = 0;
 		this->column = true;
 		this->data = null;
-		this->flag_delete = false;
+		this->_init_flag = false;
 	}
 
 	Vector::Vector(uint n, bool column)
@@ -1193,7 +1193,7 @@ namespace numpy {
 		{
 			throw std::runtime_error("Unable to allocate memory");
 		}
-		this->flag_delete = true;
+		this->_init_flag = true;
 	}
 
 	Vector::Vector(double v1, double v2)
@@ -1214,7 +1214,7 @@ namespace numpy {
 		}
 		data[0] = v1;
 		data[1] = v2;
-		this->flag_delete = true;
+		this->_init_flag = true;
 	}
 
 	Vector::Vector(double v1, double v2, double v3)
@@ -1236,7 +1236,7 @@ namespace numpy {
 		data[0] = v1;
 		data[1] = v2;
 		data[2] = v3;
-		this->flag_delete = true;
+		this->_init_flag = true;
 	}
 
 	Vector::Vector(double v1, double v2, double v3, double v4)
@@ -1259,7 +1259,7 @@ namespace numpy {
 		data[1] = v2;
 		data[2] = v3;
 		data[3] = v4;
-		this->flag_delete = true;
+		this->_init_flag = true;
 	}
 
 	Vector::Vector(double *array, uint size)
@@ -1286,12 +1286,12 @@ namespace numpy {
 		{
 			INVALID("Unable to copy array in Vector()");
 		}
-		this->flag_delete = true;
+		this->_init_flag = true;
 	}
 
 	Vector::~Vector()
 	{
-		if (flag_delete && data != NULL)
+		if (_init_flag && data != NULL)
 		{
 #ifdef _CUMPY_DEBUG_
 			printf("deleting vector %x\n", this);
@@ -1384,7 +1384,7 @@ namespace numpy {
 			INVALID("copy failed!");
 		}
 		column = np.column;
-		flag_delete = np.flag_delete;
+		_init_flag = np._init_flag;
 		return np;
 	}
 
@@ -1449,7 +1449,7 @@ namespace numpy {
 
 	uint Vector::count(double value)
 	{
-		return _count_array_(data,n,value);
+		return _count_array_<double>(data,n,value);
 	}
 
 	uint Vector::count_nonzero()
@@ -1553,7 +1553,7 @@ namespace numpy {
 
 	Vector& Vector::log()
 	{
-		if (! _log10_array_(data, n))
+		if (! _log_array_(data, n))
 		{
 			INVALID("Unable to log-ify array.");
 		}
@@ -2273,7 +2273,7 @@ namespace numpy {
 		Vector np(v.n);
 		_copy_array_<double>(np.data, v.data, v.n);
 		np.column = v.column;
-		np.flag_delete = v.flag_delete;
+		np._init_flag = v._init_flag;
 		return np;
 	}
 

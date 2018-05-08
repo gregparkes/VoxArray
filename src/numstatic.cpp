@@ -15,11 +15,15 @@
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
-#include <omp.h>
 #include <iostream>
 #include <stdexcept>
 
-#include "types.h"
+#ifdef _OPENMP
+	#include <omp.h>
+#endif
+
+#include "VoxTypes.h"
+#include "func_utils.cpp"
 
 /* DEFINITIONS */
 
@@ -59,6 +63,11 @@ static inline double _c_power_(double base, double exponent)
 static inline double _natural_log_(double v)
 {
 	return log(v);
+}
+
+static inline double _logarithm_10_(double v)
+{
+	return log10(v);
 }
 
 static inline double _sine_(double v)
@@ -112,27 +121,6 @@ static unsigned int _integer_char_length_(double a)
 {
 	return (unsigned int) (log10(fabs(a))) + 1;
 }
-
-static inline bool AlmostEqualRelativeAndAbs(double a, double b, double maxdiff,
-		 double maxreldiff = FLT_EPSILON)
-{
-	// check if the numbers are really close.
-	double diff = fabs(a - b);
-	if (diff <= maxdiff)
-	{
-		return true;
-	}
-	a = fabs(a);
-	b = fabs(b);
-	double largest = (b > a) ? b : a;
-	if (diff <= largest * maxreldiff)
-	{
-		return true;
-	}
-	return false;
-}
-
-#define CMP(x, y) AlmostEqualRelativeAndAbs(x, y, 0.005)
 
 static bool _is_integer_(double d)
 {
@@ -357,13 +345,14 @@ static int _absolute_array_(double *arr, unsigned int n)
 	else return 0;
 }
 
-static int _count_array_(double *arr, unsigned int n, double value)
+template <typename T>
+static int _count_array_(T *arr, unsigned int n, T value)
 {
 	if (n != 0 && arr != NULL)
 	{
 		int count = 0;
-		double *p1 = &arr[0];
-		double *end = p1 + n;
+		T *p1 = &arr[0];
+		T *end = p1 + n;
 	/*
 	#ifdef _OPENMP
 		#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:count)
@@ -371,7 +360,7 @@ static int _count_array_(double *arr, unsigned int n, double value)
 	*/
 		for (/* void */; p1 < end; p1++)
 		{
-			if (CMP(*p1, value))
+			if (AlmostEqualRelativeAndAbs<T>(*p1, value, 0.005))
 			{
 				count++;
 			}
@@ -1445,7 +1434,7 @@ static int _exp_array_(double *arr, unsigned int n)
 	return 1;
 }
 
-static int _log10_array_(double *arr, unsigned int n)
+static int _log_array_(double *arr, unsigned int n)
 {
 	if (n == 0 || arr == 0)
 	{
@@ -1457,7 +1446,7 @@ static int _log10_array_(double *arr, unsigned int n)
 #endif
 	for (i = 0; i < n; i++)
 	{
-		arr[i] = log(arr[i]);
+		arr[i] = _natural_log_(arr[i]);
 	}
 	return 1;
 }

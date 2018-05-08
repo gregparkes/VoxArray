@@ -162,7 +162,7 @@ namespace numpy {
 		for (i = 0; i < rhs.nvec; i++)
 		{
 			m.vectors[i]->column = rhs.vectors[i]->column;
-			m.vectors[i]->flag_delete = rhs.vectors[i]->flag_delete;
+			m.vectors[i]->_init_flag = rhs.vectors[i]->_init_flag;
 			m.vectors[i]->n = rhs.vectors[i]->n;
 		}
 		return m;
@@ -1138,7 +1138,7 @@ namespace numpy {
 	Matrix log(const Matrix& rhs)
 	{
 		Matrix m = copy(rhs);
-		if (!_log10_array_(m.data, m.nvec*m.vectors[0]->n))
+		if (!_log_array_(m.data, m.nvec*m.vectors[0]->n))
 		{
 			INVALID("Unable to log-ify matrix.");
 		}
@@ -1356,7 +1356,7 @@ namespace numpy {
 		for (uint i = 0; i < nvec; i++)
 		{
 			m.vectors[i]->column = vectors[i]->column;
-			m.vectors[i]->flag_delete = vectors[i]->flag_delete;
+			m.vectors[i]->_init_flag = vectors[i]->_init_flag;
 			m.vectors[i]->n = vectors[i]->n;
 		}
 		return m;
@@ -1894,7 +1894,7 @@ namespace numpy {
 
 	Matrix& Matrix::log()
 	{
-		if (! _log10_array_(data, BUFFSIZE(this)))
+		if (! _log_array_(data, BUFFSIZE(this)))
 		{
 			throw std::invalid_argument("Unable to log-ify matrix.");
 		}
@@ -2157,7 +2157,7 @@ namespace numpy {
 		for (uint i = 0; i < m.nvec; i++)
 		{
 			cp.vectors[i]->column = m.vectors[i]->column;
-			cp.vectors[i]->flag_delete = m.vectors[i]->flag_delete;
+			cp.vectors[i]->_init_flag = m.vectors[i]->_init_flag;
 			cp.vectors[i]->n = m.vectors[i]->n;
 		}
 		return cp;

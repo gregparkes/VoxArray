@@ -38,7 +38,7 @@ GNU General Public License:
 
 
 // firstly include types
-#include "types.h"
+#include "VoxTypes.h"
 // include structures.
 #include "VarStructs.h"
 // include base vector class

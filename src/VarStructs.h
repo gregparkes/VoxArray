@@ -8,7 +8,7 @@
 #ifndef __VARSTRUCTS_H__
 #define __VARSTRUCTS_H__
 
-#include "types.h"
+#include "VoxTypes.h"
 #include "Matrix.h"
 
 namespace numpy {

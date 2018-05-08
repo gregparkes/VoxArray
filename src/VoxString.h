@@ -36,7 +36,7 @@ GNU General Public License:
 #ifndef __VOX_STRING_H__
 #define __VOX_STRING_H__
 
-#include "types.h"
+#include "VoxTypes.h"
 
 namespace numpy {
 
