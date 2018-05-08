@@ -5,7 +5,7 @@
 GNU General Public License:
 
 	Gregory Parkes, Postgraduate Student at the University of Southampton, UK.
-    Copyright (C) 2017 Gregory Parkes
+    Copyright (C) 2017- Gregory Parkes
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,10 +25,6 @@ GNU General Public License:
 	This implementation is an attempt to replicate the Python module 'numpy' which implements
 	a float Numpy which can perform matrix and vector-based operations which modify every
 	element in the Numpy.
-
-    This is the C++ file, and is ANSI 90 compatible. This can be run using
-    C. We also have numpy.h and Numpy.cpp. which are C++ wrapper classes
-    around this foundational file.
 
     test_numpy1d.cpp
 */
@@ -1033,7 +1029,6 @@ namespace tests {
 			{
 				z.data[i] -= 360.0;
 			}
-			std::cout << y.data[i] << ", " << z.data[i] << std::endl;
 			assert(WEAK_CMP(y.data[i],z.data[i]));
 		}
 
@@ -1319,17 +1314,6 @@ namespace tests {
 		PRINT_STR("Test_Dot :: Passed");
 	}
 
-	static void test_inner()
-	{
-		PRINT_STR("Start Inner");
-		
-		Numpy a = Numpy(1.0, 2.0, 3.0);
-		Numpy b = Numpy(0.0, 1.0, 0.0);
-		assert(CMP(inner(a,b), 2.0));
-
-		PRINT_STR("test_inner :: Passed");
-	}
-
 	static void test_diag()
 	{
 		PRINT_STR("Start Diag");
@@ -1357,30 +1341,46 @@ namespace tests {
 		PRINT_STR("test_magnitude :: Passed");
 	}
 
-	static void test_normalize()
-	{
-
-		// -----------------------------------------------------------------------
-	}
-
 	static void test_standardize()
 	{
-		// -----------------------------------------------------------------------
+		PRINT_STR("Start Standardize");
+		
+		Numpy x = numpy::array("3.0, 3.0, 4.0, 4.0, 6.0");
+		Numpy y = numpy::standardize(x);
+		PRINT_OBJ(y);
+		std::cout << y.data[4] << std::endl;
+		assert(WEAK_CMP(y.data[0], -0.816497));
+		assert(CMP(y.data[2], 0.0));
+		assert(WEAK_CMP(y.data[4], 1.63299));
+
+		PRINT_STR("test_standardize :: Passed");
 	}
 
 	static void test_minmax()
 	{
-		// -----------------------------------------------------------------------
-	}
-
-	static void test_cross()
-	{
-		// -----------------------------------------------------------------------
+		PRINT_STR("Start Minmax");
+		Numpy x = numpy::rand(100) * 10;
+		Numpy y = numpy::minmax(x);
+		for (int i = 0; i < 100; i++)
+		{
+			assert(y.data[i] >= 0.0 && y.data[i] <= 1.0);
+		}
+		PRINT_STR("test_minmax :: Passed");
 	}
 
 	static void test_diff()
 	{
-		// -----------------------------------------------------------------------
+		PRINT_STR("Start Diff");
+		
+		Numpy x = numpy::array("1.0, 2.0, 4.0, 7.0, 0.0");
+		Numpy y = numpy::diff(x);
+		Numpy z = numpy::array("1.0, 1.0, 2.0, 3.0, -7.0");
+		for (int i =0; i < 5; i++)
+		{
+			assert(CMP(y.data[i],z.data[i]));
+		}
+
+		PRINT_STR("test_diff :: Passed");
 	}
 
 	static void test_sort()
@@ -1484,18 +1484,10 @@ static void call_all_tests()
 	test_min();
 	test_max();
 	test_dot();
-	test_inner();
 	test_diag();
 	test_magnitude();
-	test_normalize();
 	test_standardize();
 	test_minmax();
-	test_cross();
 	test_diff();
-
-
 	test_sort();
 }
-
-
-

@@ -166,8 +166,6 @@ static void call_all_matrix_tests()
 	test_copy();
 	test_vectorize();
 	test_countnonzero();
-	//test_empty_zero_ones_like();
 	test_eye();
 	test_trace();
 }
-

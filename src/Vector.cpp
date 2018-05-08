@@ -966,31 +966,23 @@ namespace numpy {
 		return v;
 	}
 
-	double dot(const Vector& lhs, const Vector& rhs)
+	double dot(const Vector& v, const Vector& w)
 	{
-		if (lhs.n != rhs.n)
+		// apparently the dot of column.row is the same result as column.column or row.row
+		// assume same size beginning
+		if (v.n == w.n)
+		{
+			return _vector_dot_array_(v.data, w.data, v.n);
+		}
+		else
 		{
 			RANGE("lhs must be the same size as the rhs vector");
 		}
-		// apparently the dot of column.row is the same result as column.column or row.row
-		return _vector_dot_array_(lhs.data, rhs.data, rhs.n);
-	}
-
-	double inner(const Vector& v, const Vector& w)
-	{
-		return _vector_dot_array_(v.data, w.data, v.n);
 	}
 
 	double magnitude(const Vector& v)
 	{
 		return _square_root_(dot(v, v));
-	}
-
-	Vector normalize(const Vector& v)
-	{
-		Vector np = copy(v);
-		_mult_array_(np.data, np.n, 1.0 / magnitude(v));
-		return np;
 	}
 
 	Vector standardize(const Vector& v)
@@ -1003,30 +995,26 @@ namespace numpy {
 		return np;
 	}
 
-	Vector minmax(const Vector& v)
+	Vector minmax(const Vector& v, double a, double b)
 	{
 		double curr_max = _max_value_(v.data, v.n);
 		double curr_min = _min_value_(v.data, v.n);
 		Vector cp = copy(v);
 		// subtract min from copy
 		_sub_array_(cp.data, cp.n, curr_min);
+		//if diff is not 1, then multiply X - xmin with b-a
+		if (!CMP(b - a, 1.0))
+		{
+			_mult_array_(cp.data, cp.n, b - a);
+		}
 		// divide by difference in max/min
 		_div_array_(cp.data, cp.n, (curr_max - curr_min));
-		return cp;
-	}
-
-	Vector cross(const Vector& v, const Vector& w)
-	{
-		if (v.n != 3 || w.n != 3)
+		// if a is not 0, add a to final result.
+		if (!CMP(a, 0.0))
 		{
-			throw std::logic_error("v and w must have a length == 3");
+			_add_array_(cp.data, cp.n, a);
 		}
-		// 3d
-		double o1, o2, o3;
-		o1 = v.data[1] * w.data[2] - w.data[1] * v.data[2];
-		o2 = w.data[0] * v.data[2] - v.data[0] * w.data[2];
-		o3 = v.data[0] * w.data[1] - w.data[0] * v.data[1];
-		return Vector(o1, o2, o3);
+		return cp;
 	}
 
 	Vector sin(const Vector& rhs)
@@ -1153,6 +1141,13 @@ namespace numpy {
 	{
 		Vector np = copy(rhs);
 		_quicksort_(np.data, 0, np.n-1, !((bool) sorter));
+		return np;
+	}
+
+	Vector diff(const Vector& rhs, uint periods)
+	{
+		Vector np = empty_like(rhs);
+		_diff_array_(np.data, rhs.data, rhs.n, periods);
 		return np;
 	}
 
@@ -2281,4 +2276,3 @@ namespace numpy {
 }
 
 #endif
-

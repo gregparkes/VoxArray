@@ -5,7 +5,7 @@
 GNU General Public License:
 
 	Gregory Parkes, Postgraduate Student at the University of Southampton, UK.
-    Copyright (C) 2017-18 Gregory Parkes
+    Copyright (C) 2017-18
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,16 +25,16 @@ GNU General Public License:
 */
 
 /*
- * VoxString.h
+ * VString.h
  *
- * Implements a (n,) string array
+ * Implements a (n,) string object
  *
  *  Created on: 17 Apr 2018
  *      Author: Greg
  */
 
-#ifndef __VOX_STRING_H__
-#define __VOX_STRING_H__
+#ifndef __VOX_VString_H__
+#define __VOX_VString_H__
 
 #include "VoxTypes.h"
 
@@ -53,7 +53,7 @@ namespace numpy {
      @param i : index
      @return the character
     */
-    char get(const String& s, uint i);
+    char get(const VString& s, uint i);
 
     /**
      returns the length of the string.
@@ -61,7 +61,7 @@ namespace numpy {
      @param s : base string
      @return Length
     */
-    uint len(const String& s);
+    uint len(const VString& s);
 
     /**
      Creates a copy and converts all upper-case letters to lowercase.
@@ -69,7 +69,7 @@ namespace numpy {
      @param s : the string
      @return Copied lowercase string <created on the stack>
     */
-    String lower(const String& s);
+    VString lower(const VString& s);
 
     /**
      Creates a copy and converts all lowercase letters to uppercase.
@@ -77,7 +77,7 @@ namespace numpy {
      @param s : the string
      @return Copied uppercase string <created on the stack>
     */
-    String upper(const String& s);
+    VString upper(const VString& s);
 
     /**
      Capitalizes the first letter in s.
@@ -85,7 +85,7 @@ namespace numpy {
      @param s : base string
      @return Capitalized string <created on the stack>
     */
-    String capitalize(const String& s);
+    VString capitalize(const VString& s);
 
     /**
      Attempts to convert string s into a float
@@ -93,7 +93,7 @@ namespace numpy {
      @param s : base string
      @return True or False
     */ 
-    bool is_float(const String& s);
+    bool is_float(const VString& s);
 
     /**
      Attempts to convert string s into an integer
@@ -101,7 +101,7 @@ namespace numpy {
      @param s : base string
      @return True or False
     */ 
-    bool is_integer(const String& s);
+    bool is_integer(const VString& s);
 
     /**
      Concatenates strings together into a copy.
@@ -110,7 +110,7 @@ namespace numpy {
      @param b : second string
      @return Copied string concatenated <created on the stack>
     */
-    String cat(const String& a, const String& b);
+    VString cat(const VString& a, const VString& b);
 
     /**
      Creates a string by stripping away all the values
@@ -120,7 +120,7 @@ namespace numpy {
      @param i : the index (from left) to start copying from
      @return The new string object <created on the stack>
      */
-    String lstrip(const String& s, uint i);
+    VString lstrip(const VString& s, uint i);
 
     /**
      Creates a string by stripping away all the values
@@ -130,16 +130,52 @@ namespace numpy {
      @param i : the index (from right) to start copying from
      @return The new string object <created on the stack>
      */
-    String rstrip(const String& s, uint i);
+    VString rstrip(const VString& s, uint i);
+
+    /**
+     Fills the left and right side of string with an additional character.
+
+     Great for formatting output for strings.
+
+     @param s : base string
+     @param width : minimum width of resulting string, filled with characters from fillchar
+     @param fillchar (optional) : filling character, default whitespace
+     @return New string <created on the stack>
+    */
+    VString center(const VString& s, uint width, char fillchar = ' ');
+
+    /**
+     Fills the right side of string with an additional character.
+
+     Great for formatting output for strings.
+
+     @param s : base string
+     @param width : minimum width of resulting string, filled with characters from fillchar
+     @param fillchar (optional) : filling character, default whitespace
+     @return New string <created on the stack>
+    */
+    VString ljust(const VString& s, uint width, char fillchar = ' ');
+
+    /**
+     Fills the left side of string with an additional character.
+
+     Great for formatting output for strings.
+
+     @param s : base string
+     @param width : minimum width of resulting string, filled with characters from fillchar
+     @param fillchar (optional) : filling character, default whitespace
+     @return New string <created on the stack>
+    */
+    VString rjust(const VString& s, uint width, char fillchar = ' ');
 
     /**
      Returns whether the string begins with a substring start.
 
      @param s : the string to search
-     @param start : the substring to test.
+     @param start : the subVString to test.
      @return true or false
     */
-    bool starts_with(const String& s, const String& start);
+    bool starts_with(const VString& s, const VString& start);
 
     /**
      Returns whether the string ends with a substring end.
@@ -148,7 +184,23 @@ namespace numpy {
      @param end : the substring to test.
      @return true or false
     */
-    bool ends_with(const String& s, const String& end);
+    bool ends_with(const VString& s, const VString& end);
+
+    /*
+     Returns whether all characters are uppercase.
+
+     @param s : string
+     @return True or False
+    */
+    bool is_upper(const VString& s);
+
+    /*
+     Returns whether all characters are lowercase.
+
+     @param s : string
+     @return True or False
+    */
+    bool is_lower(const VString& s);
 
     /**
      Returns a substring between start and end, not including end index itself.
@@ -161,16 +213,16 @@ namespace numpy {
      @param step (default 1) : option to skip every (step) characters if desired
      @return Sub string <created on the stack>
     */  
-    String substring(const String& s, uint start, uint end, uint step = 1);
+    VString substring(const VString& s, uint start, uint end, uint step = 1);
 
     /**
-     Repeat string s n_repeat times.
+     Repeat VString s n_repeat times.
 
      @param s : the string
      @param n_repeats : the number of times to repeat s
      @return repeated string <created on the stack>
     */
-    String repeat(const String& s, uint n_repeats);
+    VString repeat(const VString& s, uint n_repeats);
 
     /**
      Creates a copy and replaces all instances of value in s with replace_with.
@@ -180,28 +232,83 @@ namespace numpy {
      @param replace_with : to replace value with
      @return Replaced string <created on the stack>
     */
-    String replace(const String& s, const String& value, const String& replace_with);
+    VString replace(const VString& s, const VString& value, const VString& replace_with);
+    VString replace(const VString& s, char value, char replace_with);
+
+    /*
+     Count the occurences of a pattern exrp in string s.
+
+     @param s : the string
+     @param expr : char or string expression to count
+     @return int Count
+    */
+    uint count(const VString& s, const VString& expr);
+    uint count(const VString& s, char expr);
 
     /**
-     Finds all occurences of expr in the base string s.
+     Finds all occurences of expr in the base VString s.
 
      @param s : base string to search
-     @param expr : expression to search for
+     @param expr : expression/char to search for
      @return Vector of indexes (as float) <created on the stack>
     */
-    Vector find(const String& s, const String& expr);
+    Vector find(const VString& s, const VString& expr);
+    Vector find(const VString& s, char expr);
+
+    /**
+     Finds the first occurence of expr in base string s.
+
+     @param s : base string to search
+     @param expr : expression/char to search for
+     @return first index
+    */
+    uint find_first(const VString& s, const VString& expr);
+    uint find_first(const VString& s, char expr);
+
+    /**
+     Finds the last occurence of expr in base string s.
+
+     @param s : base string to search
+     @param expr : expression/char to search for
+     @return last index
+    */
+    uint find_last(const VString& s, const VString& expr);
+    uint find_last(const VString& s, char expr);
 
     /**
      Returns whether expr exists in s.
 
      @param s : base string
-     @param expr : expression to search
+     @param expr : string to search
      @return True or False
     */
-    bool contains(const String& s, const String& expr);
+    bool contains(const VString& s, const VString& expr);
 
+    /*
+     Determine if pat matches to s.
 
+     @param s : base string
+     @param pat : string to test
+     @param case (optional) : if true, case sensitive
+     @return True or False
+    */
+    bool match(const VString& s, const VString& pat, bool case = true);
 
+    /**
+     Wraps the long string to be formatted in paragraphs with length less than a given
+     width.
+
+     @param s : base string
+     @param width : maximum line-width
+     @param expand_tabs (optional) : if true, tab chars will be expanded to spaces.
+     @param replace_whitespace (optional) : if true, each whitespace char remaining
+        after tab expansion will be replaced by a single space
+     @param drop_whitespace (optional) : if true, whitespace after wrapping at the 
+        beginning or end of a line is dropped
+     @return Wrapped String <created on the stack>
+    */
+    VString wrap(const VString& s, uint width, bool expand_tabs = false,
+     bool replace_whitespace = true, bool drop_whitespace = true);
 
 
 /********************************************************************************************
@@ -211,7 +318,7 @@ namespace numpy {
 *///////////////////////////////////////////////////////////////////////////////////////////
 
 
-class String
+class VString
 {
     public:
 
@@ -224,20 +331,29 @@ class String
         /*
          Empty constructor, all values null.
         */
-        String();
+        VString();
 
         /*
          Allocated constructor, values empty.
         */
-        String(uint n);
+        VString(uint n);
 
         /*
          Copied from input, allocated.
         */
-        String(const char* input);
+        VString(const char* input);
 
         // destructor
-        ~String();
+        ~VString();
+
+        // inlines
+        inline uint len() { return n; }
+
+        inline char ix(int i) { return data[i]; }
+
+        inline char& operator[](int i) { return data[i]; }
+
+        inline char* raw_p() { return data; }
 
     /********************************************************************************************
 
@@ -245,6 +361,74 @@ class String
 
     *///////////////////////////////////////////////////////////////////////////////////////////
 
+        /**
+         Checks wheter this string is a float
+
+         @return True or False
+        */ 
+        bool is_float();
+
+        /**
+         Checks wheter this string is an int
+
+         @return True or False
+        */ 
+        bool is_integer();
+
+        /**
+         Converts all letters to lowercase.
+
+         @return This object string <object not created>
+        */
+        VString& lower();
+
+        /**
+         Converts all letters to uppercase.
+
+         @return This object string <object not created>
+        */
+        VString& upper();
+
+        /**
+         Capitalizes the first letter.
+
+         @return This object string <object not created>
+        */
+        VString& capitalize();
+
+        /**
+         Returns whether the string begins with a substring start.
+
+         @param start : the substring to test.
+         @return true or false
+        */
+        bool starts_with(const VString& start);
+
+        /**
+         Returns whether the string ends with a substring end.
+
+         @param end : the substring to test.
+         @return true or false
+        */
+        bool ends_with(const VString& end);
+
+        /**
+         Returns whether expr exists in s.
+
+         @param expr : string to search
+         @return True or False
+        */
+        bool contains(const VString& expr);
+
+        /**
+         Replaces all instances of value in s with replace_with.
+
+         @param value : the original value in s
+         @param replace_with : to replace value with
+         @return This object string <object not created>
+        */
+        VString& replace(const VString& value, const VString& replace_with);
+        VString& replace(char value, char replace_with);
 
 
      /********************************************************************************************

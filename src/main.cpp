@@ -11,7 +11,7 @@
 int main(void)
 {
  	std::cout << "---- Beginning Vector tests! ----" << std::endl;
-	call_all_tests();
+	//call_all_tests();
 	std::cout << "---- Beginning Matrix tests! ----" << std::endl;
 	call_all_matrix_tests();
 

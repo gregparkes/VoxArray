@@ -243,25 +243,6 @@ namespace numpy {
 	Matrix randchoice(uint ncols, uint nrows, const char* values);
 
 	/**
-	 Creates a binomial response (as int) from the Binomial Distribution.
-
-	 e.g binomial(10,0.5) simulates flipping a coin with n parameter = 10, most probable outcome is 5.
-
-	 @param n : parameter of the distribution
-	 @param p : the probability of getting 1 (success), in N[0, 1]
-	 @return The integer generated from n and p.
-	 */
-	uint binomial(uint n = 1, double p = 0.5);
-
-	/**
-	 Draws a value from a Poisson Distribution.
-
-	 @param lam : expectation of interval
-	 @return value from distribution.
-	 */
-	long poisson(double lam = 1.0);
-
-	/**
 	 Returns a random sample of items from the whole matrix.
 
 	 @param rhs : the matrix to sample from

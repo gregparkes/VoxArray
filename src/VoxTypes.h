@@ -1,5 +1,5 @@
 /*
- * types.h
+ * VoxTypes.h
  *
  *  Created on: 15 Feb 2017
  *      Author: Greg
@@ -46,6 +46,7 @@ namespace numpy {
 	class Vector;
 	class Matrix;
 	class Mask;
+	class VString;
 	
 	/* structs */
 	struct MATRIX_COMPLEX2;

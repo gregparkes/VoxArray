@@ -34,15 +34,12 @@
 #define RANGE(x) (throw std::range_error(x))
 #define INVALID_AXIS() (throw std::invalid_argument("axis must be 0 or 1"))
 
-#define ELEMENT_OPERATION(left, op, right) (  \
- left = left op right )
-
 
 #define _LARGEST2_(a,b) (a > b ? a : b)
 
 static inline double _absolute_(double value)
 {
-	return ((value < 0) ? -value : value);
+	return ((value < 0.0) ? -value : value);
 }
 
 static inline int _char_to_int_(char c)
@@ -217,10 +214,10 @@ static long _poisson_generator_knuth_(double lam)
  */
 static double _truncate_doub_(double value, int sigfig)
 {
-	int exponent = pow(10, sigfig);
+	long exponent = pow(10, sigfig);
 	double t1 = value * exponent;
 	int t_int = (int) t1; //deliberately cast to int to eliminate post.point dat
-	double result = (double) (t_int) / exponent;
+	double result = (double) (t_int) / (double) exponent;
 	return result;
 }
 
@@ -253,8 +250,8 @@ static int _destroy_array_(void *arr)
 	return 0;
 }
 
-template <typename T> static 
-int _fill_array_(T *arr, unsigned int n, T val)
+template <typename T> 
+static int _fill_array_(T *arr, unsigned int n, T val)
 {
 	if (n != 0 && arr != NULL)
 	{
@@ -353,14 +350,10 @@ static int _count_array_(T *arr, unsigned int n, T value)
 		int count = 0;
 		T *p1 = &arr[0];
 		T *end = p1 + n;
-	/*
-	#ifdef _OPENMP
-		#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:count)
-	#endif
-	*/
+
 		for (/* void */; p1 < end; p1++)
 		{
-			if (AlmostEqualRelativeAndAbs<T>(*p1, value, 0.005))
+			if (AlmostEqualRelativeAndAbs<T>(*p1, value, 1E-5))
 			{
 				count++;
 			}
@@ -386,7 +379,6 @@ static int _bincount_array_(double *bins, double *arr, unsigned int nbins, unsig
 		}
 		return 1;
 	}
-
 	else return 0;
 }
 
@@ -798,90 +790,82 @@ static int _normal_distrib_(double *arr, unsigned int n, double mean,
 
 static int _randint_array_(double *arr, unsigned int n, unsigned int max)
 {
-	if (n == 0 || max == 0)
+	if (n != 0 && max != 0)
 	{
-		return 0;
+		srand(time(NULL));
+		double *p1, *end;
+
+		for (p1 = &arr[0], end = &arr[0] + n; p1 < end; p1++)
+		{
+			*p1 = _uniform_randint_(max);
+		}
+		return 1;
 	}
-	srand(time(NULL));
-	unsigned int i;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (i = 0; i < n; i++)
-	{
-		arr[i] = _uniform_randint_(max);
-	}
-	return 1;
+	else return 0;
 }
 
 static int _binomial_array_(double *out, uint n, uint n_trials, double p)
 {
-	if (out == 0 || n == 0 || n_trials == 0)
+	if (out != 0 && n != 0 && n_trials != 0)
 	{
-		return 0;
-	}
-	srand(time(NULL));
-	unsigned int i, j;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (i = 0; i < n; i++)
-	{
-		uint n_successes = 0;
-		// for each trial, simulate the success
-		for (j = 0; j < n_trials; j++)
+		srand(time(NULL));
+		unsigned int j, n_success;
+		double *p1, *end;
+
+		for (p1 = &out[0], end = &out[0] + n; p1 < end; p1++)
 		{
-			if (_uniform_rand_() < p)
+			n_success = 0;
+			// for each trial, simulate the success
+			for (j = 0; j < n_trials; j++)
 			{
-				n_successes++;
+				if (_uniform_rand_() < p)
+				{
+					n_success++;
+				}
 			}
+			*p1 = n_success;
 		}
-		out[i] = n_successes;
+		return 1;
 	}
-	return 1;
+	else return 0;
 }
 
-static int _poisson_array_(double * out, uint n, double lam)
+static int _poisson_array_(double *out, uint n, double lam)
 {
-	if (out == 0 || n == 0 || lam < 0)
+	if (out != 0 && n != 0 && lam >= 0.0)
 	{
-		return 0;
+		srand(time(NULL));
+		double *p1, *end;
+		for (p1 = &out[0], end = &out[0] + n; p1 < end; p1++)
+		{
+			*p1 = _poisson_generator_knuth_(lam);
+		}
+		return 1;
 	}
-	srand(time(NULL));
-	unsigned int i;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (i = 0; i < n; i++)
-	{
-		out[i] = _poisson_generator_knuth_(lam);
-	}
-	return 1;
+	else return 0;
 }
 
 static int _floor_array_(double *arr, unsigned int n)
 {
-	if (n == 0 || arr == 0)
+	if (n != 0 && arr != 0)
 	{
-		return 0;
+		double *p1, *end;
+		for (p1 = &arr[0], end = &arr[0] + n; p1 < end; p1++)
+		{
+			*p1 = _truncate_doub_(*p1, 0);
+		}
+		return 1;
 	}
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static)
-#endif
-	for (unsigned int i = 0; i < n; i++)
-	{
-		double arr_f = _truncate_doub_(arr[i], 0);
-		arr[i] = arr_f;
-	}
-	return 1;
+	else return 0;
 }
 
 template <typename T> static 
 bool _all_true_(T *arr, unsigned int n)
 {
-	for (unsigned int i = 0; i < n; i++)
+	T *p1, *end;
+	for (p1 = &arr[0], end = &arr[0] + n; p1 < end; p1++)
 	{
-		if (!arr[i])
+		if (!(*p1))
 		{
 			return false;
 		}
@@ -892,9 +876,10 @@ bool _all_true_(T *arr, unsigned int n)
 template <typename T> static 
 bool _any_true_(T *arr, unsigned int n)
 {
-	for (unsigned int i = 0; i < n; i++)
+	T *p1, *end;
+	for (p1 = &arr[0], end = &arr[0] + n; p1 < end; p1++)
 	{
-		if (arr[i])
+		if ((*p1))
 		{
 			return true;
 		}
@@ -908,14 +893,12 @@ static int _boolean_summation_array_(bool *arr, unsigned int n)
 	{
 		return -1;
 	}
-	unsigned int total = 0;
-	unsigned int i;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:total)
-#endif
-	for (i = 0; i < n; i++)
+	int total;
+	bool *p1, *end;
+
+	for (p1 = &arr[0], end = &arr[0] + n, total = 0; p1 < end; p1++)
 	{
-		if (arr[i])
+		if (*p1)
 		{
 			total++;
 		}
@@ -941,13 +924,12 @@ static int _boolean_summation_array_(bool *arr, unsigned int n)
 */
 static double _summation_array_(double *arr, unsigned int n)
 {
-	double sum = arr[0];
 	// c is our small accumulator
-	double c = 0.0;
-	unsigned int i;
-	for (i = 1; i < n; i++)
+	double c = 0.0, sum = 0.0, *p1 = &arr[0], *end = &arr[0] + n;
+
+	while (p1 < end)
 	{
-		double y = arr[i] - c;
+		double y = *p1++ - c;
 		double t = sum + y;
 		c = (t - sum) - y;
 		sum = t;
@@ -971,7 +953,7 @@ static double _matrix_rowwise_summation_(double *arr, unsigned int nvec, unsigne
 	return sum;
 }
 
-static double _std_array_(double *arr, unsigned int n)
+static double _var_array_(double *arr, unsigned int n)
 {
 	// we use a single iteration approach.
 	if (n < 2 || arr == NULL)
@@ -980,19 +962,21 @@ static double _std_array_(double *arr, unsigned int n)
 	}
 	// we assign K as a property to avoid cancellation.
 	// ex is the sum(), ex2 is the sum of squares
-	double K, ex, ex2;
-	unsigned int i;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:ex,ex2)
-#endif
-	for (K = arr[0], ex = 0.0, ex2 = 0.0, i = 0; i < n; i++)
+	double K, ex, ex2, *p1, *end;
+
+	for (K = arr[0], ex = 0.0, ex2 = 0.0, p1 = &arr[0], end = &arr[0] + n; p1 < end; p1++)
 	{
 		// subtracting by K has no effect on variance.
-		double diff = arr[i] - K;
+		double diff = (*p1) - K;
 		ex += diff;
 		ex2 += (diff * diff);
 	}
-	return _square_root_((ex2 - (ex * ex) / n) / (n - 1));
+	return (ex2 - (ex * ex) / n) / (n - 1);
+}
+
+static double _std_array_(double *arr, unsigned int n)
+{
+	return _square_root_(_var_array_(arr, n));
 }
 
 static double _matrix_rowwise_std_(double *arr, unsigned int nvec, unsigned int ncol, unsigned int rowidx)
@@ -1007,30 +991,6 @@ static double _matrix_rowwise_std_(double *arr, unsigned int nvec, unsigned int 
 		s += (arr[rowidx+colidx*ncol] - m) * (arr[rowidx+colidx*ncol] - m);
 	}
 	return _square_root_(s / (nvec - 1));
-}
-
-static double _var_array_(double *arr, unsigned int n)
-{
-	// we use a single iteration approach.
-	if (n < 2 || arr == NULL)
-	{
-		return -1;
-	}
-	// we assign K as a property to avoid cancellation.
-	// ex is the sum(), ex2 is the sum of squares
-	double K, ex, ex2;
-	unsigned int i;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:ex,ex2)
-#endif
-	for (K = arr[0], ex = 0.0, ex2 = 0.0, i = 0; i < n; i++)
-	{
-		// subtracting by K has no effect on variance.
-		double diff = arr[i] - K;
-		ex += diff;
-		ex2 += (diff * diff);
-	}
-	return (ex2 - (ex * ex) / n) / (n - 1);
 }
 
 static double _matrix_rowwise_var_(double *arr, unsigned int nvec, unsigned int ncol, unsigned int rowidx)
@@ -1053,32 +1013,27 @@ static double _cov_array_(double *arr1, double *arr2, unsigned int n)
 {
 	if (n < 2 || arr1 == NULL || arr2 == NULL)
 	{
-		return -1;
+		return -1.0;
 	}
-	double K1, K2, ex, ey, exy;
-	unsigned int i;
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:ex,ey,exy)
-#endif
-	for (K1 = arr1[0], K2 = arr2[0], ex = 0.0, ey = 0.0, exy = 0.0, 
-			i = 0; i < n; i++)
+	double K1 = arr1[0], K2 = arr2[0],
+		 ex = 0.0, ey = 0.0, exy = 0.0, *p1 = &arr1[0],
+		 *p2 = &arr2[0], *end = &arr1[0] + n;
+
+	while (p1 < end)
 	{
-		ex += arr1[i] - K1;
-		ey += arr2[i] - K2;
-		exy += ((arr1[i] - K1) * (arr2[i] - K2));
+		ex += (*p1 - K1);
+		ey += (*p2 - K2);
+		exy += ((*p1++ - K1) * (*p2++ - K2));
 	}
 	return (exy - (ex * ey) / n) / (n - 1);
 }
 
 static double _absolute_summation_array_(double *arr, unsigned int n)
 {
-	double total = _absolute_(arr[0]);
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(+:total)
-#endif
-	for (unsigned int i = 1; i < n; i++)
+	double *p1 = &arr[0], *end = &arr[0] + n, total = 0.0;
+	while (p1 < end)
 	{
-		total += _absolute_(arr[i]);
+		total += _absolute_(*p1++);
 	}
 	return total;
 }
@@ -1099,13 +1054,10 @@ static double _absolute_matrix_rowwise_summation_(double *arr, unsigned int nvec
 
 static double _prod_array_(double *arr, unsigned int n)
 {
-	double prod = arr[0];
-#ifdef _OPENMP
-	#pragma omp parallel for if(n>__OMP_OPT_VALUE__) schedule(static) reduction(*:prod)
-#endif
-	for (unsigned int i = 1; i < n; i++)
+	double *p1 = &arr[1], *end = &arr[0] + n, prod = arr[0];
+	while (p1 < end)
 	{
-		prod *= arr[i];
+		prod *= *p1++;
 	}
 	return prod;
 }
@@ -1721,6 +1673,26 @@ static int _swap_row_(double *matrix, unsigned int nvec, unsigned int ncol, unsi
 	return 1;
 }
 
+// assume out is heaped but not initialised, in is initialised, out-in same size
+static int _diff_array_(double *out, double *in, unsigned int n, unsigned int periods)
+{
+	if (out == 0 || in == 0 || n < 2 || periods == 0 || n <= periods)
+	{
+		return 0;
+	}
+	unsigned int i;
+	double *p1, *p2, *end;
+	for (p1 = &in[0], p2 = &out[0], end = &in[0]+periods; p1 < end; p1++, p2++ /* */)
+	{
+		*p2 = *p1;
+	}
+	for (p1 = &in[periods], p2 = &out[periods], end = &in[0]+n; p1 < end; p1++, p2++)
+	{
+		*p2 = *p1 - *(p1-periods);
+	}
+	return 1;
+}
+
 static int _gaussian_elimination_(double *matrix, unsigned int n)
 {
 	// must be NxN matrix square
@@ -2189,8 +2161,7 @@ static double _median_array_(double *arr, unsigned int n, bool sorted)
 			double v = _quickselect_(arr, 0, n-1, ((int) n / 2) + 1);
 			double w = _quickselect_(arr, 0, n-1, ((int) n / 2));
 			// return arithmetic mean of two middle values.
-			printf("v: %f, w: %f\n", v, w);
-			return (v + w) / 2;
+			return (v + w) / 2.0;
 		}
 		else
 		{
@@ -2255,11 +2226,4 @@ static double _richardson_extrapolation_(double *arr, unsigned int n, double dx)
 	return (16 * Ih - I2h) / 15;
 }
 
-
 #endif
-
-
-
-
-
-

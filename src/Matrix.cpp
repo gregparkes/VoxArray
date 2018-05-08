@@ -350,16 +350,6 @@ namespace numpy {
 		return res;
 	}
 
-	uint binomial(uint n, double p)
-	{
-		return (uint) _binomial_coefficient_(n,p);
-	}
-
-	long poisson(double lam)
-	{
-		return _poisson_generator_knuth_(lam);
-	}
-
 	Matrix clip(const Matrix& rhs, double a_min, double a_max)
 	{
 		Matrix res = copy(rhs);

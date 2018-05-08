@@ -818,18 +818,6 @@ namespace numpy {
 	Vector diag(const Matrix& rhs);
 
 	/**
-	 Calculates the Hermitian inner product of two vectors. The vectors must be
-	 both column vectors. Also known as the scalar product.
-
-	 e.g x = sum(a*b).
-
-	 @param v : the left-hand side vector
-	 @param w : the right-hand side vector
-	 @return The dot product
-	 */
-	double inner(const Vector& v, const Vector& w);
-
-	/**
 	 Calculates the dot product of two vectors. The vectors must be
 	 both column vectors. Also known as the scalar product.
 
@@ -850,15 +838,9 @@ namespace numpy {
 	double magnitude(const Vector& v);
 
 	/**
-	 Normalizes the array by it's magnitude.
-	
-	@param v : the vector to normalize
-	@return The normalized array
-	*/
-	Vector normalize(const Vector& v);
-
-	/**
 	 Standardize the vector by removing the mean and standard deviation scaling.
+	
+	 The mean and standard deviation are 'estimated' from the data sample.
 
 	 =(x-x.mean())/x.std()
 
@@ -868,26 +850,17 @@ namespace numpy {
 	Vector standardize(const Vector& v);
 
 	/**
-	 Applies min-max scaling on the vector; as
+	 Feature scales brings vector v into the range [a, b]. This is also known as
+	 unity-based normalization or min-maxing. 
 
-	 x_std=(x - x.min()) / (x.max() - x.min())
+	 x_std = a + (x - xmin)(b - a) / (xmax - xmin)
 
 	 @param v : the vector to scale
+	 @param a (optional) : the lower-hand scale to scale to, default 0
+	 @param b (optional) : the upper-hand scale to scale to, default 1
 	 @return The new scaled vector <created on the stack>
 	**/
-	Vector minmax(const Vector& v);
-
-	/**
-	 Calculates the cross product of two vectors, which is the vector that is
-	 at a right angle to both v and w. Also known as the vector product.
-	 Note that the cross product makes no sense above 3 dimensions, therefore
-	 any vector v or w that are != 3 will be rejected.
-
-	 @param v : left-hand side vector
-	 @param w : right-hand side vector
-	 @return The cross product vector
-	*/
-	Vector cross(const Vector& v, const Vector& w);
+	Vector minmax(const Vector& v, double a = 0.0, double b = 1.0);
 
 	/**
 	 Creates an (applied) sine copy of the vector.
@@ -997,11 +970,31 @@ namespace numpy {
 	/**
 	 Calculates the 1st discrete differeence across a vector, approximating using Euler's method.
 
+	 Note: diff will not change the dimensions of rhs, since starting values before
+	 periods are copied over.
+
 	 @param rhs : the vector
 	 @param periods : periods to shift for forming difference
 	 @return The new difference vector. <created on the stack> 
 	*/
 	Vector diff(const Vector& rhs, uint periods = 1);
+
+	/**
+	 Returns the gradient of an 1-dimensional array.
+
+	 The gradient is computed using second-order accurate central differences in the interior
+	 points and either first or second order accurate one-sides (forward or backward) differences
+	 at the boundaries. The returned gradient hence has the same shape as the input array.
+
+	 @param v : an array containing samples of a scalar function
+	 @param spacing (optional) : spacing between v values, 
+	 	NULL specifies uniform spacing, set spacing
+	 	if non-uniform spacing is desired
+	 @param edge_order (optional) : gradient calculated at the boundaries, either 1 or 2.
+	 @return An array corresponding to the derivatives of v with respect to each dimension.
+	 	<created on the stack>
+	*/
+	//Vector gradient(const Vector& v, const Vector* spacing = NULL, int edge_order = 1);
 
 	/**
 	 Transposes the vector from column vector -> row vector or vice versa.
